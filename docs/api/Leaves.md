@@ -15,20 +15,17 @@
   "code": 200,
   "data": {
     "leaves": {
-      "annual": 8,
-      "extra": ["1231245464", "1237642712"]
-    },
-    "attendanceAndLeave": {
-      "attendance": 230,
-      "sick": 5,
-      "marriage": 2,
-      "childBaptism": 0,
-      "childCircumsion": 0,
-      "hajj": 0,
-      "maternity": 0,
-      "childBirth": 0,
-      "mainFamDeath": 0,
-      "closeFamDeath": 0
+      "annual": {
+        "remaining": 10,
+        "used": 2,
+        "expire": "783716263"
+      },
+      "extra": {
+        "remaining": 3,
+        "used": 1,
+        "expire": "787182333"
+      },
+      "substitute": ["787812378", "6787812378"]
     }
   },
   "status": "Success",
@@ -37,7 +34,7 @@
 }
 ```
 
-`data.leaves.extra` is timestamp, and will be removed when expired.
+`data.leaves.substitute`, `data.leaves.extra.expire` and `data.leaves.annual.expire` is timestamp, and will be removed when expired.
 
 - Response Body (Fail) :
 
