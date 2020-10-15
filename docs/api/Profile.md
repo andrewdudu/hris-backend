@@ -22,7 +22,7 @@
     "join": "12342134123",
     "leaves": {
       "annual": 8,
-      "extra": ["1231245464", "1237642712"]
+      "extra": 2
     },
     "attendanceAndLeave": {
       "attendance": 230,
@@ -44,7 +44,6 @@
 ```
 
 `data.join` is timestamp.
-`data.leaves.extra` is timestamp, and will be removed when expired.
 
 - Response Body (Fail) :
 
