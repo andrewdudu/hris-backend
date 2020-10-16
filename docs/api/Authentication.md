@@ -20,8 +20,8 @@
 
 ```json
 {
-  "timestamp": "2019-08-23T04:22:26.690+0000",
   "code": 200,
+  "status": "Success",
   "data": {
     "user": {
       "role": "employee",
@@ -32,9 +32,8 @@
       "join": "12342134123"
     }
   },
-  "status": "Success",
-  "message": null,
-  "path": "/auth/login"
+  "paging": null,
+  "errors": null
 }
 ```
 
@@ -44,21 +43,14 @@
 
 ```json
 {
-  "timestamp": "2019-08-23T04:22:26.690+0000",
   "code": 400,
   "status": "Bad Request",
-  "message": "Invalid Request: Invalid user authentication or invalid request format",
-  "path": "/auth/login"
-}
-```
-
-```json
-{
-  "timestamp": "2019-08-23T04:22:26.690+0000",
-  "code": 401,
-  "status": "Unauthorized",
-  "message": "Invalid Request: username/email or password is wrong",
-  "path": "/auth/login"
+  "data": null,
+  "paging": null,
+  "errors": {
+    "email": "Email does not exist",
+    "password": "Password mismatch"
+  }
 }
 ```
 
@@ -82,8 +74,8 @@
 
 ```json
 {
-  "timestamp": "2019-08-23T04:22:26.690+0000",
   "code": 200,
+  "status": "Success",
   "data": {
     "user": {
       "role": "manager",
@@ -94,9 +86,8 @@
       "join": "12342134123"
     }
   },
-  "status": "Success",
-  "message": null,
-  "path": "/auth/login/manager"
+  "paging": null,
+  "errors": null
 }
 ```
 
@@ -106,21 +97,11 @@
 
 ```json
 {
-  "timestamp": "2019-08-23T04:22:26.690+0000",
   "code": 400,
   "status": "Bad Request",
-  "message": "Invalid Request: Invalid user authentication or invalid request format",
-  "path": "/auth/login/manager"
-}
-```
-
-```json
-{
-  "timestamp": "2019-08-23T04:22:26.690+0000",
-  "code": 401,
-  "status": "Unauthorized",
-  "message": "Invalid Request: username/email or password is wrong",
-  "path": "/auth/login/manager"
+  "data": null,
+  "paging": null,
+  "errors": null
 }
 ```
 
@@ -144,8 +125,8 @@
 
 ```json
 {
-  "timestamp": "2019-08-23T04:22:26.690+0000",
   "code": 200,
+  "status": "Success",
   "data": {
     "user": {
       "role": "admin",
@@ -154,9 +135,8 @@
       "requests": 20
     }
   },
-  "status": "Success",
-  "message": null,
-  "path": "/auth/login/admin"
+  "paging": null,
+  "errors": null
 }
 ```
 
@@ -166,20 +146,10 @@
 
 ```json
 {
-  "timestamp": "2019-08-23T04:22:26.690+0000",
   "code": 400,
   "status": "Bad Request",
-  "message": "Invalid Request: Invalid user authentication or invalid request format",
-  "path": "/auth/login/admin"
-}
-```
-
-```json
-{
-  "timestamp": "2019-08-23T04:22:26.690+0000",
-  "code": 401,
-  "status": "Unauthorized",
-  "message": "Invalid Request: username/email or password is wrong",
-  "path": "/auth/login/admin"
+  "data": null,
+  "paging": null,
+  "errors": null
 }
 ```
