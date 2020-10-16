@@ -1,22 +1,13 @@
-# Authentication API
+# User API
 
-## Employee Login
+## GET User
 
-- Endpoint : `/auth/login`
-- HTTP Method : `POST`
-- Request Body :
-
-```json
-{
-  "username": "example@example.com",
-  "password": "johndoe123"
-}
-```
+- Endpoint : `/users/current-user`
+- HTTP Method : `GET`
 
 - Request Header :
   - Accept : `application/json`
 - Response Body (Success) :
-  - Set-Cookie: `userToken=token`
 
 `joinDate` is timestamp.
 
@@ -44,12 +35,7 @@
 
 ```json
 {
-  "code": 400,
-  "status": "Bad Request",
-  "data": null,
-  "paging": null,
-  "errors": {
-    "credential": ["DOES_NOT_MATCH"]
-  }
+  "code": 401,
+  "status": "Unauthorized"
 }
 ```
