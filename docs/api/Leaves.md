@@ -11,8 +11,8 @@
 
 ```json
 {
-  "timestamp": "2019-08-23T04:22:26.690+0000",
   "code": 200,
+  "status": "Success",
   "data": {
     "leaves": {
       "annual": {
@@ -28,9 +28,8 @@
       "substitute": ["787812378", "6787812378"]
     }
   },
-  "status": "Success",
-  "message": null,
-  "path": "/login"
+  "paging": null,
+  "errors": null
 }
 ```
 
@@ -40,10 +39,12 @@
 
 ```json
 {
-  "timestamp": "2019-08-23T04:22:26.690+0000",
   "code": 401,
   "status": "Unauthorized",
-  "message": "Invalid Request",
-  "path": "/leaves"
+  "data": null,
+  "paging": null,
+  "errors": {
+    "message": "You are not logged in"
+  }
 }
 ```
