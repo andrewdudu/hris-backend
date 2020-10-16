@@ -93,3 +93,49 @@
   }
 }
 ```
+
+## Attendances
+
+- Endpoint : `/attendances`
+- HTTP Method : `GET`
+- `Auth required`
+- Request Query:
+  - username : `string`
+  - startDate : `epoch GMT +7`
+  - endDate : `epoch GMT +7`
+- Request Header :
+
+  - Accept : `application/json`
+
+- Response Body (Success) :
+
+```json
+{
+  "code": 200,
+  "status": "Success",
+  "data": [
+    {
+      "date": {
+        "start": 7817238,
+        "end": 1287383
+      },
+      "location": {
+        "type": "INSIDE|OUTSIDE",
+        "lat": 787.123123,
+        "lon": 178.123123
+      }
+    },
+    {
+      "date": {
+        "start": 7817238,
+        "end": 1287383
+      },
+      "location": {
+        "type": "INSIDE|OUTSIDE",
+        "lat": 787.123123,
+        "lon": 178.123123
+      }
+    }
+  ]
+}
+```

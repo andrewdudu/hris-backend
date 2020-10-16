@@ -9,11 +9,20 @@
   - Accept : `application/json`
 - Response Body (Success) :
 
+  `report` and `request` for admin.
+
 ```json
 {
   "code": 200,
   "status": "Success",
   "data": {
+    "report": {
+      "working": 230,
+      "absent": 10
+    },
+    "request": {
+      "incoming": 20
+    },
     "calendar": {
       "date": 7817283721,
       "status": "WORKING|HOLIDAY"
