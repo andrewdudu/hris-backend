@@ -12,10 +12,10 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 @Data
-public class RequestLeave {
+public class RequestLeaveEntity extends BaseEntity {
 
-    @Field(name = "username")
-    private String username;
+    @Field(name = "employee_id")
+    private String employeeId;
 
     @Field(name = "note")
     private String note;

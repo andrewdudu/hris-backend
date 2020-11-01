@@ -1,6 +1,6 @@
 package com.bliblifuture.hrisbackend.model.response;
 
-import com.bliblifuture.hrisbackend.model.entity.Department;
+import com.bliblifuture.hrisbackend.model.entity.DepartmentEntity;
 import com.bliblifuture.hrisbackend.model.response.util.Office;
 import com.bliblifuture.hrisbackend.model.response.util.OrganizationUnit;
 import com.bliblifuture.hrisbackend.model.response.util.Position;
@@ -13,13 +13,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeResponse{
+public class EmployeeResponse {
 
     private String nik;
 
     private String name;
 
-    private Department department;
+    private DepartmentEntity departmentEntity;
 
     private Position position;
 

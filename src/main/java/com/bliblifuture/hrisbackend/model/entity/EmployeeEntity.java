@@ -5,33 +5,23 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.Date;
-import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
-@Document(collection = "user")
+@Document(collection = "employee")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class User extends BaseEntity{
-
-    @Field(name = "username")
-    private String username;
-
-    @Field(name = "password")
-    private String password;
+public class EmployeeEntity extends BaseEntity{
 
     @Field(name = "name")
     private String name;
 
-    @Field(name = "nik")
-    private String nik;
+    @Field(name = "email")
+    private String email;
 
     @Field(name = "image")
     private String image;
-
-    @Field(name = "roles")
-    private List<String> roles;
 
     @Field(name = "join_date")
     private Date joinDate;
@@ -45,13 +35,7 @@ public class User extends BaseEntity{
     @Field(name = "organization_unit")
     private String organizationUnit;
 
-    @Field(name = "office")
-    private String Office;
-
-    @Field(name = "leaves")
-    private int leaves;
-
-    @Field(name = "attendances")
-    private String attendances;
+    @Field(name = "office_id")
+    private String officeId;
 
 }

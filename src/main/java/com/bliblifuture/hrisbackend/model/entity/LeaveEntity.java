@@ -14,8 +14,8 @@ import java.util.Date;
 @Data
 public class LeaveEntity extends BaseEntity{
 
-    @Field(name = "username")
-    private String username;
+    @Field(name = "employee_id")
+    private String employeeId;
 
     @Field(name = "name")
     private String name;

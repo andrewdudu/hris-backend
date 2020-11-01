@@ -5,12 +5,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 @EqualsAndHashCode(callSuper = false)
-@Document(collection = "attendace")
+@Document(collection = "office")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class Department {
+public class OfficeEntity extends BaseEntity{
 
     @Field(name = "name")
     private String name;

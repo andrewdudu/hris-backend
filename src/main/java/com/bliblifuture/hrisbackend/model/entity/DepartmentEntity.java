@@ -4,25 +4,17 @@ import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.util.Date;
-
 @EqualsAndHashCode(callSuper = false)
-@Document(collection = "event")
+@Document(collection = "attendace")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class Event {
+public class DepartmentEntity extends BaseEntity {
 
     @Field(name = "name")
     private String name;
 
-    @Field(name = "date")
-    private Date date;
-
-    @Field(name = "note")
-    private String note;
-
-    @Field(name = "status")
-    private String status;
+    @Field(name = "code")
+    private String code;
 }

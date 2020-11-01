@@ -2,12 +2,13 @@
 
 ## Clock in
 
-- Endpoint : `/attendances/_clock-in`
+- Endpoint : `/api/attendances/_clock-in`
 - HTTP Method : `POST`
 - `Auth required`
 - Image resolution `400 x 800`
 - Request Header :
   - Accept : `application/json`
+  - Set-Cookie: `userToken=token`
 - Request Body :
 
 ```json

@@ -2,7 +2,7 @@
 
 ## GET Employee
 
-- Endpoint : `/employees`
+- Endpoint : `/api/employees`
 - HTTP Method : `GET`
 - Query Param:
 
@@ -11,6 +11,7 @@
 
 - Request Header :
   - Accept : `application/json`
+  - Set-Cookie: `userToken=token`
 - Response Body (Success) :
 
 ```json
@@ -44,7 +45,7 @@
   "code": 200,
   "status": "Success",
   "data": {
-    "user": {
+    "userEntity": {
       "name": "name",
       "department": "Technology",
       "office": {

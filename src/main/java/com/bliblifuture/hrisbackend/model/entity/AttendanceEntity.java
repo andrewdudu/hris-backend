@@ -7,12 +7,12 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.sql.Time;
 
 @EqualsAndHashCode(callSuper = false)
-@Document(collection = "attendace")
+@Document(collection = "attendance")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class Attendance {
+public class AttendanceEntity extends BaseEntity{
 
     @Field(name = "image")
     private String image;
@@ -32,6 +32,6 @@ public class Attendance {
     @Field(name = "lon")
     private double lon;
 
-    @Field(name = "assign_by")
-    private String assignBy;
+    @Field(name = "employee_id")
+    private String employeeId;
 }

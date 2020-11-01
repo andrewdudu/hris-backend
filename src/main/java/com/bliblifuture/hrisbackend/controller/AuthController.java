@@ -9,7 +9,6 @@ import com.bliblifuture.hrisbackend.model.response.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcProperties;
 import org.springframework.http.ResponseCookie;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,11 +22,6 @@ public class AuthController extends WebMvcProperties {
 
     @Autowired
     private CommandExecutor commandExecutor;
-
-    @GetMapping
-    public Mono<Response<String>> testing(){
-        return Mono.just(ResponseHelper.ok("halo"));
-    }
 
     @PostMapping("/login")
     public Mono<Response<UserResponse>> login(LoginRequest request, ServerWebExchange swe){

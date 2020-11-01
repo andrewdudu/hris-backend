@@ -2,7 +2,7 @@ package com.bliblifuture.hrisbackend.config;
 
 import com.blibli.oss.command.CommandExecutor;
 import com.bliblifuture.hrisbackend.command.GetUserDetailsByUsernameCommand;
-import com.bliblifuture.hrisbackend.model.entity.User;
+import com.bliblifuture.hrisbackend.model.entity.UserEntity;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
@@ -42,10 +42,13 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
         return Mono.empty();
     }
 
-    public Mono<Authentication> isValid(String token, User user){
-        if(true){
+    public Mono<Authentication> isValid(String token, UserEntity userEntity){
+        if(jwtTokenUtil.validateToken(token)){
             List<GrantedAuthority> authorities = new ArrayList<>();
-            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+            authorities.add(new SimpleGrantedAuthority("ROLE_EMPLOYEE"));
+            if (userEntity.getRoles().contains("ADMIN")){
+                authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            }
             return Mono.just(new UsernamePasswordAuthenticationToken(jwtTokenUtil.getUsernameFromToken(token), null, authorities));
         }
         return Mono.empty();

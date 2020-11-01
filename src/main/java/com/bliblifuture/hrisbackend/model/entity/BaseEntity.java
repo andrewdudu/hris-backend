@@ -1,6 +1,8 @@
 package com.bliblifuture.hrisbackend.model.entity;
 
+import com.bliblifuture.hrisbackend.model.response.BaseResponse;
 import lombok.Data;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -26,13 +28,13 @@ public abstract class BaseEntity implements Serializable {
     @Field(value = "updated_date")
     private Date updatedDate;
 
-//    public <T extends BaseEntity, R extends BaseResponse> R createResponse(T obj, R response){
-//        BeanUtils.copyProperties(obj, response);
-//        response.setId(obj.getId());
-//        response.setCreatedBy(obj.getCreatedBy());
-//        response.setCreatedDate(obj.getCreatedDate());
-//        response.setUpdatedBy(obj.getUpdatedBy());
-//        response.setUpdatedDate(obj.getUpdatedDate());
-//        return response;
-//    }
+    public <T extends BaseEntity, R extends BaseResponse> R createResponse(T obj, R response){
+        BeanUtils.copyProperties(obj, response);
+        response.setId(obj.getId());
+        response.setCreatedBy(obj.getCreatedBy());
+        response.setCreatedDate(obj.getCreatedDate());
+        response.setUpdatedBy(obj.getUpdatedBy());
+        response.setUpdatedDate(obj.getUpdatedDate());
+        return response;
+    }
 }

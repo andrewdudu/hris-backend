@@ -2,7 +2,7 @@
 
 ## GET Announcement
 
-- Endpoint : `/announcements?page=0&size=10`
+- Endpoint : `/api/announcements?page=0&size=10`
 - HTTP Method : `GET`
 - `Auth required`
 - Query Params :
@@ -10,6 +10,7 @@
     - size `int`
 - Request Header :
   - Accept : `application/json`
+  - Set-Cookie: `userToken=token`
 - Response Body (Success) :
 
 ```json
