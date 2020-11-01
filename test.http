@@ -1,0 +1,7 @@
+GET http://localhost:8080/user/test
+Accept: application/json
+
+###
+GET http://localhost:8080/user/get-test
+Content-Type: application/json
+Set-Cookie: userToken=token123; Max-Age=18000; Expires=Thu, 29 Oct 2020 19:57:30 GMT;

@@ -1,7 +1,6 @@
-package com.blibli.hrisbackend.model.entity;
+package com.bliblifuture.hrisbackend.model.entity;
 
 import lombok.Data;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Field;
 

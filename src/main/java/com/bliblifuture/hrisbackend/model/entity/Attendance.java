@@ -1,4 +1,4 @@
-package com.blibli.hrisbackend.model.entity;
+package com.bliblifuture.hrisbackend.model.entity;
 
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;

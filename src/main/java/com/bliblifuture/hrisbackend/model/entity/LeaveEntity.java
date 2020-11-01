@@ -1,0 +1,37 @@
+package com.bliblifuture.hrisbackend.model.entity;
+
+import lombok.*;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import java.util.Date;
+
+@EqualsAndHashCode(callSuper = false)
+@Document(collection = "leave")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Data
+public class LeaveEntity extends BaseEntity{
+
+    @Field(name = "username")
+    private String username;
+
+    @Field(name = "name")
+    private String name;
+
+    @Field(name = "code")
+    private String code;
+
+    @Field(name = "type")
+    private String type;
+
+    @Field(name = "remaining")
+    private int remaining;
+
+    @Field(name = "used")
+    private int used;
+
+    @Field(name = "expiry_date")
+    private Date expDate;
+}

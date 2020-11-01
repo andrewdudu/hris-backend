@@ -1,4 +1,4 @@
-package com.blibli.hrisbackend;
+package com.bliblifuture.hrisbackend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
