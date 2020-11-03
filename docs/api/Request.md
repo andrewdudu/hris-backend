@@ -2,10 +2,11 @@
 
 ## Request Attendance
 
-- Endpoint : `/request/attendances`
+- Endpoint : `/api/request/attendances`
 - HTTP Method : `POST`
 - Request Header :
   - Accept : `application/json`
+  - Set-Cookie: `userToken=token`
 - Request Body :
 
 ```json
@@ -178,7 +179,7 @@
   "data": [
     {
       "id": "1823a87f-12387321adf-123123adf",
-      "user": {
+      "userEntity": {
         "name": "John Doe",
         "department": "Technology",
         "office": {
@@ -200,7 +201,7 @@
     },
     {
       "id": "1823a87f-12387321adf-123123adf",
-      "user": {
+      "userEntity": {
         "name": "John Doe",
         "department": "Technology",
         "office": {
@@ -221,7 +222,7 @@
     },
     {
       "id": "1823a87f-12387321adf-123123adf",
-      "user": {
+      "userEntity": {
         "name": "John Doe",
         "department": "Technology",
         "office": {
@@ -269,7 +270,7 @@
   "status": "Success",
   "data": {
     "id": "1823a87f-12387321adf-123123adf",
-    "user": {
+    "userEntity": {
       "name": "John Doe",
       "department": "Technology",
       "office": {
@@ -317,7 +318,7 @@
   "status": "Success",
   "data": {
     "id": "1823a87f-12387321adf-123123adf",
-    "user": {
+    "userEntity": {
       "name": "John Doe",
       "department": "Technology",
       "office": {

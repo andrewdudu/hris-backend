@@ -2,11 +2,12 @@
 
 ## GET User
 
-- Endpoint : `/users/current-user`
+- Endpoint : `/api/users/current-userEntity`
 - HTTP Method : `GET`
 
 - Request Header :
   - Accept : `application/json`
+  - Set-Cookie: `userToken=token`
 - Response Body (Success) :
 
 `joinDate` is timestamp.
@@ -112,7 +113,7 @@
 
 ## Available Requests
 
-- Endpoint : `/users/current-user/available-requests`
+- Endpoint : `/users/current-userEntity/available-requests`
 - HTTP Method : `GET`
 - `Auth required`
 - Request Header :
@@ -138,7 +139,7 @@
 
 ## GET Attendnace Summary
 
-- Endpoint : `/users/current-user/attendance-summary`
+- Endpoint : `/users/current-userEntity/attendance-summary`
 - HTTP Method : `GET`
 
 - Request Header :
