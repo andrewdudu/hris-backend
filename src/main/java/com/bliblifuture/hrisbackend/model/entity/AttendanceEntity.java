@@ -1,10 +1,11 @@
 package com.bliblifuture.hrisbackend.model.entity;
 
+import com.bliblifuture.hrisbackend.model.response.util.AttendanceLocationType;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.sql.Time;
+import java.util.Date;
 
 @EqualsAndHashCode(callSuper = false)
 @Document(collection = "attendance")
@@ -18,13 +19,13 @@ public class AttendanceEntity extends BaseEntity{
     private String image;
 
     @Field(name = "location")
-    private String location;
+    private AttendanceLocationType location;
 
     @Field(name = "start_time")
-    private Time startTime;
+    private Date startTime;
 
     @Field(name = "end_time")
-    private String endTime;
+    private Date endTime;
 
     @Field(name = "lat")
     private double lat;

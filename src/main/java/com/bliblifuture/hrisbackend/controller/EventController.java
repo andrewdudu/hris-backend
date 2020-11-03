@@ -8,6 +8,7 @@ import com.bliblifuture.hrisbackend.model.request.PagingRequest;
 import com.bliblifuture.hrisbackend.model.response.AnnouncementResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcProperties;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,11 +25,16 @@ public class EventController extends WebMvcProperties {
     @Autowired
     private CommandExecutor commandExecutor;
 
+    @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping
     public Mono<Response<List<AnnouncementResponse>>> getUser(@RequestParam("page") int page, @RequestParam("size") int size){
         PagingRequest request = new PagingRequest(page, size);
         return commandExecutor.execute(GetAnnouncementCommand.class, request)
-                .map(ResponseHelper::ok)
+                .map(pagingResponse -> {
+                    Response<List<AnnouncementResponse>> response = ResponseHelper.ok(pagingResponse.getData());
+                    response.setPaging(pagingResponse.getPaging());
+                    return response;
+                })
                 .subscribeOn(Schedulers.elastic());
     }
 

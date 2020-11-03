@@ -32,9 +32,6 @@ public class RequestLeaveEntity extends BaseEntity {
     @Field(name = "file")
     private String file;
 
-    @Field(name = "requested_date")
-    private String requestedDate;
-
     @Field(name = "approved_by")
     private String approvedBy;
 

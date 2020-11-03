@@ -23,9 +23,9 @@ public class DashboardController extends WebMvcProperties {
     @Autowired
     private CommandExecutor commandExecutor;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('EMPLOYEE')")
     @PostMapping("/summary")
-    public Mono<Response<DashboardResponse>> getAdminDashboard(Principal principal){
+    public Mono<Response<DashboardResponse>> getEmployeeDashboard(Principal principal){
         return commandExecutor.execute(GetDashboardSummaryCommand.class, principal.getName())
                 .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());

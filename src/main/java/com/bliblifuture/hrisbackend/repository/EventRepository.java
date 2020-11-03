@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Date;
 
@@ -15,6 +16,10 @@ public interface EventRepository extends ReactiveMongoRepository<EventEntity, St
     @Query("{ id: { $exists: true }}")
     Flux<EventEntity> findAll(final Pageable pageable);
 
-    Flux<EventEntity> findAllByDateAfterOrderByDateDesc(Date date);
+    Flux<EventEntity> findAllByDateAfterOrderByDateDesc(Date date, Pageable pageable);
+
+    Mono<Long> countAllByDateAfter(Date date);
+
+    Mono<EventEntity> findByDate(Date date);
 
 }

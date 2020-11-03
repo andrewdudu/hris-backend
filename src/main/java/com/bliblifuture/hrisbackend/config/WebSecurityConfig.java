@@ -34,9 +34,9 @@ public class WebSecurityConfig {
                 .securityContextRepository(securityContextRepository)
                 .authorizeExchange()
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
-                .pathMatchers("/bliblimart/api/register", "/bliblimart/api/login").permitAll()
-                .pathMatchers(HttpMethod.GET,"/bliblimart/api/blimarts/**").permitAll()
-                .pathMatchers(HttpMethod.GET, "/**").permitAll()
+                .pathMatchers( "/auth/login").permitAll()
+//                .pathMatchers(HttpMethod.GET,"/bliblimart/api/blimarts/**").permitAll()
+                .pathMatchers(HttpMethod.GET, "/user/test").permitAll()
                 .anyExchange().authenticated()
                 .and().build();
     }

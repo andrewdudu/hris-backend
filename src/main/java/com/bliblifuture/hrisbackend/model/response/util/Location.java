@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Location {
 
-    private String type;
+    private AttendanceLocationType type;
 
 }

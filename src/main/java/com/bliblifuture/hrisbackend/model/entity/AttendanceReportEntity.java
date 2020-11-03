@@ -4,6 +4,8 @@ import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.util.Date;
+
 @EqualsAndHashCode(callSuper = false)
 @Document(collection = "attendance_report")
 @NoArgsConstructor
@@ -12,11 +14,8 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Data
 public class AttendanceReportEntity extends BaseEntity{
 
-    @Field(name = "employee_id")
-    private String employeeId;
-
-    @Field(name = "year")
-    private String year;
+    @Field(name = "date")
+    private Date date;
 
     @Field(name = "working")
     private int working;
