@@ -2,11 +2,12 @@
 
 ## Summary
 
-- Endpoint : `/dashboard/summary`
+- Endpoint : `/api/dashboard/summary`
 - HTTP Method : `GET`
 
 - Request Header :
   - Accept : `application/json`
+  - Set-Cookie: `userToken=token`
 - Response Body (Success) :
 
   `report` and `request` for admin.

@@ -2,7 +2,7 @@
 
 ## GET Reports
 
-- Endpoint : `/reports/leaves`
+- Endpoint : `/api/reports/leaves`
 - HTTP Method : `GET`
 - Query Param:
 
@@ -11,6 +11,7 @@
 
 - Request Header :
   - Accept : `application/json`
+  - Set-Cookie: `userToken=token`
 - Response Body (Success) :
 
 ```json

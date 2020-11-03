@@ -2,10 +2,11 @@
 
 ## GET Department
 
-- Endpoint : `/deparments`
+- Endpoint : `/api/deparments`
 - HTTP Method : `GET`
 - Request Header :
   - Accept : `application/json`
+  - Set-Cookie: `userToken=token`
 - Response Body (Success) :
 
 ```json

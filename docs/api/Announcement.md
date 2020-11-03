@@ -2,11 +2,15 @@
 
 ## GET Announcement
 
-- Endpoint : `/announcements`
+- Endpoint : `/api/announcements?page=0&size=10`
 - HTTP Method : `GET`
 - `Auth required`
+- Query Params :
+    - page `int`
+    - size `int`
 - Request Header :
   - Accept : `application/json`
+  - Set-Cookie: `userToken=token`
 - Response Body (Success) :
 
 ```json
@@ -20,6 +24,14 @@
       "date": 787812738,
       "description": "description"
     }
-  ]
+  ],
+  "paging": [
+    {
+       "page": 0,
+       "itemPerPage": 10,
+       "totalPage": 20,
+       "totalItem": 200
+    }
+  ] 
 }
 ```

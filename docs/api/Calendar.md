@@ -2,7 +2,7 @@
 
 ## GET Calendar
 
-- Endpoint : `/calendar/days`
+- Endpoint : `/api/calendar/days`
 - HTTP Method : `GET`
 - Query Param:
   - month `int`
@@ -10,6 +10,7 @@
 - `Auth required`
 - Request Header :
   - Accept : `application/json`
+  - Set-Cookie: `userToken=token`
 - Response Body (Success) :
 
 ```json
