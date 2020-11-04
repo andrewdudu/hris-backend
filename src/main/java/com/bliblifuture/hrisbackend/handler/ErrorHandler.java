@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +44,17 @@ public class ErrorHandler implements ErrorWebFluxControllerHandler, MessageSourc
         response.setStatus(HttpStatus.BAD_REQUEST.name());
         response.setErrors(Errors.from(e.getConstraintViolations()));
         return response;
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(IOException.class)
+    public Response<Object> IOException(IOException e) {
+        Response<Object> response = new Response<>();
+
+        response.setCode(HttpStatus.BAD_REQUEST.value());
+        response.setStatus(HttpStatus.BAD_REQUEST.name());
+
+        return getErrorMessage(response, "credential", e.getMessage(), e);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

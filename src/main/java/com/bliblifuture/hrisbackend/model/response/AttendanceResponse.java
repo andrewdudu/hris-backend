@@ -13,7 +13,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AttendanceResponse extends BaseResponse{
 
-    private AttendanceTime attendanceTime;
+    private AttendanceTime attendance;
 
     private Location location;
+
+    private String image;
 }

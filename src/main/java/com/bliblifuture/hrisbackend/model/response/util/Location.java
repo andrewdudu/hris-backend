@@ -13,4 +13,8 @@ public class Location {
 
     private AttendanceLocationType type;
 
+    private double lat;
+
+    private double lon;
+
 }
