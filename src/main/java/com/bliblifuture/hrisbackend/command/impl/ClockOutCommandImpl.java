@@ -1,6 +1,6 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
-import com.bliblifuture.hrisbackend.command.ClockInCommand;
+import com.bliblifuture.hrisbackend.command.ClockOutCommand;
 import com.bliblifuture.hrisbackend.model.entity.AttendanceEntity;
 import com.bliblifuture.hrisbackend.model.entity.UserEntity;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequest;
@@ -18,7 +18,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class ClockOutCommandImpl implements ClockInCommand {
+public class ClockOutCommandImpl implements ClockOutCommand {
 
     @Autowired
     private UserRepository userRepository;
@@ -62,7 +62,15 @@ public class ClockOutCommandImpl implements ClockInCommand {
         Date currentStartOfDate = new SimpleDateFormat("dd/MM/yy mm:hh:ss")
                 .parse(theDate + startTime);
 
-        return attendanceRepository.findFirstByEmployeeIdAndDate(user.getEmployeeId(), currentStartOfDate);
+        return attendanceRepository.findFirstByEmployeeIdAndDate(user.getEmployeeId(), currentStartOfDate)
+                .map(this::checkValidity);
+    }
+
+    private AttendanceEntity checkValidity(AttendanceEntity attendance) {
+        if (attendance.getStartTime() == null){
+            throw new NullPointerException("Clock-out not available");
+        }
+        return attendance;
     }
 
 }
