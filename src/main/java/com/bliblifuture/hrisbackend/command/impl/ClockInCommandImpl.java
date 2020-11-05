@@ -108,11 +108,11 @@ public class ClockInCommandImpl implements ClockInCommand {
     @SneakyThrows
     private AttendanceEntity createAttendance(UserEntity user, AttendanceRequest request) {
         Date dateWithOffset = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
-        String theDate = dateWithOffset.getDate() + "/" + dateWithOffset.getMonth() + "/" + dateWithOffset.getYear();
+        String startDate = dateWithOffset.getDate() - 1 + "/" + dateWithOffset.getMonth() + "/" + dateWithOffset.getYear();
 
-        String startTime = " 00:00:00";
-        Date currentStartOfDate = new SimpleDateFormat("dd/MM/yy mm:hh:ss")
-                .parse(theDate + startTime);
+        String startTime = " 17:00:00";
+        Date currentStartOfDate = new SimpleDateFormat("dd/MM/yy HH:mm:ss")
+                .parse(startDate + startTime);
 
         AttendanceEntity attendance = AttendanceEntity.builder()
                 .employeeId(user.getEmployeeId())

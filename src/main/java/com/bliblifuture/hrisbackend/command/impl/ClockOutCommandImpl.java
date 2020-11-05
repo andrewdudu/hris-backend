@@ -55,12 +55,12 @@ public class ClockOutCommandImpl implements ClockOutCommand {
 
     @SneakyThrows
     private Mono<AttendanceEntity> getTodayAttendance(UserEntity user) {
-        Date now = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
-        String theDate = now.getDate() + "/" + now.getMonth() + "/" + now.getYear();
+        Date dateWithOffset = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
+        String startDate = dateWithOffset.getDate() - 1 + "/" + dateWithOffset.getMonth() + "/" + dateWithOffset.getYear();
 
-        String startTime = " 00:00:00";
-        Date currentStartOfDate = new SimpleDateFormat("dd/MM/yy mm:hh:ss")
-                .parse(theDate + startTime);
+        String startTime = " 17:00:00";
+        Date currentStartOfDate = new SimpleDateFormat("dd/MM/yy HH:mm:ss")
+                .parse(startDate + startTime);
 
         return attendanceRepository.findFirstByEmployeeIdAndDate(user.getEmployeeId(), currentStartOfDate)
                 .map(this::checkValidity);

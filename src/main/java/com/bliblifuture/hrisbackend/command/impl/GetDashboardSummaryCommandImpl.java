@@ -50,15 +50,16 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     private Mono<DashboardResponse> getResponse(UserEntity user) {
 
         Date now = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
-        String theDate = now.getDate() + "/" + now.getMonth() + "/" + now.getYear();
+        String startDate = now.getDate() - 1 + "/" + now.getMonth() + "/" + now.getYear();
 
-        String startTime = " 00:00:00";
-        Date currentStartOfDate = new SimpleDateFormat("dd/MM/yy mm:hh:ss")
-                .parse(theDate + startTime);
+        String startTime = " 17:00:00";
+        Date currentStartOfDate = new SimpleDateFormat("dd/MM/yy HH:mm:ss")
+                .parse(startDate + startTime);
 
-        //        String endTime = " 23:59:59";
+        //        String endTime = " 16:59:59";
+//        String endDate = now.getDate() + "/" + now.getMonth() + "/" + now.getYear();
 //        Date currentEndDate = new SimpleDateFormat("dd/MM/yy mm:hh:ss")
-//                .parse(theDate + endTime);
+//                .parse(startDate + endTime);
 
         Calendar calendar = Calendar.builder().date(currentStartOfDate).build();
         DashboardResponse response = DashboardResponse

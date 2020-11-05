@@ -16,7 +16,7 @@ public interface EventRepository extends ReactiveMongoRepository<EventEntity, St
     @Query("{ id: { $exists: true }}")
     Flux<EventEntity> findAll(final Pageable pageable);
 
-    Flux<EventEntity> findAllByDateAfterOrderByDateDesc(Date date, Pageable pageable);
+    Flux<EventEntity> findAllByDateAfterOrderByDateAsc(Date date, Pageable pageable);
 
     Mono<Long> countAllByDateAfter(Date date);
 
