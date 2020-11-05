@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Data
-public class UserEntity extends BaseEntity{
+public class User extends BaseEntity{
 
     @Field(name = "employee_id")
     private String employeeId;

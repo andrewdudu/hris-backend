@@ -2,7 +2,7 @@
 
 ## GET User
 
-- Endpoint : `/api/users/current-userEntity`
+- Endpoint : `/api/users/current-user`
 - HTTP Method : `GET`
 
 - Request Header :
@@ -113,7 +113,7 @@
 
 ## Available Requests
 
-- Endpoint : `/users/current-userEntity/available-requests`
+- Endpoint : `/users/current-user/available-requests`
 - HTTP Method : `GET`
 - `Auth required`
 - Request Header :
@@ -139,7 +139,7 @@
 
 ## GET Attendnace Summary
 
-- Endpoint : `/users/current-userEntity/attendance-summary`
+- Endpoint : `/users/current-user/attendance-summary`
 - HTTP Method : `GET`
 
 - Request Header :

@@ -1,8 +1,8 @@
 package com.bliblifuture.hrisbackend.model.response;
 
-import com.bliblifuture.hrisbackend.model.response.util.Leave;
-import com.bliblifuture.hrisbackend.model.response.util.Office;
-import com.bliblifuture.hrisbackend.model.response.util.Position;
+import com.bliblifuture.hrisbackend.model.response.util.LeaveResponse;
+import com.bliblifuture.hrisbackend.model.response.util.OfficeResponse;
+import com.bliblifuture.hrisbackend.model.response.util.PositionResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,11 +25,11 @@ public class UserResponse extends BaseResponse{
 
     private String department;
 
-    private Position position;
+    private PositionResponse positionResponse;
 
-    private Office office;
+    private OfficeResponse officeResponse;
 
     private Date joinDate;
 
-    private Leave leave;
+    private LeaveResponse leaveResponse;
 }

@@ -1,7 +1,7 @@
 package com.bliblifuture.hrisbackend.model.response;
 
 import com.bliblifuture.hrisbackend.model.response.util.AttendanceTime;
-import com.bliblifuture.hrisbackend.model.response.util.Location;
+import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +15,7 @@ public class AttendanceResponse extends BaseResponse{
 
     private AttendanceTime attendance;
 
-    private Location location;
+    private LocationResponse locationResponse;
 
     private String image;
 }

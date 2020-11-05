@@ -45,7 +45,7 @@
   "code": 200,
   "status": "Success",
   "data": {
-    "userEntity": {
+    "user": {
       "name": "name",
       "department": "Technology",
       "office": {
@@ -58,7 +58,7 @@
         "start": 7817238,
         "end": 1287383
       },
-      "location": {
+      "locationResponse": {
         "type": "INSIDE|OUTSIDE",
         "lat": 787.123123,
         "lon": 178.123123

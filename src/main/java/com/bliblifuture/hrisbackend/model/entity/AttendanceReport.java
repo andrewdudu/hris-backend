@@ -12,7 +12,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 @Data
-public class AttendanceReportEntity extends BaseEntity{
+public class AttendanceReport extends BaseEntity{
 
     @Field(name = "date")
     private Date date;

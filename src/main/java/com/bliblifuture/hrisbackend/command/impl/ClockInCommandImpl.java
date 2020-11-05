@@ -4,13 +4,13 @@ import com.blibli.oss.command.exception.CommandValidationException;
 import com.bliblifuture.hrisbackend.command.ClockInCommand;
 import com.bliblifuture.hrisbackend.constant.AttendanceConfig;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
-import com.bliblifuture.hrisbackend.model.entity.AttendanceEntity;
-import com.bliblifuture.hrisbackend.model.entity.OfficeEntity;
-import com.bliblifuture.hrisbackend.model.entity.UserEntity;
+import com.bliblifuture.hrisbackend.model.entity.Attendance;
+import com.bliblifuture.hrisbackend.model.entity.Office;
+import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.util.AttendanceLocationType;
-import com.bliblifuture.hrisbackend.model.response.util.Location;
+import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.OfficeRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
@@ -52,26 +52,26 @@ public class ClockInCommandImpl implements ClockInCommand {
                 .map(this::createResponse);
     }
 
-    private AttendanceResponse createResponse(AttendanceEntity attendance) {
-        Location location = Location.builder().lat(attendance.getStartLat()).lon(attendance.getStartLon()).build();
+    private AttendanceResponse createResponse(Attendance attendance) {
+        LocationResponse locationResponse = LocationResponse.builder().lat(attendance.getStartLat()).lon(attendance.getStartLon()).build();
         AttendanceResponse response = AttendanceResponse.builder()
                 .image(attendance.getImage())
-                .location(location)
+                .locationResponse(locationResponse)
                 .build();
 
         return response;
     }
 
-    private Mono<AttendanceEntity> clockInProcess(AttendanceEntity attendance, AttendanceRequest request) {
+    private Mono<Attendance> clockInProcess(Attendance attendance, AttendanceRequest request) {
         return officeRepository.findAll()
                 .collectList()
                 .map(officeList -> checkLocationAndImage(attendance, request.getImage(), officeList));
     }
 
-    private AttendanceEntity checkLocationAndImage(AttendanceEntity attendance, String imageBase64, List<OfficeEntity> officeList) {
+    private Attendance checkLocationAndImage(Attendance attendance, String imageBase64, List<Office> officeList) {
         AttendanceLocationType type = AttendanceLocationType.OUTSIDE;
         for (int i = 0; i < officeList.size(); i++) {
-            OfficeEntity office = officeList.get(i);
+            Office office = officeList.get(i);
             double distance = Math.sqrt( Math.pow(attendance.getStartLat() - office.getLat(), 2) + Math.pow(attendance.getStartLat() - office.getLat(), 2) );
 
             if (distance < AttendanceConfig.RADIUS_ALLOWED){
@@ -106,7 +106,7 @@ public class ClockInCommandImpl implements ClockInCommand {
     }
 
     @SneakyThrows
-    private AttendanceEntity createAttendance(UserEntity user, AttendanceRequest request) {
+    private Attendance createAttendance(User user, AttendanceRequest request) {
         Date dateWithOffset = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
         String startDate = dateWithOffset.getDate() - 1 + "/" + dateWithOffset.getMonth() + "/" + dateWithOffset.getYear();
 
@@ -114,7 +114,7 @@ public class ClockInCommandImpl implements ClockInCommand {
         Date currentStartOfDate = new SimpleDateFormat("dd/MM/yy HH:mm:ss")
                 .parse(startDate + startTime);
 
-        AttendanceEntity attendance = AttendanceEntity.builder()
+        Attendance attendance = Attendance.builder()
                 .employeeId(user.getEmployeeId())
                 .date(currentStartOfDate)
                 .startTime(new Date())

@@ -12,7 +12,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 @Data
-public class RequestLeaveEntity extends BaseEntity {
+public class RequestLeave extends BaseEntity {
 
     @Field(name = "employee_id")
     private String employeeId;

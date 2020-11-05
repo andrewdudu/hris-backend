@@ -2,12 +2,12 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.LoginCommand;
 import com.bliblifuture.hrisbackend.config.JwtTokenUtil;
-import com.bliblifuture.hrisbackend.model.entity.LeaveEntity;
-import com.bliblifuture.hrisbackend.model.entity.UserEntity;
+import com.bliblifuture.hrisbackend.model.entity.Leave;
+import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LoginRequest;
 import com.bliblifuture.hrisbackend.model.response.LoginResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
-import com.bliblifuture.hrisbackend.model.response.util.Leave;
+import com.bliblifuture.hrisbackend.model.response.util.LeaveResponse;
 import com.bliblifuture.hrisbackend.repository.DepartmentRepository;
 import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
@@ -50,23 +50,23 @@ public class LoginCommandImpl implements LoginCommand {
                 );
     }
 
-    private void checkNull(UserEntity userEntity) {
+    private void checkNull(User user) {
         throw new SecurityException("DOES_NOT_MATCH");
     }
 
-    private Mono<LoginResponse> authenticateAndGetResponse(UserEntity userEntity, LoginRequest request) {
-        if (passwordEncoder.matches(request.getPassword(), userEntity.getPassword())){
-            String token = jwtTokenUtil.generateToken(userEntity);
+    private Mono<LoginResponse> authenticateAndGetResponse(User user, LoginRequest request) {
+        if (passwordEncoder.matches(request.getPassword(), user.getPassword())){
+            String token = jwtTokenUtil.generateToken(user);
 
             UserResponse userResponse = UserResponse.builder()
-                    .roles(userEntity.getRoles())
-                    .username(userEntity.getUsername())
+                    .roles(user.getRoles())
+                    .username(user.getUsername())
                     .build();
 
             LoginResponse response = LoginResponse.builder()
                     .accessToken(token).userResponse(userResponse).build();
 
-            return getEmployeeData(response, userEntity.getEmployeeId());
+            return getEmployeeData(response, user.getEmployeeId());
         }
         else{
             throw new SecurityException("DOES_NOT_MATCH");
@@ -93,14 +93,14 @@ public class LoginCommandImpl implements LoginCommand {
         return leaveRepository.findByEmployeeIdAndExpDateAfter(username, new Date())
                 .collectList()
                 .map(leaves -> {
-                    response.getUserResponse().setLeave(new Leave(countLeaves(leaves)));
+                    response.getUserResponse().setLeaveResponse(new LeaveResponse(countLeaves(leaves)));
                     return response;
                 });
     }
 
-    private int countLeaves(List<LeaveEntity> leaves) {
+    private int countLeaves(List<Leave> leaves) {
         int total = 0;
-        for (LeaveEntity l : leaves) {
+        for (Leave l : leaves) {
             total += l.getRemaining();
         }
         return total;

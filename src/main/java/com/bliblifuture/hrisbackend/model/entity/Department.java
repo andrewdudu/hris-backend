@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @AllArgsConstructor
 @Builder
 @Data
-public class DepartmentEntity extends BaseEntity {
+public class Department extends BaseEntity {
 
     @Field(name = "name")
     private String name;

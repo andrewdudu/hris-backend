@@ -5,7 +5,6 @@ import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.LoginCommand;
 import com.bliblifuture.hrisbackend.config.JwtTokenUtil;
-import com.bliblifuture.hrisbackend.model.entity.UserEntity;
 import com.bliblifuture.hrisbackend.model.request.LoginRequest;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-
-import java.util.Arrays;
 
 @RestController
 @RequestMapping("/user")
@@ -52,22 +49,22 @@ public class UserController extends WebMvcProperties {
                 .subscribeOn(Schedulers.elastic());
     }
 
-    @GetMapping("/test")
-    public Mono<Response<String>> cookieTest(ServerWebExchange swe){
-        UserEntity userEntity = UserEntity.builder().username("test").password("test")
-                .roles(Arrays.asList("ADMIN", "EMPLOYEE"))
-                .build();
-        ResponseCookie cookie = ResponseCookie
-                .from("userToken",jwtTokenUtil.generateToken(userEntity))
-                .maxAge(5*3600)
-                .secure(true)
-                .httpOnly(true)
-                .build();
-
-        swe.getResponse().addCookie(cookie);
-        return Mono.just(ResponseHelper.ok("test"));
-    }
+//    @GetMapping("/test")
+//    public Mono<Response<String>> cookieTest(ServerWebExchange swe){
+//        UserEntity userEntity = UserEntity.builder().username("test").password("test")
+//                .roles(Arrays.asList("ADMIN", "EMPLOYEE"))
+//                .build();
+//        ResponseCookie cookie = ResponseCookie
+//                .from("userToken",jwtTokenUtil.generateToken(userEntity))
+//                .maxAge(5*3600)
+//                .secure(true)
+//                .httpOnly(true)
+//                .build();
 //
+//        swe.getResponse().addCookie(cookie);
+//        return Mono.just(ResponseHelper.ok("test"));
+//    }
+
 //    @GetMapping("/get-test")
 //    public Mono<Response<String>> getCookieTest(ServerWebExchange swe){
 ////        String token = swe.getRequest().getCookies().getFirst("userToken").getValue();

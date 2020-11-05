@@ -5,15 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class Calendar {
+public class OrganizationUnitResponse {
 
-    private Date date;
+    private String name;
 
-    private String status;
 }

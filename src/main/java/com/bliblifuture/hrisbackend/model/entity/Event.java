@@ -12,7 +12,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 @Data
-public class EventEntity extends BaseEntity {
+public class Event extends BaseEntity {
 
     @Field(name = "title")
     private String title;

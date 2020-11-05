@@ -14,7 +14,7 @@
 ```json
 {
   "image": "base64",
-  "location": {
+  "locationResponse": {
     "lat": 787.123123,
     "lon": 178.123123
   }
@@ -29,7 +29,7 @@
   "status": "Success",
   "data": {
     "image": "http://image.webp",
-    "location": {
+    "locationResponse": {
       "lat": 787.123123,
       "lon": 178.123123
     }
@@ -44,7 +44,7 @@
   "code": 400,
   "status": "Bad Request",
   "errors": {
-    "location.lat": ["REQUIRED", "INVALID_FORMAT"],
+    "locationResponse.lat": ["REQUIRED", "INVALID_FORMAT"],
     "image": ["INVALID_FORMAT", "TOO_LARGE"]
   }
 }
@@ -61,7 +61,7 @@
 
 ```json
 {
-  "location": {
+  "locationResponse": {
     "lat": 787.123123,
     "lon": 178.123123
   }
@@ -75,7 +75,7 @@
   "code": 200,
   "status": "Success",
   "data": {
-    "location": {
+    "locationResponse": {
       "lat": 787.123123,
       "lon": 178.123123
     }
@@ -90,7 +90,7 @@
   "code": 400,
   "status": "Bad Request",
   "errors": {
-    "location.lat": ["REQUIRED", "INVALID_FORMAT"]
+    "locationResponse.lat": ["REQUIRED", "INVALID_FORMAT"]
   }
 }
 ```
@@ -120,7 +120,7 @@
         "start": 7817238,
         "end": 1287383
       },
-      "location": {
+      "locationResponse": {
         "type": "INSIDE|OUTSIDE",
         "lat": 787.123123,
         "lon": 178.123123
@@ -131,7 +131,7 @@
         "start": 7817238,
         "end": 1287383
       },
-      "location": {
+      "locationResponse": {
         "type": "INSIDE|OUTSIDE",
         "lat": 787.123123,
         "lon": 178.123123

@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Data
-public class OrganizationUnit {
+public class ReportResponse {
 
-    private String name;
+    private int working;
 
+    private int absent;
 }

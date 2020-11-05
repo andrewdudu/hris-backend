@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Data
-public class Leave {
+public class LeaveResponse {
 
     private int remaining;
 }

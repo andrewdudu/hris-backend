@@ -5,16 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@Builder
+import java.util.Date;
+
 @NoArgsConstructor
 @AllArgsConstructor
-public class Location {
+@Builder
+@Data
+public class CalendarResponse {
 
-    private AttendanceLocationType type;
+    private Date date;
 
-    private double lat;
-
-    private double lon;
-
+    private String status;
 }

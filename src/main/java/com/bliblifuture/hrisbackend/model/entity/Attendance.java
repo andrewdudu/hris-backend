@@ -13,7 +13,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 @Data
-public class AttendanceEntity extends BaseEntity{
+public class Attendance extends BaseEntity{
 
     @Field(name = "image")
     private String image;
