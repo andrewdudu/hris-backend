@@ -13,30 +13,11 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
-    private DepartmentRepository departmentRepository;
-
-    @Autowired
-    private LeaveRepository leaveRepository;
-
-    @Autowired
-    private AttendanceReportRepository attendanceReportRepository;
-
-    @Autowired
-    private AttendanceRepository attendanceRepository;
 
     @Autowired
     private EventRepository eventRepository;
@@ -47,11 +28,14 @@ public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         PagingResponse<AnnouncementResponse> response = new PagingResponse<>();
 
-        LocalDate localDate = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        String year = String.valueOf(localDate.getYear());
+//        LocalDate localDate = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        Date currentDate = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
+        String year = String.valueOf(currentDate.getYear());
+
         Date date = new SimpleDateFormat("dd/MM/yyyy").parse("01/01/"+year);
 
-        return eventRepository.findAllByDateAfterOrderByDateDesc(date, pageable)
+        return eventRepository.findAllByDateAfterOrderByDateAsc(date, pageable)
                 .map(events -> events.createResponse(events, new AnnouncementResponse()))
                 .collectList()
                 .flatMap(announcementResponseList -> {

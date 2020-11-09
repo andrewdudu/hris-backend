@@ -50,16 +50,18 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     private Mono<DashboardResponse> getResponse(UserEntity user) {
 
         Date now = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
-        String startDate = now.getDate() + "/" + now.getMonth() + "/" + now.getYear();
-        String startTime = " 00:00:00";
-//        String endTime = " 23:59:59";
+        String startDate = now.getDate() - 1 + "/" + now.getMonth() + "/" + now.getYear();
 
-        Date currentStartDate = new SimpleDateFormat("dd/MM/yy mm:hh:ss")
+        String startTime = " 17:00:00";
+        Date currentStartOfDate = new SimpleDateFormat("dd/MM/yy HH:mm:ss")
                 .parse(startDate + startTime);
+
+        //        String endTime = " 16:59:59";
+//        String endDate = now.getDate() + "/" + now.getMonth() + "/" + now.getYear();
 //        Date currentEndDate = new SimpleDateFormat("dd/MM/yy mm:hh:ss")
 //                .parse(startDate + endTime);
 
-        Calendar calendar = Calendar.builder().date(currentStartDate).build();
+        Calendar calendar = Calendar.builder().date(currentStartOfDate).build();
         DashboardResponse response = DashboardResponse
                 .builder()
                 .calendar(calendar)
@@ -71,14 +73,14 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
             response.setReport(report);
             response.setRequest(request);
 
-            return attendanceReportRepository.findByDate(currentStartDate)
+            return attendanceReportRepository.findByDate(currentStartOfDate)
                     .flatMap(res -> {
                         response.getReport().setWorking(res.getWorking());
                         response.getReport().setAbsent(res.getAbsent());
-                        return eventRepository.findByDate(currentStartDate);
+                        return eventRepository.findByDate(currentStartOfDate);
                     })
-                    .map(event -> setCalendarResponse(currentStartDate, response, event))
-                    .flatMap(res -> requestLeaveRepository.countByCreatedDateAfterAndStatus(currentStartDate, RequestLeaveStatus.PENDING))
+                    .map(event -> setCalendarResponse(currentStartOfDate, response, event))
+                    .flatMap(res -> requestLeaveRepository.countByCreatedDateAfterAndStatus(currentStartOfDate, RequestLeaveStatus.PENDING))
                     .map(totalIncomingRequest -> {
                         response.getRequest().setIncoming(totalIncomingRequest);
                         return response;
@@ -88,37 +90,37 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
         Pageable pageable = PageRequest.of(0, 2);
 
         return attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable).collectList()
-                .map(attendanceList -> setAttendanceResponse(attendanceList, response, currentStartDate))
-                .flatMap(res -> eventRepository.findByDate(currentStartDate))
-                .map(event -> setCalendarResponse(currentStartDate, response, event));
+                .map(attendanceList -> setAttendanceResponse(attendanceList, response, currentStartOfDate))
+                .flatMap(res -> eventRepository.findByDate(currentStartOfDate))
+                .map(event -> setCalendarResponse(currentStartOfDate, response, event));
     }
 
     private DashboardResponse setAttendanceResponse(List<AttendanceEntity> res, DashboardResponse response, Date currentStartDate) {
         AttendanceTime date = AttendanceTime.builder().build();
         Location location = Location.builder().build();
 
-        AttendanceResponse current = AttendanceResponse.builder().attendanceTime(date).location(location).build();
-        AttendanceResponse latest = AttendanceResponse.builder().attendanceTime(date).location(location).build();
+        AttendanceResponse current = AttendanceResponse.builder().attendance(date).location(location).build();
+        AttendanceResponse latest = AttendanceResponse.builder().attendance(date).location(location).build();
 
         if (res.get(0).getStartTime().before(currentStartDate)){
             AttendanceEntity latestAttendance = res.get(0);
-            latest.getAttendanceTime().setStart(latestAttendance.getStartTime());
-            latest.getAttendanceTime().setEnd(latestAttendance.getEndTime());
+            latest.getAttendance().setStart(latestAttendance.getStartTime());
+            latest.getAttendance().setEnd(latestAttendance.getEndTime());
             latest.getLocation().setType(latestAttendance.getLocation());
 
-            current.getAttendanceTime().setStart(null);
-            current.getAttendanceTime().setEnd(null);
+            current.getAttendance().setStart(null);
+            current.getAttendance().setEnd(null);
             current.getLocation().setType(null);
         }
         else{
             AttendanceEntity latestAttendance = res.get(1);
-            latest.getAttendanceTime().setStart(latestAttendance.getStartTime());
-            latest.getAttendanceTime().setEnd(latestAttendance.getEndTime());
+            latest.getAttendance().setStart(latestAttendance.getStartTime());
+            latest.getAttendance().setEnd(latestAttendance.getEndTime());
             latest.getLocation().setType(latestAttendance.getLocation());
 
             AttendanceEntity currentAttendance = res.get(0);
-            current.getAttendanceTime().setStart(currentAttendance.getStartTime());
-            current.getAttendanceTime().setEnd(currentAttendance.getEndTime());
+            current.getAttendance().setStart(currentAttendance.getStartTime());
+            current.getAttendance().setEnd(currentAttendance.getEndTime());
             current.getLocation().setType(currentAttendance.getLocation());
         }
 

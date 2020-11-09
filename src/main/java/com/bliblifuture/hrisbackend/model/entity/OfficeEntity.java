@@ -17,4 +17,10 @@ public class OfficeEntity extends BaseEntity{
 
     @Field(name = "code")
     private String code;
+
+    @Field(name = "lat")
+    private double lat;
+
+    @Field(name = "lon")
+    private double lon;
 }

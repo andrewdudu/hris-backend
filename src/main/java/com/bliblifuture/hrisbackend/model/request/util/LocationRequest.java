@@ -1,4 +1,4 @@
-package com.bliblifuture.hrisbackend.model.request;
+package com.bliblifuture.hrisbackend.model.request.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,12 +11,12 @@ import javax.validation.constraints.NotBlank;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginRequest {
+public class LocationRequest {
 
-    @NotBlank
-    private String username;
+    @NotBlank(message = "REQUIRED")
+    private double lat;
 
-    @NotBlank
-    private String password;
+    @NotBlank(message = "REQUIRED")
+    private double lon;
 
 }
