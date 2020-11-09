@@ -1,6 +1,6 @@
 package com.bliblifuture.hrisbackend.repository;
 
-import com.bliblifuture.hrisbackend.model.entity.Attendance;
+import com.bliblifuture.hrisbackend.model.entity.DailyAttendanceReport;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
@@ -11,15 +11,13 @@ import reactor.core.publisher.Mono;
 import java.util.Date;
 
 @Repository
-public interface AttendanceRepository extends ReactiveMongoRepository<Attendance, String> {
+public interface DailyAttendanceReportRepository extends ReactiveMongoRepository<DailyAttendanceReport, String> {
 
     @Query("{ id: { $exists: true }}")
-    Flux<Attendance> findAll(final Pageable pageable);
+    Flux<DailyAttendanceReport> findAll(final Pageable pageable);
 
-    Mono<Integer> countByDateAfter(Date date);
+    Mono<DailyAttendanceReport> findAllByDateBeforeAndDateAfter(Date startDay, Date endDay);
 
-    Flux<Attendance> findAllByEmployeeIdOrderByStartTimeDesc(String employeeId, Pageable pageable);
-
-    Mono<Attendance> findFirstByEmployeeIdAndDate(String employeeId, Date date);
+    Mono<DailyAttendanceReport> findByDate(Date date);
 
 }

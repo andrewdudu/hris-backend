@@ -3,6 +3,7 @@ package com.bliblifuture.hrisbackend.command.impl;
 import com.bliblifuture.hrisbackend.command.GetDashboardSummaryCommand;
 import com.bliblifuture.hrisbackend.constant.RequestLeaveStatus;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
+import com.bliblifuture.hrisbackend.model.entity.DailyAttendanceReport;
 import com.bliblifuture.hrisbackend.model.entity.Event;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
@@ -29,7 +30,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     private UserRepository userRepository;
 
     @Autowired
-    private AttendanceReportRepository attendanceReportRepository;
+    private DailyAttendanceReportRepository dailyAttendanceReportRepository;
 
     @Autowired
     private AttendanceRepository attendanceRepository;
@@ -73,7 +74,15 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
             response.setReportResponse(reportResponse);
             response.setRequestResponse(requestResponse);
 
-            return attendanceReportRepository.findByDate(currentStartOfDate)
+            return dailyAttendanceReportRepository.findByDate(currentStartOfDate)
+                    .switchIfEmpty(
+                            Mono.just(DailyAttendanceReport.builder()
+                            .date(currentStartOfDate)
+                            .working(0)
+                            .absent(0)
+                            .build())
+                    )
+                    .doOnSuccess(this::checkNewEntity)
                     .flatMap(res -> {
                         response.getReportResponse().setWorking(res.getWorking());
                         response.getReportResponse().setAbsent(res.getAbsent());
@@ -95,8 +104,21 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                 .map(event -> setCalendarResponse(currentStartOfDate, response, event));
     }
 
+    private void checkNewEntity(DailyAttendanceReport report) {
+        if (report.getId() == null){
+            Date date = new Date();
+            report.setCreatedBy("SYSTEM");
+            report.setCreatedDate(date);
+            report.setUpdatedBy("SYSTEM");
+            report.setUpdatedDate(date);
+            report.setId("DAR" + report.getDate());
+
+            dailyAttendanceReportRepository.save(report).subscribe();
+        }
+    }
+
     private DashboardResponse setAttendanceResponse(List<Attendance> res, DashboardResponse response, Date currentStartDate) {
-        AttendanceTime date = AttendanceTime.builder().build();
+        AttendanceTimeResponse date = AttendanceTimeResponse.builder().build();
         LocationResponse locationResponse = LocationResponse.builder().build();
 
         AttendanceResponse current = AttendanceResponse.builder().attendance(date).locationResponse(locationResponse).build();

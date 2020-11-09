@@ -31,16 +31,17 @@ public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
 //        LocalDate localDate = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
         Date currentDate = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
-        String year = String.valueOf(currentDate.getYear());
+        int year = currentDate.getYear();
 
-        Date date = new SimpleDateFormat("dd/MM/yyyy").parse("01/01/"+year);
+        Date lastTimeOfLastYear = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+                .parse("31/12/" + (String.valueOf(year-1)) + " 16:59:59");
 
-        return eventRepository.findAllByDateAfterOrderByDateAsc(date, pageable)
+        return eventRepository.findAllByDateAfterOrderByDateAsc(lastTimeOfLastYear, pageable)
                 .map(events -> events.createResponse(events, new AnnouncementResponse()))
                 .collectList()
                 .flatMap(announcementResponseList -> {
                     response.setData(announcementResponseList);
-                    return eventRepository.countAllByDateAfter(date);
+                    return eventRepository.countAllByDateAfter(lastTimeOfLastYear);
                 })
                 .map(total -> response.getPagingResponse(request, Math.toIntExact(total)));
     }

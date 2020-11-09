@@ -8,12 +8,12 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.util.Date;
 
 @EqualsAndHashCode(callSuper = false)
-@Document(collection = "leave")
+@Document(collection = "leave_report")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class Leave extends BaseEntity{
+public class LeaveReport extends BaseEntity{
 
     @Field(name = "employee_id")
     private String employeeId;

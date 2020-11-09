@@ -93,7 +93,11 @@ public class LoginCommandImpl implements LoginCommand {
         return leaveRepository.findByEmployeeIdAndExpDateAfter(username, new Date())
                 .collectList()
                 .map(leaves -> {
-                    response.getUserResponse().setLeaveResponse(new LeaveResponse(countLeaves(leaves)));
+                    response.getUserResponse()
+                            .setLeaveResponse(LeaveResponse.builder()
+                                    .remaining(countLeaves(leaves))
+                                    .build());
+
                     return response;
                 });
     }

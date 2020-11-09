@@ -9,7 +9,7 @@ import com.bliblifuture.hrisbackend.model.entity.Office;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
-import com.bliblifuture.hrisbackend.model.response.util.AttendanceLocationType;
+import com.bliblifuture.hrisbackend.constant.AttendanceLocationType;
 import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.OfficeRepository;

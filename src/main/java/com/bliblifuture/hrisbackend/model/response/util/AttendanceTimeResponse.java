@@ -1,21 +1,19 @@
 package com.bliblifuture.hrisbackend.model.response.util;
 
-import com.bliblifuture.hrisbackend.constant.AttendanceLocationType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@Builder
+import java.util.Date;
+
 @NoArgsConstructor
 @AllArgsConstructor
-public class LocationResponse {
+@Builder
+@Data
+public class AttendanceTimeResponse {
 
-    private AttendanceLocationType type;
+    private Date start;
 
-    private double lat;
-
-    private double lon;
-
+    private Date end;
 }

@@ -1,5 +1,6 @@
 package com.bliblifuture.hrisbackend.repository;
 
+import com.bliblifuture.hrisbackend.constant.LeaveType;
 import com.bliblifuture.hrisbackend.model.entity.Leave;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Query;
@@ -16,5 +17,7 @@ public interface LeaveRepository extends ReactiveMongoRepository<Leave, String> 
     Flux<Leave> findAll(final Pageable pageable);
 
     Flux<Leave> findByEmployeeIdAndExpDateAfter(String username, Date currentDate);
+
+    Flux<Leave> findByEmployeeIdAndExpDateAfterAndTypeOrType(String username, Date currentDate, LeaveType type1, LeaveType type2);
 
 }

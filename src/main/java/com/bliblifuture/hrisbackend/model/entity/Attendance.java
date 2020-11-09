@@ -1,6 +1,6 @@
 package com.bliblifuture.hrisbackend.model.entity;
 
-import com.bliblifuture.hrisbackend.model.response.util.AttendanceLocationType;
+import com.bliblifuture.hrisbackend.constant.AttendanceLocationType;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
