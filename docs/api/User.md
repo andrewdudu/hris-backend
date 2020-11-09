@@ -153,13 +153,11 @@
   "data": {
     "month": {
       "attendance": 120,
-      "leave": 2,
-      "absence": 2
+      "absent": 2
     },
     "year": {
       "attendance": 120,
-      "leave": 2,
-      "absence": 2
+      "absent": 2
     }
   }
 }
