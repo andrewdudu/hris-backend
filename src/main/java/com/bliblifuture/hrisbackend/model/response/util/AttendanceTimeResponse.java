@@ -5,12 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class Position {
+public class AttendanceTimeResponse {
 
-    private String name;
+    private Date start;
 
+    private Date end;
 }

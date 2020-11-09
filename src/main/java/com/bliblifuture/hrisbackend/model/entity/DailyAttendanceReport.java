@@ -4,23 +4,22 @@ import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.util.Date;
+
 @EqualsAndHashCode(callSuper = false)
-@Document(collection = "office")
+@Document(collection = "daily_attendance_report")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class OfficeEntity extends BaseEntity{
+public class DailyAttendanceReport extends BaseEntity{
 
-    @Field(name = "name")
-    private String name;
+    @Field(name = "date")
+    private Date date;
 
-    @Field(name = "code")
-    private String code;
+    @Field(name = "working")
+    private int working;
 
-    @Field(name = "lat")
-    private double lat;
-
-    @Field(name = "lon")
-    private double lon;
+    @Field(name = "absent")
+    private int absent;
 }

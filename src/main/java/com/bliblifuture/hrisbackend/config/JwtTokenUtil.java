@@ -1,6 +1,6 @@
 package com.bliblifuture.hrisbackend.config;
 
-import com.bliblifuture.hrisbackend.model.entity.UserEntity;
+import com.bliblifuture.hrisbackend.model.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -63,9 +63,9 @@ public class JwtTokenUtil implements Serializable {
         return getClaimFromToken(token, Claims::getExpiration);
     }
 
-    public String generateToken(UserEntity userEntity){
+    public String generateToken(User user){
         Map<String, Object> claims = new HashMap<>();
-        return doGenerateToken(claims, userEntity.getUsername());
+        return doGenerateToken(claims, user.getUsername());
     }
 
     private String doGenerateToken(Map<String, Object> claims, String subject){

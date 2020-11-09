@@ -1,7 +1,7 @@
 package com.bliblifuture.hrisbackend.repository;
 
-import com.bliblifuture.hrisbackend.model.entity.LeaveEntity;
-import com.bliblifuture.hrisbackend.model.entity.RequestLeaveEntity;
+import com.bliblifuture.hrisbackend.model.entity.Leave;
+import com.bliblifuture.hrisbackend.model.entity.RequestLeave;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
@@ -12,12 +12,12 @@ import reactor.core.publisher.Mono;
 import java.util.Date;
 
 @Repository
-public interface RequestLeaveRepository extends ReactiveMongoRepository<RequestLeaveEntity, String> {
+public interface RequestLeaveRepository extends ReactiveMongoRepository<RequestLeave, String> {
 
     @Query("{ id: { $exists: true }}")
-    Flux<LeaveEntity> findAll(final Pageable pageable);
+    Flux<Leave> findAll(final Pageable pageable);
 
-    Flux<LeaveEntity> findByDateAfterAndStatus(Date currentDate, String status);
+    Flux<Leave> findByDateAfterAndStatus(Date currentDate, String status);
 
     Mono<Integer> countByCreatedDateAfterAndStatus(Date currentDate, String status);
 

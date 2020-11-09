@@ -2,9 +2,10 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetDashboardSummaryCommand;
 import com.bliblifuture.hrisbackend.constant.RequestLeaveStatus;
-import com.bliblifuture.hrisbackend.model.entity.AttendanceEntity;
-import com.bliblifuture.hrisbackend.model.entity.EventEntity;
-import com.bliblifuture.hrisbackend.model.entity.UserEntity;
+import com.bliblifuture.hrisbackend.model.entity.Attendance;
+import com.bliblifuture.hrisbackend.model.entity.DailyAttendanceReport;
+import com.bliblifuture.hrisbackend.model.entity.Event;
+import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.DashboardResponse;
 import com.bliblifuture.hrisbackend.model.response.util.*;
@@ -29,7 +30,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     private UserRepository userRepository;
 
     @Autowired
-    private AttendanceReportRepository attendanceReportRepository;
+    private DailyAttendanceReportRepository dailyAttendanceReportRepository;
 
     @Autowired
     private AttendanceRepository attendanceRepository;
@@ -47,7 +48,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     }
 
     @SneakyThrows
-    private Mono<DashboardResponse> getResponse(UserEntity user) {
+    private Mono<DashboardResponse> getResponse(User user) {
 
         Date now = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
         String startDate = now.getDate() - 1 + "/" + now.getMonth() + "/" + now.getYear();
@@ -61,28 +62,36 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
 //        Date currentEndDate = new SimpleDateFormat("dd/MM/yy mm:hh:ss")
 //                .parse(startDate + endTime);
 
-        Calendar calendar = Calendar.builder().date(currentStartOfDate).build();
+        CalendarResponse calendarResponse = CalendarResponse.builder().date(currentStartOfDate).build();
         DashboardResponse response = DashboardResponse
                 .builder()
-                .calendar(calendar)
+                .calendarResponse(calendarResponse)
                 .build();
 
         if (user.getRoles().contains("ADMIN")){
-            Report report = new Report();
-            Request request = new Request();
-            response.setReport(report);
-            response.setRequest(request);
+            ReportResponse reportResponse = new ReportResponse();
+            RequestResponse requestResponse = new RequestResponse();
+            response.setReportResponse(reportResponse);
+            response.setRequestResponse(requestResponse);
 
-            return attendanceReportRepository.findByDate(currentStartOfDate)
+            return dailyAttendanceReportRepository.findByDate(currentStartOfDate)
+                    .switchIfEmpty(
+                            Mono.just(DailyAttendanceReport.builder()
+                            .date(currentStartOfDate)
+                            .working(0)
+                            .absent(0)
+                            .build())
+                    )
+                    .doOnSuccess(this::checkNewEntity)
                     .flatMap(res -> {
-                        response.getReport().setWorking(res.getWorking());
-                        response.getReport().setAbsent(res.getAbsent());
+                        response.getReportResponse().setWorking(res.getWorking());
+                        response.getReportResponse().setAbsent(res.getAbsent());
                         return eventRepository.findByDate(currentStartOfDate);
                     })
                     .map(event -> setCalendarResponse(currentStartOfDate, response, event))
                     .flatMap(res -> requestLeaveRepository.countByCreatedDateAfterAndStatus(currentStartOfDate, RequestLeaveStatus.PENDING))
                     .map(totalIncomingRequest -> {
-                        response.getRequest().setIncoming(totalIncomingRequest);
+                        response.getRequestResponse().setIncoming(totalIncomingRequest);
                         return response;
                     });
         }
@@ -95,48 +104,61 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                 .map(event -> setCalendarResponse(currentStartOfDate, response, event));
     }
 
-    private DashboardResponse setAttendanceResponse(List<AttendanceEntity> res, DashboardResponse response, Date currentStartDate) {
-        AttendanceTime date = AttendanceTime.builder().build();
-        Location location = Location.builder().build();
+    private void checkNewEntity(DailyAttendanceReport report) {
+        if (report.getId() == null){
+            Date date = new Date();
+            report.setCreatedBy("SYSTEM");
+            report.setCreatedDate(date);
+            report.setUpdatedBy("SYSTEM");
+            report.setUpdatedDate(date);
+            report.setId("DAR" + report.getDate());
 
-        AttendanceResponse current = AttendanceResponse.builder().attendance(date).location(location).build();
-        AttendanceResponse latest = AttendanceResponse.builder().attendance(date).location(location).build();
+            dailyAttendanceReportRepository.save(report).subscribe();
+        }
+    }
+
+    private DashboardResponse setAttendanceResponse(List<Attendance> res, DashboardResponse response, Date currentStartDate) {
+        AttendanceTimeResponse date = AttendanceTimeResponse.builder().build();
+        LocationResponse locationResponse = LocationResponse.builder().build();
+
+        AttendanceResponse current = AttendanceResponse.builder().attendance(date).locationResponse(locationResponse).build();
+        AttendanceResponse latest = AttendanceResponse.builder().attendance(date).locationResponse(locationResponse).build();
 
         if (res.get(0).getStartTime().before(currentStartDate)){
-            AttendanceEntity latestAttendance = res.get(0);
+            Attendance latestAttendance = res.get(0);
             latest.getAttendance().setStart(latestAttendance.getStartTime());
             latest.getAttendance().setEnd(latestAttendance.getEndTime());
-            latest.getLocation().setType(latestAttendance.getLocation());
+            latest.getLocationResponse().setType(latestAttendance.getLocation());
 
             current.getAttendance().setStart(null);
             current.getAttendance().setEnd(null);
-            current.getLocation().setType(null);
+            current.getLocationResponse().setType(null);
         }
         else{
-            AttendanceEntity latestAttendance = res.get(1);
+            Attendance latestAttendance = res.get(1);
             latest.getAttendance().setStart(latestAttendance.getStartTime());
             latest.getAttendance().setEnd(latestAttendance.getEndTime());
-            latest.getLocation().setType(latestAttendance.getLocation());
+            latest.getLocationResponse().setType(latestAttendance.getLocation());
 
-            AttendanceEntity currentAttendance = res.get(0);
+            Attendance currentAttendance = res.get(0);
             current.getAttendance().setStart(currentAttendance.getStartTime());
             current.getAttendance().setEnd(currentAttendance.getEndTime());
-            current.getLocation().setType(currentAttendance.getLocation());
+            current.getLocationResponse().setType(currentAttendance.getLocation());
         }
 
         response.setAttendance(Arrays.asList(current, latest));
         return response;
     }
 
-    private DashboardResponse setCalendarResponse(Date currentDate, DashboardResponse response, EventEntity event) {
-        response.getCalendar().setDate(currentDate);
-        response.getCalendar().setStatus(getStatusHoliday(response, event));
+    private DashboardResponse setCalendarResponse(Date currentDate, DashboardResponse response, Event event) {
+        response.getCalendarResponse().setDate(currentDate);
+        response.getCalendarResponse().setStatus(getStatusHoliday(response, event));
         return response;
     }
 
-    private String getStatusHoliday(DashboardResponse res, EventEntity event){
+    private String getStatusHoliday(DashboardResponse res, Event event){
         if (event.getStatus().equals("HOLIDAY")){
-            res.getCalendar().setStatus(event.getStatus());
+            res.getCalendarResponse().setStatus(event.getStatus());
         }
         return "WORKING";
     }

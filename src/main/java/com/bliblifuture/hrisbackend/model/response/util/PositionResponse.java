@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Data
-public class Request {
+public class PositionResponse {
 
-    private int incoming;
+    private String name;
+
 }

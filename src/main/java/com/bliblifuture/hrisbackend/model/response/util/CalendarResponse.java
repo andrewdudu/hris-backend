@@ -11,7 +11,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 @Data
-public class Calendar {
+public class CalendarResponse {
 
     private Date date;
 

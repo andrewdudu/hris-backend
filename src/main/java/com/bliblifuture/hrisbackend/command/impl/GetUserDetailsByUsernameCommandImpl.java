@@ -1,8 +1,8 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
+import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.command.GetUserDetailsByUsernameCommand;
-import com.bliblifuture.hrisbackend.model.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -14,7 +14,7 @@ public class GetUserDetailsByUsernameCommandImpl implements GetUserDetailsByUser
     private UserRepository userRepository;
 
     @Override
-    public Mono<UserEntity> execute(String username) {
+    public Mono<User> execute(String username) {
         return userRepository.findByUsername(username);
     }
 

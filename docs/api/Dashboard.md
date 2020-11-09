@@ -10,21 +10,21 @@
   - Set-Cookie: `userToken=token`
 - Response Body (Success) :
 
-  `report` and `request` for admin.
+  `reportResponse` and `requestResponse` for admin.
 
 ```json
 {
   "code": 200,
   "status": "Success",
   "data": {
-    "report": {
+    "reportResponse": {
       "working": 230,
       "absent": 10
     },
-    "request": {
+    "requestResponse": {
       "incoming": 20
     },
-    "calendar": {
+    "calendarResponse": {
       "date": 7817283721,
       "status": "WORKING|HOLIDAY"
     },
@@ -33,7 +33,7 @@
         "date": {
           "start": 7817238
         },
-        "location": {
+        "locationResponse": {
           "type": "INSIDE|OUTSIDE"
         }
       },
@@ -42,7 +42,7 @@
           "start": 7817238,
           "end": 1287383
         },
-        "location": {
+        "locationResponse": {
           "type": "INSIDE|OUTSIDE"
         }
       }

@@ -1,11 +1,11 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.ClockOutCommand;
-import com.bliblifuture.hrisbackend.model.entity.AttendanceEntity;
-import com.bliblifuture.hrisbackend.model.entity.UserEntity;
+import com.bliblifuture.hrisbackend.model.entity.Attendance;
+import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
-import com.bliblifuture.hrisbackend.model.response.util.Location;
+import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import lombok.SneakyThrows;
@@ -36,7 +36,7 @@ public class ClockOutCommandImpl implements ClockOutCommand {
                 .map(this::createResponse);
     }
 
-    private AttendanceEntity updateAttendance(AttendanceEntity attendance, AttendanceRequest request) {
+    private Attendance updateAttendance(Attendance attendance, AttendanceRequest request) {
         attendance.setEndLat(request.getLocation().getLat());
         attendance.setEndLon(request.getLocation().getLon());
         attendance.setEndTime(new Date());
@@ -44,17 +44,17 @@ public class ClockOutCommandImpl implements ClockOutCommand {
         return attendance;
     }
 
-    private AttendanceResponse createResponse(AttendanceEntity attendance) {
-        Location location = Location.builder().lat(attendance.getStartLat()).lon(attendance.getStartLon()).build();
+    private AttendanceResponse createResponse(Attendance attendance) {
+        LocationResponse locationResponse = LocationResponse.builder().lat(attendance.getStartLat()).lon(attendance.getStartLon()).build();
         AttendanceResponse response = AttendanceResponse.builder()
-                .location(location)
+                .locationResponse(locationResponse)
                 .build();
 
         return response;
     }
 
     @SneakyThrows
-    private Mono<AttendanceEntity> getTodayAttendance(UserEntity user) {
+    private Mono<Attendance> getTodayAttendance(User user) {
         Date dateWithOffset = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
         String startDate = dateWithOffset.getDate() - 1 + "/" + dateWithOffset.getMonth() + "/" + dateWithOffset.getYear();
 
@@ -66,7 +66,7 @@ public class ClockOutCommandImpl implements ClockOutCommand {
                 .map(this::checkValidity);
     }
 
-    private AttendanceEntity checkValidity(AttendanceEntity attendance) {
+    private Attendance checkValidity(Attendance attendance) {
         if (attendance.getStartTime() == null){
             throw new NullPointerException("Clock-out not available");
         }

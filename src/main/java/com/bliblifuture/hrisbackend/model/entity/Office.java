@@ -4,18 +4,13 @@ import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.util.Date;
-
 @EqualsAndHashCode(callSuper = false)
-@Document(collection = "leave")
+@Document(collection = "office")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class LeaveEntity extends BaseEntity{
-
-    @Field(name = "employee_id")
-    private String employeeId;
+public class Office extends BaseEntity{
 
     @Field(name = "name")
     private String name;
@@ -23,15 +18,9 @@ public class LeaveEntity extends BaseEntity{
     @Field(name = "code")
     private String code;
 
-    @Field(name = "type")
-    private String type;
+    @Field(name = "lat")
+    private double lat;
 
-    @Field(name = "remaining")
-    private int remaining;
-
-    @Field(name = "used")
-    private int used;
-
-    @Field(name = "expiry_date")
-    private Date expDate;
+    @Field(name = "lon")
+    private double lon;
 }

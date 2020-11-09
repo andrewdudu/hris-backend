@@ -1,4 +1,4 @@
-package com.bliblifuture.hrisbackend.model.response.util;
+package com.bliblifuture.hrisbackend.constant;
 
 public enum AttendanceLocationType {
 

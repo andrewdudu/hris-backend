@@ -2,7 +2,7 @@
 
 ## GET Calendar
 
-- Endpoint : `/api/calendar/days`
+- Endpoint : `/api/calendarResponse/days`
 - HTTP Method : `GET`
 - Query Param:
   - month `int`
@@ -35,7 +35,7 @@
 
 `date` format ex: `2020-02-25`
 
-- Endpoint : `/calendar/days/{date}/events`
+- Endpoint : `/calendarResponse/days/{date}/events`
 - HTTP Method : `POST`
 - `Auth required`
 - Request Header :

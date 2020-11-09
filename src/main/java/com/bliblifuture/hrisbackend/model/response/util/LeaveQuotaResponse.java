@@ -5,16 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Location {
+@Builder
+@Data
+public class LeaveQuotaResponse {
 
-    private AttendanceLocationType type;
+    private int annual;
 
-    private double lat;
+    private int extra;
 
-    private double lon;
-
+    private int subtitute;
 }

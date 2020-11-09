@@ -7,19 +7,22 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.util.Date;
 
 @EqualsAndHashCode(callSuper = false)
-@Document(collection = "attendance_report")
+@Document(collection = "event")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class AttendanceReportEntity extends BaseEntity{
+public class Event extends BaseEntity {
+
+    @Field(name = "title")
+    private String title;
 
     @Field(name = "date")
     private Date date;
 
-    @Field(name = "working")
-    private int working;
+    @Field(name = "description")
+    private String description;
 
-    @Field(name = "absent")
-    private int absent;
+    @Field(name = "status")
+    private String status;
 }

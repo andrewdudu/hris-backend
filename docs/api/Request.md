@@ -2,7 +2,7 @@
 
 ## Request Attendance
 
-- Endpoint : `/api/request/attendances`
+- Endpoint : `/api/requestResponse/attendances`
 - HTTP Method : `POST`
 - Request Header :
   - Accept : `application/json`
@@ -48,7 +48,7 @@
 
 ## Request Leaves
 
-- Endpoint : `/request/leaves`
+- Endpoint : `/requestResponse/leaves`
 - HTTP Method : `POST`
 
 - Request Header :
@@ -95,7 +95,7 @@
 
 ## GET Extend Leaves data
 
-- Endpoint : `/request/extend-leave`
+- Endpoint : `/requestResponse/extend-leave`
 - HTTP Method : `GET`
 
 - Request Header :
@@ -120,7 +120,7 @@
 
 ## Request Extend Leave
 
-- Endpoint : `/request/extend-leave`
+- Endpoint : `/requestResponse/extend-leave`
 - HTTP Method : `POST`
 
 - Request Header :
@@ -179,7 +179,7 @@
   "data": [
     {
       "id": "1823a87f-12387321adf-123123adf",
-      "userEntity": {
+      "user": {
         "name": "John Doe",
         "department": "Technology",
         "office": {
@@ -201,7 +201,7 @@
     },
     {
       "id": "1823a87f-12387321adf-123123adf",
-      "userEntity": {
+      "user": {
         "name": "John Doe",
         "department": "Technology",
         "office": {
@@ -222,7 +222,7 @@
     },
     {
       "id": "1823a87f-12387321adf-123123adf",
-      "userEntity": {
+      "user": {
         "name": "John Doe",
         "department": "Technology",
         "office": {
@@ -270,7 +270,7 @@
   "status": "Success",
   "data": {
     "id": "1823a87f-12387321adf-123123adf",
-    "userEntity": {
+    "user": {
       "name": "John Doe",
       "department": "Technology",
       "office": {
@@ -318,7 +318,7 @@
   "status": "Success",
   "data": {
     "id": "1823a87f-12387321adf-123123adf",
-    "userEntity": {
+    "user": {
       "name": "John Doe",
       "department": "Technology",
       "office": {

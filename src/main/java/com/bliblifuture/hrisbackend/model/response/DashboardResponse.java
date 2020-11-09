@@ -1,8 +1,8 @@
 package com.bliblifuture.hrisbackend.model.response;
 
-import com.bliblifuture.hrisbackend.model.response.util.Calendar;
-import com.bliblifuture.hrisbackend.model.response.util.Report;
-import com.bliblifuture.hrisbackend.model.response.util.Request;
+import com.bliblifuture.hrisbackend.model.response.util.CalendarResponse;
+import com.bliblifuture.hrisbackend.model.response.util.ReportResponse;
+import com.bliblifuture.hrisbackend.model.response.util.RequestResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,11 +16,11 @@ import java.util.List;
 @AllArgsConstructor
 public class DashboardResponse {
 
-    private Report report;
+    private ReportResponse reportResponse;
 
-    private Request request;
+    private RequestResponse requestResponse;
 
-    private Calendar calendar;
+    private CalendarResponse calendarResponse;
 
     private List<AttendanceResponse> attendance;
 
