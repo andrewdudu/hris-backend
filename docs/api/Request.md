@@ -2,7 +2,7 @@
 
 ## Request Attendance
 
-- Endpoint : `/api/requestResponse/attendances`
+- Endpoint : `/api/request/attendances`
 - HTTP Method : `POST`
 - Request Header :
   - Accept : `application/json`
@@ -48,7 +48,7 @@
 
 ## Request Leaves
 
-- Endpoint : `/requestResponse/leaves`
+- Endpoint : `/request/leaves`
 - HTTP Method : `POST`
 
 - Request Header :
@@ -95,7 +95,7 @@
 
 ## GET Extend Leaves data
 
-- Endpoint : `/requestResponse/extend-leave`
+- Endpoint : `/request/extend-leave`
 - HTTP Method : `GET`
 
 - Request Header :
@@ -120,7 +120,7 @@
 
 ## Request Extend Leave
 
-- Endpoint : `/requestResponse/extend-leave`
+- Endpoint : `/request/extend-leave`
 - HTTP Method : `POST`
 
 - Request Header :
