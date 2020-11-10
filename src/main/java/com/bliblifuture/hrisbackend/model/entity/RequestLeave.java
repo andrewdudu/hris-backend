@@ -1,5 +1,6 @@
 package com.bliblifuture.hrisbackend.model.entity;
 
+import com.bliblifuture.hrisbackend.constant.RequestLeaveStatus;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -12,7 +13,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 @Data
-public class RequestLeaveEntity extends BaseEntity {
+public class RequestLeave extends BaseEntity {
 
     @Field(name = "employee_id")
     private String employeeId;
@@ -36,6 +37,6 @@ public class RequestLeaveEntity extends BaseEntity {
     private String approvedBy;
 
     @Field(name = "status")
-    private String status;
+    private RequestLeaveStatus status;
 
 }

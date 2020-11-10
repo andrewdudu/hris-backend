@@ -1,4 +1,4 @@
-package com.bliblifuture.hrisbackend.model.response.util;
+package com.bliblifuture.hrisbackend.model.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,10 +7,11 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class Location {
+@NoArgsConstructor
+public class BaseRequest {
 
-    private AttendanceLocationType type;
+    private String id;
 
+    private String requester;
 }

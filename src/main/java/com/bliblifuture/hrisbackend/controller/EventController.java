@@ -27,7 +27,7 @@ public class EventController extends WebMvcProperties {
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping
-    public Mono<Response<List<AnnouncementResponse>>> getUser(@RequestParam("page") int page, @RequestParam("size") int size){
+    public Mono<Response<List<AnnouncementResponse>>> getAnnouncements(@RequestParam("page") int page, @RequestParam("size") int size){
         PagingRequest request = new PagingRequest(page, size);
         return commandExecutor.execute(GetAnnouncementCommand.class, request)
                 .map(pagingResponse -> {

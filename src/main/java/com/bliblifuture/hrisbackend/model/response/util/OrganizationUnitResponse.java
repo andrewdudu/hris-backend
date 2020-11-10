@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Data
-public class Office {
+public class OrganizationUnitResponse {
 
     private String name;
 

@@ -45,7 +45,7 @@
   "code": 200,
   "status": "Success",
   "data": {
-    "userEntity": {
+    "user": {
       "name": "name",
       "department": "Technology",
       "office": {

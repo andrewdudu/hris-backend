@@ -5,15 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class Calendar {
+public class LeaveQuotaResponse {
 
-    private Date date;
+    private int annual;
 
-    private String status;
+    private int extra;
+
+    private int subtitute;
 }

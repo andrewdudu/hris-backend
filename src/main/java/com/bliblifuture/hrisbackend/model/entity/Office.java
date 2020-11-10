@@ -10,11 +10,17 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @AllArgsConstructor
 @Builder
 @Data
-public class OfficeEntity extends BaseEntity{
+public class Office extends BaseEntity{
 
     @Field(name = "name")
     private String name;
 
     @Field(name = "code")
     private String code;
+
+    @Field(name = "lat")
+    private double lat;
+
+    @Field(name = "lon")
+    private double lon;
 }

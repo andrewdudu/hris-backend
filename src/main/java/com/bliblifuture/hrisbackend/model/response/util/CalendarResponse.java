@@ -11,9 +11,9 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 @Data
-public class AttendanceTime {
+public class CalendarResponse {
 
-    private Date start;
+    private Date date;
 
-    private Date end;
+    private String status;
 }

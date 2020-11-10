@@ -179,7 +179,7 @@
   "data": [
     {
       "id": "1823a87f-12387321adf-123123adf",
-      "userEntity": {
+      "user": {
         "name": "John Doe",
         "department": "Technology",
         "office": {
@@ -201,7 +201,7 @@
     },
     {
       "id": "1823a87f-12387321adf-123123adf",
-      "userEntity": {
+      "user": {
         "name": "John Doe",
         "department": "Technology",
         "office": {
@@ -222,7 +222,7 @@
     },
     {
       "id": "1823a87f-12387321adf-123123adf",
-      "userEntity": {
+      "user": {
         "name": "John Doe",
         "department": "Technology",
         "office": {
@@ -270,7 +270,7 @@
   "status": "Success",
   "data": {
     "id": "1823a87f-12387321adf-123123adf",
-    "userEntity": {
+    "user": {
       "name": "John Doe",
       "department": "Technology",
       "office": {
@@ -318,7 +318,7 @@
   "status": "Success",
   "data": {
     "id": "1823a87f-12387321adf-123123adf",
-    "userEntity": {
+    "user": {
       "name": "John Doe",
       "department": "Technology",
       "office": {

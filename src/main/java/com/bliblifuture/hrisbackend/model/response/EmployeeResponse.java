@@ -1,9 +1,9 @@
 package com.bliblifuture.hrisbackend.model.response;
 
-import com.bliblifuture.hrisbackend.model.entity.DepartmentEntity;
-import com.bliblifuture.hrisbackend.model.response.util.Office;
-import com.bliblifuture.hrisbackend.model.response.util.OrganizationUnit;
-import com.bliblifuture.hrisbackend.model.response.util.Position;
+import com.bliblifuture.hrisbackend.model.entity.Department;
+import com.bliblifuture.hrisbackend.model.response.util.OfficeResponse;
+import com.bliblifuture.hrisbackend.model.response.util.OrganizationUnitResponse;
+import com.bliblifuture.hrisbackend.model.response.util.PositionResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,11 +19,11 @@ public class EmployeeResponse {
 
     private String name;
 
-    private DepartmentEntity departmentEntity;
+    private Department department;
 
-    private Position position;
+    private PositionResponse positionResponse;
 
-    private OrganizationUnit organizationUnit;
+    private OrganizationUnitResponse organizationUnitResponse;
 
-    private Office office;
+    private OfficeResponse officeResponse;
 }

@@ -1,6 +1,6 @@
 package com.bliblifuture.hrisbackend.repository;
 
-import com.bliblifuture.hrisbackend.model.entity.UserEntity;
+import com.bliblifuture.hrisbackend.model.entity.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
@@ -9,11 +9,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
-public interface UserRepository extends ReactiveMongoRepository<UserEntity, String> {
+public interface UserRepository extends ReactiveMongoRepository<User, String> {
 
     @Query("{ id: { $exists: true }}")
-    Flux<UserEntity> findAll(final Pageable pageable);
+    Flux<User> findAll(final Pageable pageable);
 
-    Mono<UserEntity> findByUsername(String username);
+    Mono<User> findByUsername(String username);
 
 }

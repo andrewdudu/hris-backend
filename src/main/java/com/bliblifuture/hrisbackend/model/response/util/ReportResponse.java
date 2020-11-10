@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Data
-public class Request {
+public class ReportResponse {
 
-    private int incoming;
+    private int working;
+
+    private int absent;
 }
