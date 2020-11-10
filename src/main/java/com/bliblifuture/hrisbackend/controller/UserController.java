@@ -6,6 +6,7 @@ import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.*;
 import com.bliblifuture.hrisbackend.config.JwtTokenUtil;
 import com.bliblifuture.hrisbackend.constant.RequestType;
+import com.bliblifuture.hrisbackend.constant.SpecialRequestType;
 import com.bliblifuture.hrisbackend.model.entity.RequestLeave;
 import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
 import com.bliblifuture.hrisbackend.model.response.LeavesReportResponse;
@@ -64,6 +65,14 @@ public class UserController extends WebMvcProperties {
     @GetMapping("/current-user/available-requests")
     public Mono<Response<List<RequestType>>> getAvailableRequests(Principal principal){
         return commandExecutor.execute(GetAvailableRequestsCommand.class, principal.getName())
+                .map(ResponseHelper::ok)
+                .subscribeOn(Schedulers.elastic());
+    }
+
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    @GetMapping("/current-user/available-special-requests")
+    public Mono<Response<List<SpecialRequestType>>> getAvailableSpecialRequests(Principal principal){
+        return commandExecutor.execute(GetAvailableSpecialRequestsCommand.class, principal.getName())
                 .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());
     }
