@@ -162,10 +162,10 @@
 						</goals>
 					</execution>
 					<execution>
-						<id>default-reportResponse</id>
+						<id>default-report</id>
 						<phase>prepare-package</phase>
 						<goals>
-							<goal>reportResponse</goal>
+							<goal>report</goal>
 						</goals>
 					</execution>
 				</executions>
