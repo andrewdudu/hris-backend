@@ -137,6 +137,37 @@
 }
 ```
 
+## Available Special Requests
+
+- Endpoint : `/users/current-user/available-special-requests`
+- HTTP Method : `GET`
+- `Auth required`
+- Request Header :
+
+  - Accept : `application/json`
+
+- Response Body (Success) :
+
+```json
+{
+  "code": 200,
+  "status": "Success",
+  "data": [
+    "SICK",
+    "SICK_WITH_MEDICAL_LETTER",
+    "MARRIAGE",
+    "MATERNITY",
+    "CHILDBIRTH",
+    "MAIN_FAMILY_DEATH",
+    "CLOSE_FAMILY_DEATH",
+    "HAJJ",
+    "CHILD_BAPTISM",
+    "CHILD_CIRCUMSION",
+    "UNPAID_LEAVE"
+  ]
+}
+```
+
 ## GET Attendnace Summary
 
 - Endpoint : `/users/current-user/attendance-summary`
