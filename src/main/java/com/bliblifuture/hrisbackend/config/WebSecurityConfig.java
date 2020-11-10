@@ -35,8 +35,7 @@ public class WebSecurityConfig {
                 .authorizeExchange()
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
                 .pathMatchers( "/auth/login").permitAll()
-//                .pathMatchers(HttpMethod.GET,"/bliblimart/api/blimarts/**").permitAll()
-                .pathMatchers(HttpMethod.GET, "/user/test").permitAll()
+                .pathMatchers(HttpMethod.GET, "/api/users/test", "/api/users/get-test").permitAll()
                 .anyExchange().authenticated()
                 .and().build();
     }

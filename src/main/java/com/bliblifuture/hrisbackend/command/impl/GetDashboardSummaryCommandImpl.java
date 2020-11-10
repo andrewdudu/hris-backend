@@ -21,7 +21,6 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryCommand {
@@ -50,19 +49,14 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     @SneakyThrows
     private Mono<DashboardResponse> getResponse(User user) {
 
-        Date now = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
-        String startDate = now.getDate() - 1 + "/" + now.getMonth() + "/" + now.getYear();
+        Date now = new Date();
+        String startDate = now.getDate() + "/" + now.getMonth()+1 + "/" + now.getYear()+1900;
 
-        String startTime = " 17:00:00";
-        Date currentStartOfDate = new SimpleDateFormat("dd/MM/yy HH:mm:ss")
+        String startTime = " 00:00:00";
+        Date startOfDate = new SimpleDateFormat("dd/MM/yy HH:mm:ss")
                 .parse(startDate + startTime);
 
-        //        String endTime = " 16:59:59";
-//        String endDate = now.getDate() + "/" + now.getMonth() + "/" + now.getYear();
-//        Date currentEndDate = new SimpleDateFormat("dd/MM/yy mm:hh:ss")
-//                .parse(startDate + endTime);
-
-        CalendarResponse calendarResponse = CalendarResponse.builder().date(currentStartOfDate).build();
+        CalendarResponse calendarResponse = CalendarResponse.builder().date(startOfDate).build();
         DashboardResponse response = DashboardResponse
                 .builder()
                 .calendarResponse(calendarResponse)
@@ -74,10 +68,10 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
             response.setReportResponse(reportResponse);
             response.setRequestResponse(requestResponse);
 
-            return dailyAttendanceReportRepository.findByDate(currentStartOfDate)
+            return dailyAttendanceReportRepository.findByDate(startOfDate)
                     .switchIfEmpty(
                             Mono.just(DailyAttendanceReport.builder()
-                            .date(currentStartOfDate)
+                            .date(startOfDate)
                             .working(0)
                             .absent(0)
                             .build())
@@ -86,10 +80,10 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                     .flatMap(res -> {
                         response.getReportResponse().setWorking(res.getWorking());
                         response.getReportResponse().setAbsent(res.getAbsent());
-                        return eventRepository.findByDate(currentStartOfDate);
+                        return eventRepository.findByDate(startOfDate);
                     })
-                    .map(event -> setCalendarResponse(currentStartOfDate, response, event))
-                    .flatMap(res -> requestLeaveRepository.countByCreatedDateAfterAndStatus(currentStartOfDate, RequestLeaveStatus.PENDING))
+                    .map(event -> setCalendarResponse(startOfDate, response, event))
+                    .flatMap(res -> requestLeaveRepository.countByCreatedDateAfterAndStatus(startOfDate, RequestLeaveStatus.PENDING))
                     .map(totalIncomingRequest -> {
                         response.getRequestResponse().setIncoming(totalIncomingRequest);
                         return response;
@@ -99,9 +93,9 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
         Pageable pageable = PageRequest.of(0, 2);
 
         return attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable).collectList()
-                .map(attendanceList -> setAttendanceResponse(attendanceList, response, currentStartOfDate))
-                .flatMap(res -> eventRepository.findByDate(currentStartOfDate))
-                .map(event -> setCalendarResponse(currentStartOfDate, response, event));
+                .map(attendanceList -> setAttendanceResponse(attendanceList, response, startOfDate))
+                .flatMap(res -> eventRepository.findByDate(startOfDate))
+                .map(event -> setCalendarResponse(startOfDate, response, event));
     }
 
     private void checkNewEntity(DailyAttendanceReport report) {

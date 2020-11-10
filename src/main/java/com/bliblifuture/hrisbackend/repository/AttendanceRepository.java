@@ -22,4 +22,5 @@ public interface AttendanceRepository extends ReactiveMongoRepository<Attendance
 
     Mono<Attendance> findFirstByEmployeeIdAndDate(String employeeId, Date date);
 
+
 }

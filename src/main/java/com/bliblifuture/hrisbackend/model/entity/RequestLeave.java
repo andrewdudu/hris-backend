@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.Date;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
 @Document(collection = "leave")
@@ -27,8 +28,8 @@ public class RequestLeave extends BaseEntity {
     @Field(name = "detail")
     private String detail;
 
-    @Field(name = "date")
-    private Date date;
+    @Field(name = "dates")
+    private List<Date> dates;
 
     @Field(name = "file")
     private String file;
