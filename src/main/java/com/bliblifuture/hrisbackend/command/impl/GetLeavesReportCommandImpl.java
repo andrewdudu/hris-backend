@@ -22,15 +22,6 @@ import java.util.List;
 public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
-    private DepartmentRepository departmentRepository;
-
-    @Autowired
     private LeaveRepository leaveRepository;
 
     @Autowired
@@ -56,7 +47,7 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
                 .switchIfEmpty(Mono.just(createLeaveSummary(employeeId, theYear)))
                 .doOnSuccess(this::checkNewEntity)
                 .map(employeeLeaveSummary -> setLeavesData(employeeLeaveSummary, response))
-                .flatMap(res -> attendanceRepository.countByDateAfter(lastTimeOfLastYear))
+                .flatMap(res -> attendanceRepository.countByEmployeeIdAndDateAfter(employeeId, lastTimeOfLastYear))
                 .flatMap(attendance -> {
                     response.setAttendance(attendance);
                     return leaveRepository.findByEmployeeIdAndExpDateAfterAndTypeOrType(employeeId, lastTimeOfLastYear, LeaveType.annual, LeaveType.extra)

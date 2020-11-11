@@ -1,6 +1,6 @@
 package com.bliblifuture.hrisbackend.constant;
 
-public enum SpecialRequestType {
+public enum SpecialLeaveType {
 
     SICK,
     SICK_WITH_MEDICAL_LETTER,

@@ -13,7 +13,5 @@ public class AttendanceSummaryResponse extends BaseResponse{
 
     private int attendance;
 
-    private int leave;
-
-    private int absence;
+    private int absent;
 }

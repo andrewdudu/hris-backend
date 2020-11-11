@@ -4,9 +4,8 @@ import com.blibli.oss.command.CommandExecutor;
 import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.*;
-import com.bliblifuture.hrisbackend.config.JwtTokenUtil;
 import com.bliblifuture.hrisbackend.constant.RequestType;
-import com.bliblifuture.hrisbackend.constant.SpecialRequestType;
+import com.bliblifuture.hrisbackend.constant.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.RequestLeave;
 import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
 import com.bliblifuture.hrisbackend.model.response.LeavesReportResponse;
@@ -34,8 +33,8 @@ public class UserController extends WebMvcProperties {
     @Autowired
     private CommandExecutor commandExecutor;
 
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
+//    @Autowired
+//    private JwtTokenUtil jwtTokenUtil;
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping("/current-user")
@@ -71,7 +70,7 @@ public class UserController extends WebMvcProperties {
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping("/current-user/available-special-requests")
-    public Mono<Response<List<SpecialRequestType>>> getAvailableSpecialRequests(Principal principal){
+    public Mono<Response<List<SpecialLeaveType>>> getAvailableSpecialRequests(Principal principal){
         return commandExecutor.execute(GetAvailableSpecialRequestsCommand.class, principal.getName())
                 .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());

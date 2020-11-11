@@ -58,10 +58,10 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
                 .parse("1/1/" + thisYear);
 
         return userRepository.findByUsername(username)
-                .flatMap(user -> attendanceRepository.countByDateAfter(startOfCurrentMonth)
+                .flatMap(user -> attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentMonth)
                         .flatMap(monthAttendance -> {
                             responses.get(0).setAttendance(monthAttendance);
-                            return attendanceRepository.countByDateAfter(startOfCurrentYear);
+                            return attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentYear);
                         })
                         .flatMap(yearAttendance -> {
                             responses.get(1).setAttendance(yearAttendance);
@@ -71,13 +71,13 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
                         })
                         .map(this::countThisMonthLeave)
                         .flatMap(totalThisMonthLeaves -> {
-                            responses.get(0).setAbsence(totalThisMonthLeaves);
+                            responses.get(0).setAbsent(totalThisMonthLeaves);
                             return employeeLeaveSummaryRepository.findByYearAndEmployeeId(String.valueOf(thisYear), user.getEmployeeId())
                                     .switchIfEmpty(Mono.just(EmployeeLeaveSummary.builder().build()));
                         })
                         .map(this::countThisYearLeaves)
                         .map(totalThisYearLeaves -> {
-                            responses.get(1).setAbsence(totalThisYearLeaves);
+                            responses.get(1).setAbsent(totalThisYearLeaves);
                             return responses;
                         })
                 );
@@ -88,7 +88,8 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
                 + thisYearLeaves.getChildCircumsion() + thisYearLeaves.getCloseFamilyDeath()
                 + thisYearLeaves.getHajj() + thisYearLeaves.getMainFamilyDeath()
                 + thisYearLeaves.getMaternity() + thisYearLeaves.getSick()
-                + thisYearLeaves.getUnpaidLeave();
+                + thisYearLeaves.getUnpaidLeave() + thisYearLeaves.getAnnualLeave()
+                + thisYearLeaves.getExtraLeave() + thisYearLeaves.getSubtituteLeave();
     }
 
     private int countThisMonthLeave(List<RequestLeave> thisMonthLeaves) {
