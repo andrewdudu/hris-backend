@@ -1,6 +1,6 @@
 package com.bliblifuture.hrisbackend.model.entity;
 
-import com.bliblifuture.hrisbackend.constant.RequestLeaveStatus;
+import com.bliblifuture.hrisbackend.constant.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.RequestType;
 import com.bliblifuture.hrisbackend.constant.SpecialLeaveType;
 import lombok.*;
@@ -16,19 +16,25 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Data
-public class RequestLeave extends BaseEntity {
+public class Request extends BaseEntity {
 
     @Field(name = "employee_id")
     private String employeeId;
 
-    @Field(name = "note")
-    private String note;
+    @Field(name = "notes")
+    private String notes;
 
     @Field(name = "type")
     private RequestType type;
 
     @Field(name = "special_request_type")
     private SpecialLeaveType specialLeaveType;
+
+    @Field(name = "clock_in")
+    private String clockIn;
+
+    @Field(name = "clock_out")
+    private String clockOut;
 
     @Field(name = "detail")
     private String detail;
@@ -43,6 +49,6 @@ public class RequestLeave extends BaseEntity {
     private String approvedBy;
 
     @Field(name = "status")
-    private RequestLeaveStatus status;
+    private RequestStatus status;
 
 }
