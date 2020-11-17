@@ -28,4 +28,6 @@ public class LeavesDataResponse {
     private int mainFamilyDeath;
 
     private int closeFamilyDeath;
+
+    private int unpaidLeave;
 }

@@ -42,4 +42,16 @@ public class EmployeeLeaveSummary extends BaseEntity{
     @Field(name = "close_family_death")
     private int closeFamilyDeath;
 
+    @Field(name = "unpaid_leave")
+    private int unpaidLeave;
+
+    @Field(name = "annual_leave")
+    private int annualLeave;
+
+    @Field(name = "extra_leave")
+    private int extraLeave;
+
+    @Field(name = "subtitute_leave")
+    private int subtituteLeave;
+
 }

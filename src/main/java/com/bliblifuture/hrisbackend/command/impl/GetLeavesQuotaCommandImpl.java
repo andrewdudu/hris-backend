@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class GetLeavesQuotaCommandImpl implements GetLeavesQuotaCommand {
@@ -38,13 +37,13 @@ public class GetLeavesQuotaCommandImpl implements GetLeavesQuotaCommand {
     @SneakyThrows
     @Override
     public Mono<List<LeaveResponse>> execute(String employeeId) {
-        Date currentDate = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
-        int year = currentDate.getYear();
+        Date currentDate = new Date();
+        int year = currentDate.getYear() + 1900;
 
-        Date lastTimeOfLastYear = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
-                .parse("31/12/" + (year - 1) + " 16:59:59");
+        Date startOfThisYear = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+                .parse("1/1/" + year + " 00:00:00");
 
-        return leaveRepository.findByEmployeeIdAndExpDateAfter(employeeId, lastTimeOfLastYear)
+        return leaveRepository.findByEmployeeIdAndExpDateAfter(employeeId, startOfThisYear)
                 .collectList()
                 .map(this::createResponse);
     }
