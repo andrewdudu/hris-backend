@@ -1,13 +1,13 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAttendanceSummaryCommand;
-import com.bliblifuture.hrisbackend.constant.RequestLeaveStatus;
+import com.bliblifuture.hrisbackend.constant.RequestStatus;
 import com.bliblifuture.hrisbackend.model.entity.EmployeeLeaveSummary;
-import com.bliblifuture.hrisbackend.model.entity.RequestLeave;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.EmployeeLeaveSummaryRepository;
-import com.bliblifuture.hrisbackend.repository.RequestLeaveRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
     private AttendanceRepository attendanceRepository;
 
     @Autowired
-    private RequestLeaveRepository requestLeaveRepository;
+    private RequestRepository requestRepository;
 
     @SneakyThrows
     @Override
@@ -51,10 +51,10 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
         int thisMonth = currentDate.getMonth()+1;
         int thisYear = currentDate.getYear()+1900;
 
-        Date startOfCurrentMonth = new SimpleDateFormat("dd/MM/yy")
+        Date startOfCurrentMonth = new SimpleDateFormat("dd/MM/yyyy")
                 .parse(1 + "/" + thisMonth + "/" + thisYear);
 
-        Date startOfCurrentYear = new SimpleDateFormat("dd/MM/yy")
+        Date startOfCurrentYear = new SimpleDateFormat("dd/MM/yyyy")
                 .parse("1/1/" + thisYear);
 
         return userRepository.findByUsername(username)
@@ -65,8 +65,8 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
                         })
                         .flatMap(yearAttendance -> {
                             responses.get(1).setAttendance(yearAttendance);
-                            return requestLeaveRepository.findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestLeaveStatus.APPROVED, user.getEmployeeId())
-                                    .switchIfEmpty(Flux.just(RequestLeave.builder().dates(new ArrayList<>()).build()))
+                            return requestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId())
+                                    .switchIfEmpty(Flux.just(Request.builder().dates(new ArrayList<>()).build()))
                                     .collectList();
                         })
                         .map(this::countThisMonthLeave)
@@ -92,10 +92,10 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
                 + thisYearLeaves.getExtraLeave() + thisYearLeaves.getSubtituteLeave();
     }
 
-    private int countThisMonthLeave(List<RequestLeave> thisMonthLeaves) {
+    private int countThisMonthLeave(List<Request> thisMonthLeaves) {
         int total = 0;
-        for (RequestLeave requestLeave : thisMonthLeaves) {
-            total += requestLeave.getDates().size();
+        for (Request request : thisMonthLeaves) {
+            total += request.getDates().size();
         }
         return total;
     }

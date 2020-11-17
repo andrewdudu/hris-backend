@@ -6,7 +6,7 @@ import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.*;
 import com.bliblifuture.hrisbackend.constant.RequestType;
 import com.bliblifuture.hrisbackend.constant.SpecialLeaveType;
-import com.bliblifuture.hrisbackend.model.entity.RequestLeave;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
 import com.bliblifuture.hrisbackend.model.response.LeavesReportResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
@@ -101,7 +101,7 @@ public class UserController extends WebMvcProperties {
 //    }
 
     @GetMapping("/get-test")
-    public Mono<Response<RequestLeave>> getCookieTest(ServerWebExchange swe) throws ParseException {
+    public Mono<Response<Request>> getCookieTest(ServerWebExchange swe) throws ParseException {
 //        String token = swe.getRequest().getCookies().getFirst("userToken").getValue();
 //        String t = swe.getRequest().getHeaders().getFirst(HttpHeaders.SET_COOKIE);
 
@@ -115,7 +115,7 @@ public class UserController extends WebMvcProperties {
 //
 //        return Mono.just(ResponseHelper.ok(tanggal + " " + bulan + " " + tahun));
 
-        RequestLeave summary = RequestLeave.builder().build();
+        Request summary = Request.builder().build();
         System.out.println(summary.getDates());
 
         return Mono.just(ResponseHelper.ok(summary));

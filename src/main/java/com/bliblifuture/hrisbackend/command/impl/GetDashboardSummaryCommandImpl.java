@@ -1,7 +1,7 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetDashboardSummaryCommand;
-import com.bliblifuture.hrisbackend.constant.RequestLeaveStatus;
+import com.bliblifuture.hrisbackend.constant.RequestStatus;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.DailyAttendanceReport;
 import com.bliblifuture.hrisbackend.model.entity.Event;
@@ -38,7 +38,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     private EventRepository eventRepository;
 
     @Autowired
-    private RequestLeaveRepository requestLeaveRepository;
+    private RequestRepository requestRepository;
 
     @Override
     public Mono<DashboardResponse> execute(String username) {
@@ -53,7 +53,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
         String startDate = now.getDate() + "/" + now.getMonth()+1 + "/" + now.getYear()+1900;
 
         String startTime = " 00:00:00";
-        Date startOfDate = new SimpleDateFormat("dd/MM/yy HH:mm:ss")
+        Date startOfDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
                 .parse(startDate + startTime);
 
         CalendarResponse calendarResponse = CalendarResponse.builder().date(startOfDate).build();
@@ -63,10 +63,10 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                 .build();
 
         if (user.getRoles().contains("ADMIN")){
-            ReportResponse reportResponse = new ReportResponse();
-            RequestResponse requestResponse = new RequestResponse();
-            response.setReportResponse(reportResponse);
-            response.setRequestResponse(requestResponse);
+            ReportResponse report = new ReportResponse();
+            RequestResponse request = new RequestResponse();
+            response.setReportResponse(report);
+            response.setRequestResponse(request);
 
             return dailyAttendanceReportRepository.findByDate(startOfDate)
                     .switchIfEmpty(
@@ -83,7 +83,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                         return eventRepository.findByDate(startOfDate);
                     })
                     .map(event -> setCalendarResponse(startOfDate, response, event))
-                    .flatMap(res -> requestLeaveRepository.countByCreatedDateAfterAndStatus(startOfDate, RequestLeaveStatus.PENDING))
+                    .flatMap(res -> requestRepository.countByCreatedDateAfterAndStatus(startOfDate, RequestStatus.PENDING))
                     .map(totalIncomingRequest -> {
                         response.getRequestResponse().setIncoming(totalIncomingRequest);
                         return response;

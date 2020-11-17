@@ -110,7 +110,7 @@ public class ClockInCommandImpl implements ClockInCommand {
         String dateString = date.getDate() + "/" + date.getMonth() + 1 + "/" + date.getYear() + 1900;
 
         String startTime = " 00:00:00";
-        Date startOfDate = new SimpleDateFormat("dd/MM/yy HH:mm:ss")
+        Date startOfDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
                 .parse(dateString + startTime);
 
         Attendance attendance = Attendance.builder()

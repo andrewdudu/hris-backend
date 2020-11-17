@@ -48,9 +48,9 @@ public class GetAvailableRequestsCommandImplTests {
 
         User user = User.builder().username("username").build();
 
-        Date currentDate = new SimpleDateFormat("dd/MM/yy").parse("11/12/2020");
+        Date currentDate = new SimpleDateFormat("dd/MM/yyyy").parse("11/12/2020");
 
-        Date joinDate = new SimpleDateFormat("dd/MM/yy").parse("10/10/2017");
+        Date joinDate = new SimpleDateFormat("dd/MM/yyyy").parse("10/10/2017");
 
         Employee employee = Employee.builder()
                 .name("name")
