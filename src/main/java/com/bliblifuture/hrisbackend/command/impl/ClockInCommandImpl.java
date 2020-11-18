@@ -3,13 +3,13 @@ package com.bliblifuture.hrisbackend.command.impl;
 import com.blibli.oss.command.exception.CommandValidationException;
 import com.bliblifuture.hrisbackend.command.ClockInCommand;
 import com.bliblifuture.hrisbackend.constant.AttendanceConfig;
+import com.bliblifuture.hrisbackend.constant.AttendanceLocationType;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.Office;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
-import com.bliblifuture.hrisbackend.constant.AttendanceLocationType;
 import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.OfficeRepository;
@@ -28,7 +28,6 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class ClockInCommandImpl implements ClockInCommand {
@@ -107,16 +106,16 @@ public class ClockInCommandImpl implements ClockInCommand {
 
     @SneakyThrows
     private Attendance createAttendance(User user, AttendanceRequest request) {
-        Date dateWithOffset = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
-        String startDate = dateWithOffset.getDate() - 1 + "/" + dateWithOffset.getMonth() + "/" + dateWithOffset.getYear();
+        Date date = new Date();
+        String dateString = date.getDate() + "/" + date.getMonth() + 1 + "/" + date.getYear() + 1900;
 
-        String startTime = " 17:00:00";
-        Date currentStartOfDate = new SimpleDateFormat("dd/MM/yy HH:mm:ss")
-                .parse(startDate + startTime);
+        String startTime = " 00:00:00";
+        Date startOfDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+                .parse(dateString + startTime);
 
         Attendance attendance = Attendance.builder()
                 .employeeId(user.getEmployeeId())
-                .date(currentStartOfDate)
+                .date(startOfDate)
                 .startTime(new Date())
                 .endTime(null)
                 .startLat(request.getLocation().getLat())

@@ -17,19 +17,9 @@ import reactor.core.publisher.Mono;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
-    private DepartmentRepository departmentRepository;
 
     @Autowired
     private LeaveRepository leaveRepository;
@@ -43,11 +33,11 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
     @SneakyThrows
     @Override
     public Mono<LeavesReportResponse> execute(String employeeId) {
-        Date currentDate = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
-        int year = currentDate.getYear();
+        Date currentDate = new Date();
+        int year = currentDate.getYear() + 1899;
 
         Date lastTimeOfLastYear = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
-                .parse("31/12/" + (year - 1) + " 16:59:59");
+                .parse("31/12/" + year + " 23:59:59");
 
         String theYear = String.valueOf(year);
 
@@ -55,9 +45,9 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
 
         return employeeLeaveSummaryRepository.findByYearAndEmployeeId(theYear, employeeId)
                 .switchIfEmpty(Mono.just(createLeaveSummary(employeeId, theYear)))
-                .doOnSuccess(report -> checkNewEntity(report))
+                .doOnSuccess(this::checkNewEntity)
                 .map(employeeLeaveSummary -> setLeavesData(employeeLeaveSummary, response))
-                .flatMap(res -> attendanceRepository.countByDateAfter(lastTimeOfLastYear))
+                .flatMap(res -> attendanceRepository.countByEmployeeIdAndDateAfter(employeeId, lastTimeOfLastYear))
                 .flatMap(attendance -> {
                     response.setAttendance(attendance);
                     return leaveRepository.findByEmployeeIdAndExpDateAfterAndTypeOrType(employeeId, lastTimeOfLastYear, LeaveType.annual, LeaveType.extra)
@@ -88,26 +78,20 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
     }
 
     private void checkNewEntity(EmployeeLeaveSummary report) {
-        report.setId("ELS-" + report.getEmployeeId() + "-" + report.getYear());
-        report.setCreatedBy("SYSTEM");
-        report.setUpdatedBy("SYSTEM");
-        Date date = new Date();
-        report.setCreatedDate(date);
-        report.setUpdatedDate(date);
+        if (report.getId() == null){
+            report.setId("ELS-" + report.getEmployeeId() + "-" + report.getYear());
+            report.setCreatedBy("SYSTEM");
+            report.setUpdatedBy("SYSTEM");
+            Date date = new Date();
+            report.setCreatedDate(date);
+            report.setUpdatedDate(date);
 
-        employeeLeaveSummaryRepository.save(report).subscribe();
+            employeeLeaveSummaryRepository.save(report).subscribe();
+        }
     }
 
     private EmployeeLeaveSummary createLeaveSummary(String employeeId, String year) {
         return EmployeeLeaveSummary.builder()
-                .childBaptism(0)
-                .childBirth(0)
-                .childCircumsion(0)
-                .closeFamilyDeath(0)
-                .hajj(0)
-                .mainFamilyDeath(0)
-                .maternity(0)
-                .sick(0)
                 .year(year)
                 .employeeId(employeeId)
                 .build();

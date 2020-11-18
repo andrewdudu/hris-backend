@@ -15,7 +15,6 @@ import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class ClockOutCommandImpl implements ClockOutCommand {
@@ -55,14 +54,14 @@ public class ClockOutCommandImpl implements ClockOutCommand {
 
     @SneakyThrows
     private Mono<Attendance> getTodayAttendance(User user) {
-        Date dateWithOffset = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
-        String startDate = dateWithOffset.getDate() - 1 + "/" + dateWithOffset.getMonth() + "/" + dateWithOffset.getYear();
+        Date date = new Date();
+        String dateString = date.getDate() + "/" + date.getMonth() + 1 + "/" + date.getYear() + 1900;
 
-        String startTime = " 17:00:00";
-        Date currentStartOfDate = new SimpleDateFormat("dd/MM/yy HH:mm:ss")
-                .parse(startDate + startTime);
+        String startTime = " 00:00:00";
+        Date startOfDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+                .parse(dateString + startTime);
 
-        return attendanceRepository.findFirstByEmployeeIdAndDate(user.getEmployeeId(), currentStartOfDate)
+        return attendanceRepository.findFirstByEmployeeIdAndDate(user.getEmployeeId(), startOfDate)
                 .map(this::checkValidity);
     }
 

@@ -1,11 +1,14 @@
 package com.bliblifuture.hrisbackend.model.entity;
 
 import com.bliblifuture.hrisbackend.constant.RequestLeaveStatus;
+import com.bliblifuture.hrisbackend.constant.RequestType;
+import com.bliblifuture.hrisbackend.constant.SpecialLeaveType;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.Date;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
 @Document(collection = "leave")
@@ -22,13 +25,16 @@ public class RequestLeave extends BaseEntity {
     private String note;
 
     @Field(name = "type")
-    private String type;
+    private RequestType type;
+
+    @Field(name = "special_request_type")
+    private SpecialLeaveType specialLeaveType;
 
     @Field(name = "detail")
     private String detail;
 
-    @Field(name = "date")
-    private Date date;
+    @Field(name = "dates")
+    private List<Date> dates;
 
     @Field(name = "file")
     private String file;

@@ -4,7 +4,7 @@ import com.bliblifuture.hrisbackend.command.GetAnnouncementCommand;
 import com.bliblifuture.hrisbackend.model.request.PagingRequest;
 import com.bliblifuture.hrisbackend.model.response.AnnouncementResponse;
 import com.bliblifuture.hrisbackend.model.response.PagingResponse;
-import com.bliblifuture.hrisbackend.repository.*;
+import com.bliblifuture.hrisbackend.repository.EventRepository;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -14,7 +14,6 @@ import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
@@ -28,13 +27,11 @@ public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         PagingResponse<AnnouncementResponse> response = new PagingResponse<>();
 
-//        LocalDate localDate = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
-        Date currentDate = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(7));
-        int year = currentDate.getYear();
+        Date currentDate = new Date();
+        int year = currentDate.getYear() + 1899;
 
         Date lastTimeOfLastYear = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
-                .parse("31/12/" + (String.valueOf(year-1)) + " 16:59:59");
+                .parse("31/12/" + year + " 23:59:59");
 
         return eventRepository.findAllByDateAfterOrderByDateAsc(lastTimeOfLastYear, pageable)
                 .map(events -> events.createResponse(events, new AnnouncementResponse()))
