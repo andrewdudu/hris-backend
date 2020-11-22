@@ -1,5 +1,6 @@
 package com.bliblifuture.hrisbackend.model.request;
 
+import com.bliblifuture.hrisbackend.model.request.util.LocationRequest;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -9,17 +10,11 @@ import javax.validation.constraints.NotBlank;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestAttendanceRequest extends BaseRequest{
+public class ClockInClockOutRequest extends BaseRequest{
+
+    private String image;
 
     @NotBlank
-    private String date;
-
-    @NotBlank
-    private String ClockIn;
-
-    @NotBlank
-    private String ClockOut;
-
-    private String notes;
+    private LocationRequest location;
 
 }

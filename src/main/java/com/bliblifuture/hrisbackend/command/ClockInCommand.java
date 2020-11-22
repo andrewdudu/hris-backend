@@ -1,9 +1,9 @@
 package com.bliblifuture.hrisbackend.command;
 
 import com.blibli.oss.command.Command;
-import com.bliblifuture.hrisbackend.model.request.AttendanceRequest;
-import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
+import com.bliblifuture.hrisbackend.model.request.ClockInClockOutRequest;
+import com.bliblifuture.hrisbackend.model.response.ClockInClockOutResponse;
 
-public interface ClockInCommand extends Command<AttendanceRequest, AttendanceResponse> {
+public interface ClockInCommand extends Command<ClockInClockOutRequest, ClockInClockOutResponse> {
 
 }

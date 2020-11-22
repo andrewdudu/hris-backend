@@ -3,11 +3,12 @@ package com.bliblifuture.hrisbackend.command.impl;
 import com.bliblifuture.hrisbackend.command.ClockOutCommand;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.User;
-import com.bliblifuture.hrisbackend.model.request.AttendanceRequest;
-import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
+import com.bliblifuture.hrisbackend.model.request.ClockInClockOutRequest;
+import com.bliblifuture.hrisbackend.model.response.ClockInClockOutResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
+import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,8 +26,11 @@ public class ClockOutCommandImpl implements ClockOutCommand {
     @Autowired
     private AttendanceRepository attendanceRepository;
 
+    @Autowired
+    private DateUtil dateUtil;
+
     @Override
-    public Mono<AttendanceResponse> execute(AttendanceRequest request) {
+    public Mono<ClockInClockOutResponse> execute(ClockInClockOutRequest request) {
         return Mono.fromCallable(request::getRequester)
                 .flatMap(username -> userRepository.findByUsername(username))
                 .flatMap(this::getTodayAttendance)
@@ -35,17 +39,17 @@ public class ClockOutCommandImpl implements ClockOutCommand {
                 .map(this::createResponse);
     }
 
-    private Attendance updateAttendance(Attendance attendance, AttendanceRequest request) {
+    private Attendance updateAttendance(Attendance attendance, ClockInClockOutRequest request) {
         attendance.setEndLat(request.getLocation().getLat());
         attendance.setEndLon(request.getLocation().getLon());
-        attendance.setEndTime(new Date());
+        attendance.setEndTime(dateUtil.getNewDate());
 
         return attendance;
     }
 
-    private AttendanceResponse createResponse(Attendance attendance) {
+    private ClockInClockOutResponse createResponse(Attendance attendance) {
         LocationResponse locationResponse = LocationResponse.builder().lat(attendance.getStartLat()).lon(attendance.getStartLon()).build();
-        AttendanceResponse response = AttendanceResponse.builder()
+        ClockInClockOutResponse response = ClockInClockOutResponse.builder()
                 .locationResponse(locationResponse)
                 .build();
 
@@ -54,7 +58,7 @@ public class ClockOutCommandImpl implements ClockOutCommand {
 
     @SneakyThrows
     private Mono<Attendance> getTodayAttendance(User user) {
-        Date date = new Date();
+        Date date = dateUtil.getNewDate();
         String dateString = date.getDate() + "/" + date.getMonth() + 1 + "/" + date.getYear() + 1900;
 
         String startTime = " 00:00:00";

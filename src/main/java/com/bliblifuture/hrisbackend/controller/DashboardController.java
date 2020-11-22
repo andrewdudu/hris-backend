@@ -6,7 +6,6 @@ import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.GetDashboardSummaryCommand;
 import com.bliblifuture.hrisbackend.model.response.DashboardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcProperties;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +17,7 @@ import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/dashboard")
-public class DashboardController extends WebMvcProperties {
+public class DashboardController {
 
     @Autowired
     private CommandExecutor commandExecutor;

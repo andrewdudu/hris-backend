@@ -1,7 +1,7 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAvailableRequestsCommand;
-import com.bliblifuture.hrisbackend.constant.RequestType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.Employee;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
@@ -58,13 +58,13 @@ public class GetAvailableRequestsCommandImplTests {
                 .joinDate(joinDate)
                 .build();
 
-        List<RequestType> expected = new ArrayList<>();
-        expected.add(RequestType.ATTENDANCE);
-        expected.add(RequestType.ANNUAL_LEAVE);
-        expected.add(RequestType.SPECIAL_LEAVE);
-        expected.add(RequestType.SUBTITUTE_LEAVE);
-        expected.add(RequestType.EXTRA_LEAVE);
-        expected.add(RequestType.EXTEND_ANNUAL_LEAVE);
+        List<RequestLeaveType> expected = new ArrayList<>();
+        expected.add(RequestLeaveType.ATTENDANCE);
+        expected.add(RequestLeaveType.ANNUAL_LEAVE);
+        expected.add(RequestLeaveType.SPECIAL_LEAVE);
+        expected.add(RequestLeaveType.SUBTITUTE_LEAVE);
+        expected.add(RequestLeaveType.EXTRA_LEAVE);
+        expected.add(RequestLeaveType.EXTEND_ANNUAL_LEAVE);
 
         Mockito.when(employeeRepository.findByEmail(user.getUsername()))
                 .thenReturn(Mono.just(employee));

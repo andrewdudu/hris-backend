@@ -1,7 +1,7 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAvailableRequestsCommand;
-import com.bliblifuture.hrisbackend.constant.RequestType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.Employee;
 import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
@@ -26,18 +26,18 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
     private DateUtil dateUtil;
 
     @Override
-    public Mono<List<RequestType>> execute(String username) {
+    public Mono<List<RequestLeaveType>> execute(String username) {
         return employeeRepository.findByEmail(username)
                 .map(this::getResponse);
     }
 
     @SneakyThrows
-    private List<RequestType> getResponse(Employee employee){
-        List<RequestType> response = new ArrayList<>();
-        response.add(RequestType.ATTENDANCE);
-        response.add(RequestType.ANNUAL_LEAVE);
-        response.add(RequestType.SPECIAL_LEAVE);
-        response.add(RequestType.SUBTITUTE_LEAVE);
+    private List<RequestLeaveType> getResponse(Employee employee){
+        List<RequestLeaveType> response = new ArrayList<>();
+        response.add(RequestLeaveType.ATTENDANCE);
+        response.add(RequestLeaveType.ANNUAL_LEAVE);
+        response.add(RequestLeaveType.SPECIAL_LEAVE);
+        response.add(RequestLeaveType.SUBTITUTE_LEAVE);
 
         Date currentDate = dateUtil.getNewDate();
 
@@ -49,11 +49,11 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
         Date dateToGetExtraLeave = new SimpleDateFormat("dd/MM/yyyy").parse(date + "/" + month + "/" + (year+3));
 
         if (currentDate.after(dateToGetExtraLeave)){
-            response.add(RequestType.EXTRA_LEAVE);
+            response.add(RequestLeaveType.EXTRA_LEAVE);
         }
 
         if (currentDate.getMonth() == Calendar.DECEMBER) {
-            response.add(RequestType.EXTEND_ANNUAL_LEAVE);
+            response.add(RequestLeaveType.EXTEND_ANNUAL_LEAVE);
         }
 
         return response;

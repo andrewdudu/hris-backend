@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestAttendanceResponse extends BaseResponse{
+public class AttendanceRequestResponse extends BaseResponse{
 
     private String date;
 

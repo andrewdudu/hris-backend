@@ -1,10 +1,12 @@
 package com.bliblifuture.hrisbackend.config;
 
 import com.bliblifuture.hrisbackend.model.entity.User;
+import com.bliblifuture.hrisbackend.util.DateUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +27,9 @@ public class JwtTokenUtil implements Serializable {
     private String jwtSecret;
 
     private Key key;
+
+    @Autowired
+    private DateUtil dateUtil;
 
     @PostConstruct
     public void init(){
@@ -52,10 +57,10 @@ public class JwtTokenUtil implements Serializable {
 
     private Boolean isTokenExpired(String token){
         try{
-            return getExpirationDateFromToken(token).before(new Date());
+            return getExpirationDateFromToken(token).before(dateUtil.getNewDate());
         }
         catch (ExpiredJwtException e){
-            return e.getClaims().getExpiration().before(new Date());
+            return e.getClaims().getExpiration().before(dateUtil.getNewDate());
         }
     }
 

@@ -1,13 +1,14 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetLeavesReportCommand;
-import com.bliblifuture.hrisbackend.constant.LeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
 import com.bliblifuture.hrisbackend.model.entity.EmployeeLeaveSummary;
 import com.bliblifuture.hrisbackend.model.entity.Leave;
 import com.bliblifuture.hrisbackend.model.response.LeavesReportResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LeaveQuotaResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LeavesDataResponse;
 import com.bliblifuture.hrisbackend.repository.*;
+import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +31,13 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
     @Autowired
     private EmployeeLeaveSummaryRepository employeeLeaveSummaryRepository;
 
+    @Autowired
+    private DateUtil dateUtil;
+
     @SneakyThrows
     @Override
     public Mono<LeavesReportResponse> execute(String employeeId) {
-        Date currentDate = new Date();
+        Date currentDate = dateUtil.getNewDate();
         int year = currentDate.getYear() + 1899;
 
         Date lastTimeOfLastYear = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
@@ -82,7 +86,7 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
             report.setId("ELS-" + report.getEmployeeId() + "-" + report.getYear());
             report.setCreatedBy("SYSTEM");
             report.setUpdatedBy("SYSTEM");
-            Date date = new Date();
+            Date date = dateUtil.getNewDate();
             report.setCreatedDate(date);
             report.setUpdatedDate(date);
 

@@ -1,15 +1,16 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetDashboardSummaryCommand;
-import com.bliblifuture.hrisbackend.constant.RequestStatus;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.DailyAttendanceReport;
 import com.bliblifuture.hrisbackend.model.entity.Event;
 import com.bliblifuture.hrisbackend.model.entity.User;
-import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
+import com.bliblifuture.hrisbackend.model.response.ClockInClockOutResponse;
 import com.bliblifuture.hrisbackend.model.response.DashboardResponse;
 import com.bliblifuture.hrisbackend.model.response.util.*;
 import com.bliblifuture.hrisbackend.repository.*;
+import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -38,7 +39,10 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     private EventRepository eventRepository;
 
     @Autowired
-    private RequestRepository requestRepository;
+    private LeaveRequestRepository leaveRequestRepository;
+
+    @Autowired
+    private DateUtil dateUtil;
 
     @Override
     public Mono<DashboardResponse> execute(String username) {
@@ -48,8 +52,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
 
     @SneakyThrows
     private Mono<DashboardResponse> getResponse(User user) {
-
-        Date now = new Date();
+        Date now = dateUtil.getNewDate();
         String startDate = now.getDate() + "/" + now.getMonth()+1 + "/" + now.getYear()+1900;
 
         String startTime = " 00:00:00";
@@ -83,7 +86,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                         return eventRepository.findByDate(startOfDate);
                     })
                     .map(event -> setCalendarResponse(startOfDate, response, event))
-                    .flatMap(res -> requestRepository.countByCreatedDateAfterAndStatus(startOfDate, RequestStatus.PENDING))
+                    .flatMap(res -> leaveRequestRepository.countByCreatedDateAfterAndStatus(startOfDate, RequestStatus.REQUESTED))
                     .map(totalIncomingRequest -> {
                         response.getRequestResponse().setIncoming(totalIncomingRequest);
                         return response;
@@ -100,7 +103,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
 
     private void checkNewEntity(DailyAttendanceReport report) {
         if (report.getId() == null){
-            Date date = new Date();
+            Date date = dateUtil.getNewDate();
             report.setCreatedBy("SYSTEM");
             report.setCreatedDate(date);
             report.setUpdatedBy("SYSTEM");
@@ -115,8 +118,8 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
         AttendanceTimeResponse date = AttendanceTimeResponse.builder().build();
         LocationResponse locationResponse = LocationResponse.builder().build();
 
-        AttendanceResponse current = AttendanceResponse.builder().attendance(date).locationResponse(locationResponse).build();
-        AttendanceResponse latest = AttendanceResponse.builder().attendance(date).locationResponse(locationResponse).build();
+        ClockInClockOutResponse current = ClockInClockOutResponse.builder().attendance(date).locationResponse(locationResponse).build();
+        ClockInClockOutResponse latest = ClockInClockOutResponse.builder().attendance(date).locationResponse(locationResponse).build();
 
         if (res.get(0).getStartTime().before(currentStartDate)){
             Attendance latestAttendance = res.get(0);

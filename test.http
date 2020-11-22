@@ -1,12 +1,35 @@
-GET http://localhost:8080/users/test
+POST http://localhost:8080/api/dummy/create-user
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "user",
+  "password": "pass",
+  "employeeId": "ADMIN123",
+  "roles": ["ADMIN", "USER"]
+}
+
+###
+GET http://localhost:8080/api/users/test
 Accept: application/json
 
 ###
-GET http://localhost:8080/users/get-test
+GET http://localhost:8080/api/users/get-test
 Content-Type: application/json
-Set-Cookie: userToken=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxNjA0MzA2NTM3LCJleHAiOjE2MDQzNjY1Mzd9.9PHHYf7dcjWKyRUE_9xwTdPsOPtv0mP_MB5lJd99gz5-t1JeR4AWgamnC-yph5J4R039xk6b2hBsJ4scCR3sjg; Max-Age=18000; Expires=Thu, 29 Oct 2020 19:57:30 GMT;
-
+Set-Cookie: userToken=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxNjA1Njk5ODk1LCJleHAiOjE2MDU3NTk4OTV9.eFEuWGupIHzrsncW7apeMsa6YBJJiu7cpZF78NK1qkY_3WEf9vILNNe6SpUKvqtDMk_9mHrrqPEDoZhPnir3iQ; Max-Age=18000; Expires=Wed, 18 Nov 2020 16:44:55 GMT; Secure; HttpOnly
 ###
 GET http://localhost:8080/api/users/get-test
+
+###
+POST http://localhost:8080/api/request/leaves
+Content-Type: application/json
+Accept: application/json
+
+{
+  "dates": ["1/1/2020", "2/1/2020"],
+  "files": ["asasdad"],
+  "notes": "notes",
+  "type": "SPECIAL_LEAVE"
+}
 
 ###

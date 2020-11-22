@@ -28,7 +28,7 @@ import java.util.List;
 
 @RunWith(SpringRunner.class)
 @WebFluxTest(controllers = UserController.class)
-public class UserControllerTests {
+public class RequestControllerTests {
 
     @MockBean
     private CommandExecutor commandExecutor;

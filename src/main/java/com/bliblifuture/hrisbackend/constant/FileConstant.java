@@ -8,4 +8,8 @@ public class FileConstant {
 
     public final static String IMAGE_ATTENDANCE_BASE_URL = "/api/attendances/image/";
 
+    public final static String REQUEST_FILE_PATH = FileConstant.BASE_STORAGE_PATH + "\\request-file\\";
+
+    public final static String REQUEST_FILE_BASE_URL = "/api/request/file/";
+
 }

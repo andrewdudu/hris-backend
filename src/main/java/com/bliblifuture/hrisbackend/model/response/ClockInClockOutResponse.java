@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AttendanceResponse extends BaseResponse{
+public class ClockInClockOutResponse extends BaseResponse{
 
     private AttendanceTimeResponse attendance;
 
