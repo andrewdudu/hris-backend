@@ -3,7 +3,6 @@ package com.bliblifuture.hrisbackend.command.impl.helper;
 import com.blibli.oss.command.exception.CommandValidationException;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
-import com.bliblifuture.hrisbackend.util.DateUtil;
 import sun.misc.BASE64Decoder;
 
 import java.io.IOException;
@@ -16,19 +15,15 @@ import java.util.List;
 
 public class FileHelper {
 
-    public static String getExtension(String base64){
-        String[] fileData = base64.split(",");
-        String[] dataURI = fileData[0].split("/");
-        String[] typeBase64 = dataURI[1].split(";");
-
-        return "." + typeBase64[0];
-    }
-
-    public static List<String> saveFiles(LeaveRequestData data, String employeeId) {
-        DateUtil dateUtil = new DateUtil();
+    public static List<String> saveFiles(LeaveRequestData data, String employeeId, long currentDateTime) {
         List<String> filesPath = new ArrayList<>();
-        for (String base64 : data.getFiles()) {
-            String filename = data.getType() + employeeId + "_" + dateUtil.getNewDate().getTime() + getExtension(base64);
+        for (int i = 0; i < data.getFiles().size(); i++) {
+            // Format file is "extension;base64data"
+            String[] fileData = data.getFiles().get(i).split(";");
+            String extension = "." + fileData[0];
+            String base64 = fileData[1];
+
+            String filename = data.getType() + "-" + employeeId + "-" + (i+1) +"-" + currentDateTime + extension;
             String uploadPath = FileConstant.REQUEST_FILE_PATH + filename;
 
             Path path = Paths.get(uploadPath);

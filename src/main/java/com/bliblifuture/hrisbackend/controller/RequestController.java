@@ -5,7 +5,7 @@ import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.GetExtendLeaveDataCommand;
 import com.bliblifuture.hrisbackend.command.RequestAttendanceCommand;
-import com.bliblifuture.hrisbackend.command.RequestExtendLeaveDataCommand;
+import com.bliblifuture.hrisbackend.command.RequestExtendLeaveCommand;
 import com.bliblifuture.hrisbackend.command.RequestLeaveCommand;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
@@ -45,7 +45,6 @@ public class RequestController {
                 .subscribeOn(Schedulers.elastic());
     }
 
-    @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping("/extend-leave")
     public Mono<Response<ExtendLeaveResponse>> getExtendLeaveData(Principal principal){
         return commandExecutor.execute(GetExtendLeaveDataCommand.class, principal.getName())
@@ -57,7 +56,7 @@ public class RequestController {
     @PostMapping("/extend-leave")
     public Mono<Response<ExtendLeaveResponse>> requestExtendLeave(@RequestBody LeaveRequestData request, Principal principal){
         request.setRequester(principal.getName());
-        return commandExecutor.execute(RequestExtendLeaveDataCommand.class, request)
+        return commandExecutor.execute(RequestExtendLeaveCommand.class, request)
                 .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());
     }

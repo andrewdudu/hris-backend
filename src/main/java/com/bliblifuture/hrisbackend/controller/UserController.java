@@ -4,7 +4,6 @@ import com.blibli.oss.command.CommandExecutor;
 import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.*;
-import com.bliblifuture.hrisbackend.config.JwtTokenUtil;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
 import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
@@ -30,9 +29,6 @@ public class UserController extends WebMvcProperties {
 
     @Autowired
     private CommandExecutor commandExecutor;
-
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping("/current-user")

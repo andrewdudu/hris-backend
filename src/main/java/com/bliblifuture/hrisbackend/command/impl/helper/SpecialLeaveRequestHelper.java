@@ -14,17 +14,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class SpecialLeaveRequestHelper extends RequestHelper {
+public class SpecialLeaveRequestHelper {
 
-    @Override
-    public Mono<LeaveRequest> processRequest(LeaveRequestData data, User user){
-        return Mono.fromCallable(() -> createRequest(data, user.getEmployeeId()));
+    public Mono<LeaveRequest> processRequest(LeaveRequestData data, User user, long currentDateTime){
+        return Mono.fromCallable(() -> createRequest(data, user.getEmployeeId(), currentDateTime));
     }
 
-    private LeaveRequest createRequest(LeaveRequestData data, String employeeId) {
+    private LeaveRequest createRequest(LeaveRequestData data, String employeeId, long currentDateTime) {
         if (data.getType().equals(SpecialLeaveType.SICK.toString())){
             if (data.getDates().size() > 1){
-                throw new IllegalArgumentException("INVALID_REQUEST");
+                throw new IllegalArgumentException("INVALID");
             }
         }
 
@@ -48,12 +47,13 @@ public class SpecialLeaveRequestHelper extends RequestHelper {
                 .status(RequestStatus.REQUESTED)
                 .build();
 
+        leaveRequest.setId(leaveRequest.getSpecialLeaveType().toString() + "-" + leaveRequest.getEmployeeId() + "-" + currentDateTime);
+
         if (data.getFiles() != null){
-            List<String> files = FileHelper.saveFiles(data, employeeId);
+            List<String> files = FileHelper.saveFiles(data, employeeId, currentDateTime);
             leaveRequest.setFiles(files);
         }
 
         return leaveRequest;
     }
-
 }

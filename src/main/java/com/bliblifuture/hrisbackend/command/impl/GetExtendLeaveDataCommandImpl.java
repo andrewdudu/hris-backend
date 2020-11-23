@@ -57,7 +57,9 @@ public class GetExtendLeaveDataCommandImpl implements GetExtendLeaveDataCommand 
             if (currentDate.getMonth() == 11){
                 response.setStatus(RequestStatus.AVAILABLE);
             }
-            response.setStatus(RequestStatus.UNAVAILABLE);
+            else {
+                response.setStatus(RequestStatus.UNAVAILABLE);
+            }
         }
         return response;
     }

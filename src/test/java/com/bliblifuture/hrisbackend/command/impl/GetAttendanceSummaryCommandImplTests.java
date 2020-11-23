@@ -1,15 +1,18 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAttendanceSummaryCommand;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
-import com.bliblifuture.hrisbackend.model.entity.Employee;
 import com.bliblifuture.hrisbackend.model.entity.EmployeeLeaveSummary;
 import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
-import com.bliblifuture.hrisbackend.repository.*;
+import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
+import com.bliblifuture.hrisbackend.repository.EmployeeLeaveSummaryRepository;
+import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
+import com.bliblifuture.hrisbackend.repository.UserRepository;
+import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,10 +27,13 @@ import reactor.core.publisher.Mono;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 @RunWith(SpringRunner.class)
-public class GetAttendaceSummaryCommandImplTests {
+public class GetAttendanceSummaryCommandImplTests {
 
     @TestConfiguration
     static class command{
@@ -52,6 +58,9 @@ public class GetAttendaceSummaryCommandImplTests {
     @MockBean
     private LeaveRequestRepository leaveRequestRepository;
 
+    @MockBean
+    private DateUtil dateUtil;
+
     @Test
     public void test_execute() throws ParseException {
 
@@ -60,22 +69,22 @@ public class GetAttendaceSummaryCommandImplTests {
                 .employeeId("ID-123")
                 .build();
 
-        Employee employee = Employee.builder()
-                .name("name")
-                .email(user.getUsername())
-                .build();
-
         Mockito.when(userRepository.findByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
-        Date startOfCurrentMonth = new SimpleDateFormat("dd/MM/yyyy").parse("1/11/2020");
+        Date currentDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-11-15");
+
+        Mockito.when(dateUtil.getNewDate())
+                .thenReturn(currentDate);
+
+        Date startOfCurrentMonth = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-11-1");
 
         Integer thisMonthAttendance = 15;
 
         Mockito.when(attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentMonth))
                 .thenReturn(Mono.just(thisMonthAttendance));
 
-        Date startOfCurrentYear = new SimpleDateFormat("dd/MM/yyyy").parse("1/1/2020");
+        Date startOfCurrentYear = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-1-1");
 
         Integer thisYearAttendance = 215;
 
@@ -137,6 +146,7 @@ public class GetAttendaceSummaryCommandImplTests {
                     }
                 });
 
+        Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(attendanceRepository, Mockito.times(1)).countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentMonth);
         Mockito.verify(attendanceRepository, Mockito.times(1)).countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentYear);
         Mockito.verify(leaveRequestRepository, Mockito.times(1)).findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId());

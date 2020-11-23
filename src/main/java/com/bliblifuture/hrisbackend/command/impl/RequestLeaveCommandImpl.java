@@ -3,10 +3,13 @@ package com.bliblifuture.hrisbackend.command.impl;
 import com.bliblifuture.hrisbackend.command.RequestLeaveCommand;
 import com.bliblifuture.hrisbackend.command.impl.helper.*;
 import com.bliblifuture.hrisbackend.constant.LeaveTypeConstant;
+import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.LeaveRequestResponse;
+import com.bliblifuture.hrisbackend.repository.LeaveRepository;
 import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
@@ -16,7 +19,6 @@ import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -29,6 +31,12 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
     @Autowired
     private LeaveRequestRepository leaveRequestRepository;
 
+    @Autowired
+    private LeaveRepository leaveRepository;
+
+    @Autowired
+    private DateUtil dateUtil;
+
     @Override
     public Mono<LeaveRequestResponse> execute(LeaveRequestData request) {
         return userRepository.findByUsername(request.getRequester())
@@ -38,17 +46,19 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
     }
 
     private Mono<LeaveRequest> callHelper(LeaveRequestData request, User user) {
-        RequestHelper helper;
+        long currentDateTime = dateUtil.getNewDate().getTime();
         switch (request.getType()){
             case LeaveTypeConstant.ANNUAL_LEAVE:
-                helper = new AnnualLeaveRequestHelper();
-                break;
+                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(user.getEmployeeId(), LeaveType.annual, dateUtil.getNewDate())
+                        .collectList()
+                        .map(leaves -> new AnnualLeaveRequestHelper().processRequest(request, user, leaves, currentDateTime));
             case LeaveTypeConstant.SUBTITUTE_LEAVE:
-                helper = new SubtituteLeaveRequestHelper();
-                break;
+                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(user.getEmployeeId(), LeaveType.subtitute, dateUtil.getNewDate(), 0)
+                        .collectList()
+                        .map(leaves -> new SubtituteLeaveRequestHelper().processRequest(request, user, leaves, currentDateTime));
             case LeaveTypeConstant.EXTRA_LEAVE:
-                helper = new ExtraLeaveRequestHelper();
-                break;
+                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfter(user.getEmployeeId(), LeaveType.extra, dateUtil.getNewDate())
+                        .map(leave -> new ExtraLeaveRequestHelper().processRequest(request, user, leave, currentDateTime));
             case LeaveTypeConstant.CHILD_BAPTISM:
             case LeaveTypeConstant.CHILD_CIRCUMSION:
             case LeaveTypeConstant.CHILDBIRTH:
@@ -60,12 +70,10 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
             case LeaveTypeConstant.SICK:
             case LeaveTypeConstant.SICK_WITH_MEDICAL_LETTER:
             case LeaveTypeConstant.UNPAID_LEAVE:
-                helper = new SpecialLeaveRequestHelper();
-                break;
+                return new SpecialLeaveRequestHelper().processRequest(request, user, currentDateTime);
             default:
                 throw new IllegalArgumentException("INVALID_REQUEST");
         }
-        return helper.processRequest(request, user);
     }
 
     private static LeaveRequestResponse createResponse(LeaveRequest leaveRequest) {
@@ -75,12 +83,20 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
             dates.add(date);
         }
 
-        return LeaveRequestResponse
-                .builder()
-                .files(Collections.singletonList(""))
+        LeaveRequestResponse response = LeaveRequestResponse.builder()
+                .files(leaveRequest.getFiles())
                 .dates(dates)
                 .notes(leaveRequest.getNotes())
                 .build();
+        if (leaveRequest.getType().equals(RequestLeaveType.SPECIAL_LEAVE)){
+            response.setType(leaveRequest.getSpecialLeaveType().toString());
+        }
+        else {
+            response.setType(leaveRequest.getType().toString());
+        }
+        response.setId(leaveRequest.getId());
+
+        return response;
     }
 
 }

@@ -22,10 +22,10 @@ public class AttendanceRequest extends BaseEntity {
     private Date date;
 
     @Field(name = "clock_in")
-    private String clockIn;
+    private Date clockIn;
 
     @Field(name = "clock_out")
-    private String clockOut;
+    private Date clockOut;
 
     @Field(name = "notes")
     private String notes;

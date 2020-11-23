@@ -37,27 +37,36 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
 
     private AttendanceRequestResponse createResponse(AttendanceRequest attendanceRequest) {
         String date = new SimpleDateFormat(DateUtil.DATE_FORMAT).format(attendanceRequest.getDate());
-        AttendanceRequestResponse response = AttendanceRequestResponse
-                .builder()
+        String clockIn = new SimpleDateFormat(DateUtil.TIME_FORMAT).format(attendanceRequest.getClockIn());
+        String clockOut = new SimpleDateFormat(DateUtil.TIME_FORMAT).format(attendanceRequest.getClockOut());
+
+        AttendanceRequestResponse response = AttendanceRequestResponse.builder()
                 .date(date)
-                .ClockIn(attendanceRequest.getClockIn())
-                .ClockOut(attendanceRequest.getClockOut())
+                .ClockIn(clockIn)
+                .ClockOut(clockOut)
                 .notes(attendanceRequest.getNotes())
                 .build();
+        response.setId(attendanceRequest.getId());
+
         return response;
     }
 
     private AttendanceRequest createRequestEntity(AttendanceRequestData data, String employeeId){
-        Date date;
+        Date clockIn, clockOut, date;
         try {
-            date = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(data.getDate());
+            clockIn = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                    .parse(data.getDate() + " " + data.getClockIn() + ":00");
+            clockOut = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                    .parse(data.getDate() + " " + data.getClockOut() + ":00");
+            date = new SimpleDateFormat(DateUtil.DATE_FORMAT)
+                    .parse(data.getDate());
         }
         catch (Exception e){
-            throw new IllegalArgumentException("INVALID");
+            throw new IllegalArgumentException("INVALID_FORMAT");
         }
         AttendanceRequest request = AttendanceRequest.builder()
-                .clockIn(data.getClockIn())
-                .clockOut(data.getClockOut())
+                .clockIn(clockIn)
+                .clockOut(clockOut)
                 .date(date)
                 .notes(data.getNotes())
                 .status(RequestStatus.REQUESTED)

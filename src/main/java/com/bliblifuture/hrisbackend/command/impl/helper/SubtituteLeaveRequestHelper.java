@@ -1,37 +1,23 @@
 package com.bliblifuture.hrisbackend.command.impl.helper;
 
-import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
+import com.bliblifuture.hrisbackend.model.entity.Leave;
 import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
-import com.bliblifuture.hrisbackend.repository.LeaveRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class SubtituteLeaveRequestHelper extends RequestHelper {
+public class SubtituteLeaveRequestHelper {
 
-    @Autowired
-    private LeaveRepository leaveRepository;
-
-    @Autowired
-    private DateUtil dateUtil;
-
-    @Override
-    public Mono<LeaveRequest> processRequest(LeaveRequestData data, User user){
-        return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(user.getEmployeeId(), LeaveType.subtitute, dateUtil.getNewDate(), 0)
-                .collectList()
-                .map(leaves -> {
-                    checkRemainingLeave(leaves.size(), data);
-                    return createRequest(data, user.getEmployeeId());
-                });
+    public LeaveRequest processRequest(LeaveRequestData data, User user, List<Leave> leaves, long currentDateTime){
+        checkRemainingLeave(leaves.size(), data);
+        return createRequest(data, user.getEmployeeId(), currentDateTime);
     }
 
     private void checkRemainingLeave(int size, LeaveRequestData data) {
@@ -40,7 +26,7 @@ public class SubtituteLeaveRequestHelper extends RequestHelper {
         }
     }
 
-    private LeaveRequest createRequest(LeaveRequestData data, String employeeId) {
+    private LeaveRequest createRequest(LeaveRequestData data, String employeeId, long currentDateTime) {
         List<Date> dates = new ArrayList<>();
         for (String dateString : data.getDates()) {
             try {
@@ -61,7 +47,7 @@ public class SubtituteLeaveRequestHelper extends RequestHelper {
                 .build();
 
         if (data.getFiles() != null){
-            List<String> files = FileHelper.saveFiles(data, employeeId);
+            List<String> files = FileHelper.saveFiles(data, employeeId, currentDateTime);
             leaveRequest.setFiles(files);
         }
 

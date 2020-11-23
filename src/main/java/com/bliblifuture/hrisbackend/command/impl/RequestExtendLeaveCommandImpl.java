@@ -1,6 +1,6 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
-import com.bliblifuture.hrisbackend.command.RequestExtendLeaveDataCommand;
+import com.bliblifuture.hrisbackend.command.RequestExtendLeaveCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono;
 import java.util.Date;
 
 @Service
-public class RequestExtendLeaveDataCommandImpl implements RequestExtendLeaveDataCommand {
+public class RequestExtendLeaveCommandImpl implements RequestExtendLeaveCommand {
 
     @Autowired
     private UserRepository userRepository;
