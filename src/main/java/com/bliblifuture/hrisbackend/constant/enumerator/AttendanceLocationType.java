@@ -1,4 +1,4 @@
-package com.bliblifuture.hrisbackend.constant;
+package com.bliblifuture.hrisbackend.constant.enumerator;
 
 public enum AttendanceLocationType {
 

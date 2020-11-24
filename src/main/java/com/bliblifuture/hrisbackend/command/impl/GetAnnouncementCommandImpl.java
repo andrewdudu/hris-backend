@@ -5,6 +5,7 @@ import com.bliblifuture.hrisbackend.model.request.PagingRequest;
 import com.bliblifuture.hrisbackend.model.response.AnnouncementResponse;
 import com.bliblifuture.hrisbackend.model.response.PagingResponse;
 import com.bliblifuture.hrisbackend.repository.EventRepository;
+import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -21,13 +22,16 @@ public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
     @Autowired
     private EventRepository eventRepository;
 
+    @Autowired
+    private DateUtil dateUtil;
+
     @SneakyThrows
     @Override
     public Mono<PagingResponse<AnnouncementResponse>> execute(PagingRequest request) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         PagingResponse<AnnouncementResponse> response = new PagingResponse<>();
 
-        Date currentDate = new Date();
+        Date currentDate = dateUtil.getNewDate();
         int year = currentDate.getYear() + 1899;
 
         Date lastTimeOfLastYear = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")

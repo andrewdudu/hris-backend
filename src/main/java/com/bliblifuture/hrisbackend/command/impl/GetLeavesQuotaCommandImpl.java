@@ -1,13 +1,11 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetLeavesQuotaCommand;
-import com.bliblifuture.hrisbackend.constant.LeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
 import com.bliblifuture.hrisbackend.model.entity.Leave;
 import com.bliblifuture.hrisbackend.model.response.util.LeaveResponse;
-import com.bliblifuture.hrisbackend.repository.DepartmentRepository;
-import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
-import com.bliblifuture.hrisbackend.repository.UserRepository;
+import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,25 +21,19 @@ import java.util.List;
 public class GetLeavesQuotaCommandImpl implements GetLeavesQuotaCommand {
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
-    private DepartmentRepository departmentRepository;
-
-    @Autowired
     private LeaveRepository leaveRepository;
+
+    @Autowired
+    private DateUtil dateUtil;
 
     @SneakyThrows
     @Override
     public Mono<List<LeaveResponse>> execute(String employeeId) {
-        Date currentDate = new Date();
+        Date currentDate = dateUtil.getNewDate();
         int year = currentDate.getYear() + 1900;
 
-        Date startOfThisYear = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
-                .parse("1/1/" + year + " 00:00:00");
+        Date startOfThisYear = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                .parse(year + "-1-1" + " 00:00:00");
 
         return leaveRepository.findByEmployeeIdAndExpDateAfter(employeeId, startOfThisYear)
                 .collectList()

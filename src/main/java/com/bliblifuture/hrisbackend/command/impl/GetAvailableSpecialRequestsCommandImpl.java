@@ -1,7 +1,7 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAvailableSpecialRequestsCommand;
-import com.bliblifuture.hrisbackend.constant.SpecialLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.Employee;
 import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
 import lombok.SneakyThrows;

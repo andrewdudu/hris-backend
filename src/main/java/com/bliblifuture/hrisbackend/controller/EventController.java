@@ -7,7 +7,6 @@ import com.bliblifuture.hrisbackend.command.GetAnnouncementCommand;
 import com.bliblifuture.hrisbackend.model.request.PagingRequest;
 import com.bliblifuture.hrisbackend.model.response.AnnouncementResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcProperties;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/announcement")
-public class EventController extends WebMvcProperties {
+public class EventController {
 
     @Autowired
     private CommandExecutor commandExecutor;
