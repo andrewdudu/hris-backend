@@ -50,8 +50,8 @@ public class AttendanceController {
         AttendanceListRequest request = AttendanceListRequest.builder()
                 .startDate(startDate)
                 .endDate(endDate)
+                .username(principal.getName())
                 .build();
-        request.setRequester(principal.getName());
         return commandExecutor.execute(GetAttendancesCommand.class, request)
                 .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());

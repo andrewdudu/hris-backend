@@ -45,7 +45,7 @@ public class GetAttendancesCommandImpl implements GetAttendancesCommand {
 
             LocationResponse location = LocationResponse.builder()
                     .lat(attendance.getStartLat())
-                    .lon(attendance.getEndLat())
+                    .lon(attendance.getStartLon())
                     .type(attendance.getLocationType())
                     .build();
 
