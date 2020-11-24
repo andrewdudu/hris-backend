@@ -22,6 +22,6 @@ public class DashboardResponse {
 
     private CalendarResponse calendarResponse;
 
-    private List<ClockInClockOutResponse> attendance;
+    private List<AttendanceResponse> attendance;
 
 }

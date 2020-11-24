@@ -11,11 +11,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClockInClockOutResponse extends BaseResponse{
+public class AttendanceResponse extends BaseResponse{
 
-    private AttendanceTimeResponse attendance;
+    private AttendanceTimeResponse date;
 
-    private LocationResponse locationResponse;
+    private LocationResponse location;
 
     private String image;
 }

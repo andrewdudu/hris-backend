@@ -170,6 +170,7 @@ public class RequestControllerTests {
     public void getExtendLeaveDataTest() throws ParseException {
         String dateString = "2020-05-25";
         Date date = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(dateString);
+        System.out.println(date.getTime());
 
         ExtendLeaveQuotaResponse quota = ExtendLeaveQuotaResponse.builder()
                 .remaining(3)

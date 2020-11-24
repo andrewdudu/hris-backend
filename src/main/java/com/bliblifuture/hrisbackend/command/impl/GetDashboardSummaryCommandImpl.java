@@ -2,11 +2,12 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetDashboardSummaryCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
+import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.DailyAttendanceReport;
 import com.bliblifuture.hrisbackend.model.entity.Event;
 import com.bliblifuture.hrisbackend.model.entity.User;
-import com.bliblifuture.hrisbackend.model.response.ClockInClockOutResponse;
+import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.DashboardResponse;
 import com.bliblifuture.hrisbackend.model.response.util.*;
 import com.bliblifuture.hrisbackend.repository.*;
@@ -65,7 +66,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                 .calendarResponse(calendarResponse)
                 .build();
 
-        if (user.getRoles().contains("ADMIN")){
+        if (user.getRoles().contains(UserRole.ADMIN)){
             ReportResponse report = new ReportResponse();
             RequestResponse request = new RequestResponse();
             response.setReportResponse(report);
@@ -116,31 +117,31 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
 
     private DashboardResponse setAttendanceResponse(List<Attendance> res, DashboardResponse response, Date currentStartDate) {
         AttendanceTimeResponse date = AttendanceTimeResponse.builder().build();
-        LocationResponse locationResponse = LocationResponse.builder().build();
+        LocationResponse location = LocationResponse.builder().build();
 
-        ClockInClockOutResponse current = ClockInClockOutResponse.builder().attendance(date).locationResponse(locationResponse).build();
-        ClockInClockOutResponse latest = ClockInClockOutResponse.builder().attendance(date).locationResponse(locationResponse).build();
+        AttendanceResponse current = AttendanceResponse.builder().date(date).location(location).build();
+        AttendanceResponse latest = AttendanceResponse.builder().date(date).location(location).build();
 
         if (res.get(0).getStartTime().before(currentStartDate)){
             Attendance latestAttendance = res.get(0);
-            latest.getAttendance().setStart(latestAttendance.getStartTime());
-            latest.getAttendance().setEnd(latestAttendance.getEndTime());
-            latest.getLocationResponse().setType(latestAttendance.getLocation());
+            latest.getDate().setStart(latestAttendance.getStartTime());
+            latest.getDate().setEnd(latestAttendance.getEndTime());
+            latest.getLocation().setType(latestAttendance.getLocationType());
 
-            current.getAttendance().setStart(null);
-            current.getAttendance().setEnd(null);
-            current.getLocationResponse().setType(null);
+            current.getDate().setStart(null);
+            current.getDate().setEnd(null);
+            current.getLocation().setType(null);
         }
         else{
             Attendance latestAttendance = res.get(1);
-            latest.getAttendance().setStart(latestAttendance.getStartTime());
-            latest.getAttendance().setEnd(latestAttendance.getEndTime());
-            latest.getLocationResponse().setType(latestAttendance.getLocation());
+            latest.getDate().setStart(latestAttendance.getStartTime());
+            latest.getDate().setEnd(latestAttendance.getEndTime());
+            latest.getLocation().setType(latestAttendance.getLocationType());
 
             Attendance currentAttendance = res.get(0);
-            current.getAttendance().setStart(currentAttendance.getStartTime());
-            current.getAttendance().setEnd(currentAttendance.getEndTime());
-            current.getLocationResponse().setType(currentAttendance.getLocation());
+            current.getDate().setStart(currentAttendance.getStartTime());
+            current.getDate().setEnd(currentAttendance.getEndTime());
+            current.getLocation().setType(currentAttendance.getLocationType());
         }
 
         response.setAttendance(Arrays.asList(current, latest));

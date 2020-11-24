@@ -4,7 +4,7 @@ import com.bliblifuture.hrisbackend.command.ClockOutCommand;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.ClockInClockOutRequest;
-import com.bliblifuture.hrisbackend.model.response.ClockInClockOutResponse;
+import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
@@ -30,7 +30,7 @@ public class ClockOutCommandImpl implements ClockOutCommand {
     private DateUtil dateUtil;
 
     @Override
-    public Mono<ClockInClockOutResponse> execute(ClockInClockOutRequest request) {
+    public Mono<AttendanceResponse> execute(ClockInClockOutRequest request) {
         return Mono.fromCallable(request::getRequester)
                 .flatMap(username -> userRepository.findByUsername(username))
                 .flatMap(this::getTodayAttendance)
@@ -47,10 +47,10 @@ public class ClockOutCommandImpl implements ClockOutCommand {
         return attendance;
     }
 
-    private ClockInClockOutResponse createResponse(Attendance attendance) {
+    private AttendanceResponse createResponse(Attendance attendance) {
         LocationResponse locationResponse = LocationResponse.builder().lat(attendance.getStartLat()).lon(attendance.getStartLon()).build();
-        ClockInClockOutResponse response = ClockInClockOutResponse.builder()
-                .locationResponse(locationResponse)
+        AttendanceResponse response = AttendanceResponse.builder()
+                .location(locationResponse)
                 .build();
 
         return response;

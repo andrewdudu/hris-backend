@@ -19,7 +19,7 @@ public class Attendance extends BaseEntity{
     private String image;
 
     @Field(name = "location")
-    private AttendanceLocationType location;
+    private AttendanceLocationType locationType;
 
     @Field(name = "office_code")
     private String officeCode;

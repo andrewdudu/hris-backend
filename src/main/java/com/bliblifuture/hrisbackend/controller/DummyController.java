@@ -5,6 +5,7 @@ import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.config.JwtTokenUtil;
 import com.bliblifuture.hrisbackend.config.PassEncoder;
+import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
 import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
@@ -44,7 +45,7 @@ public class DummyController {
     @GetMapping("/test")
     public Mono<Response<String>> cookieTest(ServerWebExchange swe){
         User userEntity = User.builder().username("test").password("test")
-                .roles(Arrays.asList("ADMIN", "EMPLOYEE"))
+                .roles(Arrays.asList(UserRole.ADMIN, UserRole.EMPLOYEE))
                 .build();
         ResponseCookie cookie = ResponseCookie
                 .from("userToken",jwtTokenUtil.generateToken(userEntity))
