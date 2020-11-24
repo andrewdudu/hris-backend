@@ -5,8 +5,8 @@ import com.blibli.oss.common.response.Response;
 import com.bliblifuture.hrisbackend.command.GetAttendanceSummaryCommand;
 import com.bliblifuture.hrisbackend.command.GetAvailableRequestsCommand;
 import com.bliblifuture.hrisbackend.command.GetAvailableSpecialRequestsCommand;
-import com.bliblifuture.hrisbackend.constant.RequestType;
-import com.bliblifuture.hrisbackend.constant.SpecialLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
 import org.junit.Assert;
@@ -56,15 +56,15 @@ public class UserControllerTests {
 
     @Test
     public void getAvailableRequestsTest(){
-        List<RequestType> requestTypes = Arrays.asList(
-                RequestType.ANNUAL_LEAVE, RequestType.ATTENDANCE, RequestType.SPECIAL_LEAVE,
-                RequestType.SUBTITUTE_LEAVE, RequestType.EXTRA_LEAVE, RequestType.EXTEND_ANNUAL_LEAVE);
+        List<RequestLeaveType> requestLeaveTypes = Arrays.asList(
+                RequestLeaveType.ANNUAL_LEAVE, RequestLeaveType.ATTENDANCE, RequestLeaveType.SPECIAL_LEAVE,
+                RequestLeaveType.SUBTITUTE_LEAVE, RequestLeaveType.EXTRA_LEAVE, RequestLeaveType.EXTEND_ANNUAL_LEAVE);
 
         Mockito.when(commandExecutor.execute(GetAvailableRequestsCommand.class, username))
-                .thenReturn(Mono.just(requestTypes));
+                .thenReturn(Mono.just(requestLeaveTypes));
 
-        Response<List<RequestType>> expected = new Response<>();
-        expected.setData(requestTypes);
+        Response<List<RequestLeaveType>> expected = new Response<>();
+        expected.setData(requestLeaveTypes);
         expected.setCode(HttpStatus.OK.value());
         expected.setStatus(HttpStatus.OK.name());
 

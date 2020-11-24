@@ -5,8 +5,8 @@ import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.ClockInCommand;
 import com.bliblifuture.hrisbackend.command.ClockOutCommand;
-import com.bliblifuture.hrisbackend.model.request.AttendanceRequest;
-import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
+import com.bliblifuture.hrisbackend.model.request.ClockInClockOutRequest;
+import com.bliblifuture.hrisbackend.model.response.ClockInClockOutResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +27,7 @@ public class AttendanceController {
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @PostMapping("/_clock-in")
-    public Mono<Response<AttendanceResponse>> clockIn(@RequestBody AttendanceRequest request, Principal principal){
+    public Mono<Response<ClockInClockOutResponse>> clockIn(@RequestBody ClockInClockOutRequest request, Principal principal){
         request.setRequester(principal.getName());
         return commandExecutor.execute(ClockInCommand.class, request)
                 .map(ResponseHelper::ok)
@@ -36,7 +36,7 @@ public class AttendanceController {
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @PostMapping("/_clock-out")
-    public Mono<Response<AttendanceResponse>> clockOut(@RequestBody AttendanceRequest request, Principal principal){
+    public Mono<Response<ClockInClockOutResponse>> clockOut(@RequestBody ClockInClockOutRequest request, Principal principal){
         request.setRequester(principal.getName());
         return commandExecutor.execute(ClockOutCommand.class, request)
                 .map(ResponseHelper::ok)

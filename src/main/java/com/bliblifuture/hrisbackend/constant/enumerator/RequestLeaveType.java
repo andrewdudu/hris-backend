@@ -1,6 +1,6 @@
-package com.bliblifuture.hrisbackend.constant;
+package com.bliblifuture.hrisbackend.constant.enumerator;
 
-public enum RequestType {
+public enum RequestLeaveType {
 
     ATTENDANCE, ANNUAL_LEAVE, SPECIAL_LEAVE, EXTRA_LEAVE, SUBTITUTE_LEAVE, EXTEND_ANNUAL_LEAVE
 }

@@ -12,12 +12,12 @@ import com.bliblifuture.hrisbackend.repository.DepartmentRepository;
 import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
+import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -40,6 +40,9 @@ public class LoginCommandImpl implements LoginCommand {
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+
+    @Autowired
+    private DateUtil dateUtil;
 
     @Override
     public Mono<LoginResponse> execute(LoginRequest request) {
@@ -90,7 +93,7 @@ public class LoginCommandImpl implements LoginCommand {
     }
 
     private Mono<LoginResponse> setTotalRemainingLeaves(LoginResponse response, String username) {
-        return leaveRepository.findByEmployeeIdAndExpDateAfter(username, new Date())
+        return leaveRepository.findByEmployeeIdAndExpDateAfter(username, dateUtil.getNewDate())
                 .collectList()
                 .map(leaves -> {
                     response.getUserResponse()

@@ -1,15 +1,18 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAttendanceSummaryCommand;
-import com.bliblifuture.hrisbackend.constant.RequestStatus;
-import com.bliblifuture.hrisbackend.constant.RequestType;
-import com.bliblifuture.hrisbackend.constant.SpecialLeaveType;
-import com.bliblifuture.hrisbackend.model.entity.Employee;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
+import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.EmployeeLeaveSummary;
-import com.bliblifuture.hrisbackend.model.entity.Request;
+import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
-import com.bliblifuture.hrisbackend.repository.*;
+import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
+import com.bliblifuture.hrisbackend.repository.EmployeeLeaveSummaryRepository;
+import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
+import com.bliblifuture.hrisbackend.repository.UserRepository;
+import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,10 +27,13 @@ import reactor.core.publisher.Mono;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 @RunWith(SpringRunner.class)
-public class GetAttendaceSummaryCommandImplTests {
+public class GetAttendanceSummaryCommandImplTests {
 
     @TestConfiguration
     static class command{
@@ -50,7 +56,10 @@ public class GetAttendaceSummaryCommandImplTests {
     private AttendanceRepository attendanceRepository;
 
     @MockBean
-    private RequestRepository requestRepository;
+    private LeaveRequestRepository leaveRequestRepository;
+
+    @MockBean
+    private DateUtil dateUtil;
 
     @Test
     public void test_execute() throws ParseException {
@@ -60,22 +69,22 @@ public class GetAttendaceSummaryCommandImplTests {
                 .employeeId("ID-123")
                 .build();
 
-        Employee employee = Employee.builder()
-                .name("name")
-                .email(user.getUsername())
-                .build();
-
         Mockito.when(userRepository.findByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
-        Date startOfCurrentMonth = new SimpleDateFormat("dd/MM/yyyy").parse("1/11/2020");
+        Date currentDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-11-15");
+
+        Mockito.when(dateUtil.getNewDate())
+                .thenReturn(currentDate);
+
+        Date startOfCurrentMonth = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-11-1");
 
         Integer thisMonthAttendance = 15;
 
         Mockito.when(attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentMonth))
                 .thenReturn(Mono.just(thisMonthAttendance));
 
-        Date startOfCurrentYear = new SimpleDateFormat("dd/MM/yyyy").parse("1/1/2020");
+        Date startOfCurrentYear = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-1-1");
 
         Integer thisYearAttendance = 215;
 
@@ -86,21 +95,21 @@ public class GetAttendaceSummaryCommandImplTests {
         Date date2 = new SimpleDateFormat("dd/MM/yyyy").parse("12/8/2020");
         Date date3 = new SimpleDateFormat("dd/MM/yyyy").parse("13/8/2020");
 
-        Request leave1 = Request.builder()
+        LeaveRequest leave1 = LeaveRequest.builder()
                 .employeeId(user.getEmployeeId())
-                .type(RequestType.ANNUAL_LEAVE)
+                .type(RequestLeaveType.ANNUAL_LEAVE)
                 .dates(Collections.singletonList(date1))
                 .build();
 
-        Request leave2 = Request.builder()
+        LeaveRequest leave2 = LeaveRequest.builder()
                 .employeeId(user.getEmployeeId())
-                .type(RequestType.SPECIAL_LEAVE)
+                .type(RequestLeaveType.SPECIAL_LEAVE)
                 .specialLeaveType(SpecialLeaveType.SICK_WITH_MEDICAL_LETTER)
                 .dates(Arrays.asList(date2, date3))
                 .build();
 
         Mockito.when(
-                requestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId())
+                leaveRequestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId())
         ).thenReturn(Flux.just(leave1, leave2));
 
         String thisYear = "2020";
@@ -137,9 +146,10 @@ public class GetAttendaceSummaryCommandImplTests {
                     }
                 });
 
+        Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(attendanceRepository, Mockito.times(1)).countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentMonth);
         Mockito.verify(attendanceRepository, Mockito.times(1)).countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentYear);
-        Mockito.verify(requestRepository, Mockito.times(1)).findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId());
+        Mockito.verify(leaveRequestRepository, Mockito.times(1)).findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId());
         Mockito.verify(employeeLeaveSummaryRepository, Mockito.times(1)).findByYearAndEmployeeId(thisYear, user.getEmployeeId());
     }
 

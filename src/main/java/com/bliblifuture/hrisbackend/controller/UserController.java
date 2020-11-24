@@ -4,9 +4,8 @@ import com.blibli.oss.command.CommandExecutor;
 import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.*;
-import com.bliblifuture.hrisbackend.constant.RequestType;
-import com.bliblifuture.hrisbackend.constant.SpecialLeaveType;
-import com.bliblifuture.hrisbackend.model.entity.Request;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
 import com.bliblifuture.hrisbackend.model.response.LeavesReportResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
@@ -18,12 +17,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.security.Principal;
-import java.text.ParseException;
 import java.util.List;
 
 @RestController
@@ -32,9 +29,6 @@ public class UserController extends WebMvcProperties {
 
     @Autowired
     private CommandExecutor commandExecutor;
-
-//    @Autowired
-//    private JwtTokenUtil jwtTokenUtil;
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping("/current-user")
@@ -62,7 +56,7 @@ public class UserController extends WebMvcProperties {
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping("/current-user/available-requests")
-    public Mono<Response<List<RequestType>>> getAvailableRequests(Principal principal){
+    public Mono<Response<List<RequestLeaveType>>> getAvailableRequests(Principal principal){
         return commandExecutor.execute(GetAvailableRequestsCommand.class, principal.getName())
                 .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());
@@ -82,42 +76,5 @@ public class UserController extends WebMvcProperties {
         return commandExecutor.execute(GetAttendanceSummaryCommand.class, principal.getName())
                 .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());
-    }
-
-//    @GetMapping("/test")
-//    public Mono<Response<String>> cookieTest(ServerWebExchange swe){
-//        UserEntity userEntity = UserEntity.builder().username("test").password("test")
-//                .roles(Arrays.asList("ADMIN", "EMPLOYEE"))
-//                .build();
-//        ResponseCookie cookie = ResponseCookie
-//                .from("userToken",jwtTokenUtil.generateToken(userEntity))
-//                .maxAge(5*3600)
-//                .secure(true)
-//                .httpOnly(true)
-//                .build();
-//
-//        swe.getResponse().addCookie(cookie);
-//        return Mono.just(ResponseHelper.ok("test"));
-//    }
-
-    @GetMapping("/get-test")
-    public Mono<Response<Request>> getCookieTest(ServerWebExchange swe) throws ParseException {
-//        String token = swe.getRequest().getCookies().getFirst("userToken").getValue();
-//        String t = swe.getRequest().getHeaders().getFirst(HttpHeaders.SET_COOKIE);
-
-//        Date date = new SimpleDateFormat("dd/MM/yy").parse("1/1/2020");
-//
-//        System.out.println(date);
-//
-//        String tanggal = String.valueOf(date.getDate());
-//        String bulan = String.valueOf(date.getMonth() + 1);
-//        String tahun = String.valueOf(date.getYear() + 1900);
-//
-//        return Mono.just(ResponseHelper.ok(tanggal + " " + bulan + " " + tahun));
-
-        Request summary = Request.builder().build();
-        System.out.println(summary.getDates());
-
-        return Mono.just(ResponseHelper.ok(summary));
     }
 }

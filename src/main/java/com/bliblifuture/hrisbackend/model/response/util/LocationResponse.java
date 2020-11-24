@@ -1,6 +1,6 @@
 package com.bliblifuture.hrisbackend.model.response.util;
 
-import com.bliblifuture.hrisbackend.constant.AttendanceLocationType;
+import com.bliblifuture.hrisbackend.constant.enumerator.AttendanceLocationType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

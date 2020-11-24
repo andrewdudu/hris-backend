@@ -9,11 +9,11 @@ import com.bliblifuture.hrisbackend.repository.DepartmentRepository;
 import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
+import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -30,6 +30,9 @@ public class GetCurrentUserCommandImpl implements GetCurrentUserCommand {
 
     @Autowired
     private LeaveRepository leaveRepository;
+
+    @Autowired
+    private DateUtil dateUtil;
 
     @Override
     public Mono<UserResponse> execute(String username) {
@@ -63,7 +66,7 @@ public class GetCurrentUserCommandImpl implements GetCurrentUserCommand {
     }
 
     private Mono<UserResponse> setTotalRemainingLeaves(UserResponse response, String username) {
-        return leaveRepository.findByEmployeeIdAndExpDateAfter(username, new Date())
+        return leaveRepository.findByEmployeeIdAndExpDateAfter(username, dateUtil.getNewDate())
                 .collectList()
                 .map(leaves -> {
                     response.setLeaveResponse(LeaveResponse.builder()

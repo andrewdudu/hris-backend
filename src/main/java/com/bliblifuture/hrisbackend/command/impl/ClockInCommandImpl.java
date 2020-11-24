@@ -3,17 +3,18 @@ package com.bliblifuture.hrisbackend.command.impl;
 import com.blibli.oss.command.exception.CommandValidationException;
 import com.bliblifuture.hrisbackend.command.ClockInCommand;
 import com.bliblifuture.hrisbackend.constant.AttendanceConfig;
-import com.bliblifuture.hrisbackend.constant.AttendanceLocationType;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
+import com.bliblifuture.hrisbackend.constant.enumerator.AttendanceLocationType;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.Office;
 import com.bliblifuture.hrisbackend.model.entity.User;
-import com.bliblifuture.hrisbackend.model.request.AttendanceRequest;
-import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
+import com.bliblifuture.hrisbackend.model.request.ClockInClockOutRequest;
+import com.bliblifuture.hrisbackend.model.response.ClockInClockOutResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.OfficeRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
+import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,8 +42,11 @@ public class ClockInCommandImpl implements ClockInCommand {
     @Autowired
     private OfficeRepository officeRepository;
 
+    @Autowired
+    private DateUtil dateUtil;
+
     @Override
-    public Mono<AttendanceResponse> execute(AttendanceRequest request) {
+    public Mono<ClockInClockOutResponse> execute(ClockInClockOutRequest request) {
         return Mono.fromCallable(request::getRequester)
                 .flatMap(username -> userRepository.findByUsername(username))
                 .map(user -> createAttendance(user, request))
@@ -51,9 +55,9 @@ public class ClockInCommandImpl implements ClockInCommand {
                 .map(this::createResponse);
     }
 
-    private AttendanceResponse createResponse(Attendance attendance) {
+    private ClockInClockOutResponse createResponse(Attendance attendance) {
         LocationResponse locationResponse = LocationResponse.builder().lat(attendance.getStartLat()).lon(attendance.getStartLon()).build();
-        AttendanceResponse response = AttendanceResponse.builder()
+        ClockInClockOutResponse response = ClockInClockOutResponse.builder()
                 .image(attendance.getImage())
                 .locationResponse(locationResponse)
                 .build();
@@ -61,7 +65,7 @@ public class ClockInCommandImpl implements ClockInCommand {
         return response;
     }
 
-    private Mono<Attendance> clockInProcess(Attendance attendance, AttendanceRequest request) {
+    private Mono<Attendance> clockInProcess(Attendance attendance, ClockInClockOutRequest request) {
         return officeRepository.findAll()
                 .collectList()
                 .map(officeList -> checkLocationAndImage(attendance, request.getImage(), officeList));
@@ -105,8 +109,8 @@ public class ClockInCommandImpl implements ClockInCommand {
     }
 
     @SneakyThrows
-    private Attendance createAttendance(User user, AttendanceRequest request) {
-        Date date = new Date();
+    private Attendance createAttendance(User user, ClockInClockOutRequest request) {
+        Date date = dateUtil.getNewDate();
         String dateString = date.getDate() + "/" + date.getMonth() + 1 + "/" + date.getYear() + 1900;
 
         String startTime = " 00:00:00";
@@ -116,7 +120,7 @@ public class ClockInCommandImpl implements ClockInCommand {
         Attendance attendance = Attendance.builder()
                 .employeeId(user.getEmployeeId())
                 .date(startOfDate)
-                .startTime(new Date())
+                .startTime(date)
                 .endTime(null)
                 .startLat(request.getLocation().getLat())
                 .startLon(request.getLocation().getLon())
