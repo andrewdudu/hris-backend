@@ -18,4 +18,6 @@ public class AttendanceResponse extends BaseResponse{
     private LocationResponse location;
 
     private String image;
+
+    private String notes;
 }

@@ -1,11 +1,11 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAttendanceSummaryCommand;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.EmployeeLeaveSummary;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
@@ -95,15 +95,15 @@ public class GetAttendanceSummaryCommandImplTests {
         Date date2 = new SimpleDateFormat("dd/MM/yyyy").parse("12/8/2020");
         Date date3 = new SimpleDateFormat("dd/MM/yyyy").parse("13/8/2020");
 
-        LeaveRequest leave1 = LeaveRequest.builder()
+        Request leave1 = Request.builder()
                 .employeeId(user.getEmployeeId())
-                .type(RequestLeaveType.ANNUAL_LEAVE)
+                .type(RequestType.ANNUAL_LEAVE)
                 .dates(Collections.singletonList(date1))
                 .build();
 
-        LeaveRequest leave2 = LeaveRequest.builder()
+        Request leave2 = Request.builder()
                 .employeeId(user.getEmployeeId())
-                .type(RequestLeaveType.SPECIAL_LEAVE)
+                .type(RequestType.SPECIAL_LEAVE)
                 .specialLeaveType(SpecialLeaveType.SICK_WITH_MEDICAL_LETTER)
                 .dates(Arrays.asList(date2, date3))
                 .build();

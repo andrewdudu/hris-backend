@@ -165,7 +165,7 @@
 - Endpoint : `/requests`
 - HTTP Method : `GET`
 - Query Param:
-  - type: `PENDING|APPROVED|REJECTED`
+  - type: `REQUESTED|APPROVED|REJECTED`
 - Request Header :
 
   - Accept : `application/json`
@@ -186,7 +186,7 @@
           "name": "Sarana Jaya"
         }
       },
-      "status": "PENDING",
+      "status": "REQUESTED",
       "type": "LEAVE|EXTEND|ATTENDANCE",
       "detail": {
         "attendance": {
@@ -208,7 +208,7 @@
           "name": "Sarana Jaya"
         }
       },
-      "status": "PENDING",
+      "status": "REQUESTED",
       "type": "LEAVE|EXTEND|ATTENDANCE",
       "detail": {
         "leave": {
@@ -229,7 +229,7 @@
           "name": "Sarana Jaya"
         }
       },
-      "status": "PENDING",
+      "status": "REQUESTED",
       "type": "LEAVE|EXTEND|ATTENDANCE",
       "detail": {
         "extend": {

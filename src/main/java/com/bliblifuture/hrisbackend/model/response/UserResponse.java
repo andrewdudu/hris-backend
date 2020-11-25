@@ -22,15 +22,17 @@ public class UserResponse extends BaseResponse{
 
     private String name;
 
+    private String employeeId;
+
     private List<UserRole> roles;
 
     private String department;
 
-    private PositionResponse positionResponse;
+    private PositionResponse position;
 
-    private OfficeResponse officeResponse;
+    private OfficeResponse office;
 
     private Date joinDate;
 
-    private LeaveResponse leaveResponse;
+    private LeaveResponse leave;
 }

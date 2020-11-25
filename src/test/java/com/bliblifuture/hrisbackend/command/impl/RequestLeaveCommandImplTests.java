@@ -2,10 +2,10 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.RequestLeaveCommand;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.LeaveRequestResponse;
@@ -92,10 +92,10 @@ public class RequestLeaveCommandImplTests {
         String pathFile2 = FileConstant.REQUEST_FILE_BASE_URL + request.getType() + "-" + user.getEmployeeId()
                 + "-2-" + currentDate.getTime() + ".webp";;
 
-        LeaveRequest entity = LeaveRequest.builder()
+        Request entity = Request.builder()
                 .files(Arrays.asList(pathFile1, pathFile2))
                 .dates(Arrays.asList(date1, date2))
-                .type(RequestLeaveType.SPECIAL_LEAVE)
+                .type(RequestType.SPECIAL_LEAVE)
                 .specialLeaveType(SpecialLeaveType.SICK_WITH_MEDICAL_LETTER)
                 .status(RequestStatus.REQUESTED)
                 .employeeId(user.getEmployeeId())

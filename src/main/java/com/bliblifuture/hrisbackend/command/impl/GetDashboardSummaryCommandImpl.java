@@ -63,14 +63,14 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
         CalendarResponse calendarResponse = CalendarResponse.builder().date(startOfDate).build();
         DashboardResponse response = DashboardResponse
                 .builder()
-                .calendarResponse(calendarResponse)
+                .calendar(calendarResponse)
                 .build();
 
         if (user.getRoles().contains(UserRole.ADMIN)){
             ReportResponse report = new ReportResponse();
-            RequestResponse request = new RequestResponse();
-            response.setReportResponse(report);
-            response.setRequestResponse(request);
+            IncomingRequestResponse request = new IncomingRequestResponse();
+            response.setReport(report);
+            response.setRequest(request);
 
             return dailyAttendanceReportRepository.findByDate(startOfDate)
                     .switchIfEmpty(
@@ -82,14 +82,14 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                     )
                     .doOnSuccess(this::checkNewEntity)
                     .flatMap(res -> {
-                        response.getReportResponse().setWorking(res.getWorking());
-                        response.getReportResponse().setAbsent(res.getAbsent());
+                        response.getReport().setWorking(res.getWorking());
+                        response.getReport().setAbsent(res.getAbsent());
                         return eventRepository.findByDate(startOfDate);
                     })
                     .map(event -> setCalendarResponse(startOfDate, response, event))
                     .flatMap(res -> leaveRequestRepository.countByCreatedDateAfterAndStatus(startOfDate, RequestStatus.REQUESTED))
                     .map(totalIncomingRequest -> {
-                        response.getRequestResponse().setIncoming(totalIncomingRequest);
+                        response.getRequest().setIncoming(totalIncomingRequest);
                         return response;
                     });
         }
@@ -149,14 +149,14 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     }
 
     private DashboardResponse setCalendarResponse(Date currentDate, DashboardResponse response, Event event) {
-        response.getCalendarResponse().setDate(currentDate);
-        response.getCalendarResponse().setStatus(getStatusHoliday(response, event));
+        response.getCalendar().setDate(currentDate);
+        response.getCalendar().setStatus(getStatusHoliday(response, event));
         return response;
     }
 
     private String getStatusHoliday(DashboardResponse res, Event event){
         if (event.getStatus().equals("HOLIDAY")){
-            res.getCalendarResponse().setStatus(event.getStatus());
+            res.getCalendar().setStatus(event.getStatus());
         }
         return "WORKING";
     }

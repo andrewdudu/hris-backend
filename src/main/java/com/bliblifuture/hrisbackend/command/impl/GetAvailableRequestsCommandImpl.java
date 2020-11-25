@@ -1,7 +1,7 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAvailableRequestsCommand;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
 import com.bliblifuture.hrisbackend.model.entity.Employee;
 import com.bliblifuture.hrisbackend.model.entity.User;
@@ -32,7 +32,7 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
     private DateUtil dateUtil;
 
     @Override
-    public Mono<List<RequestLeaveType>> execute(String username) {
+    public Mono<List<RequestType>> execute(String username) {
         return employeeRepository.findByEmail(username)
                 .map(this::getResponse)
                 .flatMap(response -> userRepository.findByUsername(username)
@@ -40,20 +40,22 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
                 );
     }
 
-    private List<RequestLeaveType> addAdminRequest(User user, List<RequestLeaveType> response) {
+    private List<RequestType> addAdminRequest(User user, List<RequestType> response) {
         if (user.getRoles().contains(UserRole.ADMIN)){
-            response.add(RequestLeaveType.INCOMING_REQUESTS);
+            response.add(RequestType.INCOMING_REQUESTS);
+            response.add(RequestType.SET_HOLIDAY);
+            response.add(RequestType.EMPLOYEE);
         }
         return response;
     }
 
     @SneakyThrows
-    private List<RequestLeaveType> getResponse(Employee employee){
-        List<RequestLeaveType> response = new ArrayList<>();
-        response.add(RequestLeaveType.ATTENDANCE);
-        response.add(RequestLeaveType.ANNUAL_LEAVE);
-        response.add(RequestLeaveType.SPECIAL_LEAVE);
-        response.add(RequestLeaveType.SUBTITUTE_LEAVE);
+    private List<RequestType> getResponse(Employee employee){
+        List<RequestType> response = new ArrayList<>();
+        response.add(RequestType.ATTENDANCE);
+        response.add(RequestType.ANNUAL_LEAVE);
+        response.add(RequestType.SPECIAL_LEAVE);
+        response.add(RequestType.SUBTITUTE_LEAVE);
 
         Date currentDate = dateUtil.getNewDate();
 
@@ -65,11 +67,11 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
         Date dateToGetExtraLeave = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse((year+3) + "-" + month + "-" + date);
 
         if (currentDate.after(dateToGetExtraLeave)){
-            response.add(RequestLeaveType.EXTRA_LEAVE);
+            response.add(RequestType.EXTRA_LEAVE);
         }
 
         if (currentDate.getMonth() == Calendar.DECEMBER) {
-            response.add(RequestLeaveType.EXTEND_ANNUAL_LEAVE);
+            response.add(RequestType.EXTEND_ANNUAL_LEAVE);
         }
 
         return response;

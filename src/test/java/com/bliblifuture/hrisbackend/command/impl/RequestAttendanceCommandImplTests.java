@@ -2,11 +2,11 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.RequestAttendanceCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
-import com.bliblifuture.hrisbackend.model.entity.AttendanceRequest;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
 import com.bliblifuture.hrisbackend.model.response.AttendanceRequestResponse;
-import com.bliblifuture.hrisbackend.repository.AttendanceRequestRepository;
+import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
@@ -22,6 +22,7 @@ import reactor.core.publisher.Mono;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 
 @RunWith(SpringRunner.class)
@@ -42,7 +43,7 @@ public class RequestAttendanceCommandImplTests {
     private UserRepository userRepository;
 
     @MockBean
-    private AttendanceRequestRepository attendanceRequestRepository;
+    private LeaveRequestRepository leaveRequestRepository;
 
     @MockBean
     private DateUtil dateUtil;
@@ -70,10 +71,10 @@ public class RequestAttendanceCommandImplTests {
         Date clockIn = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse(dateString + " " + startTime + ":00");
         Date clockOut = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse(dateString + " " + endTime + ":00");
         Date date = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(dateString);
-        AttendanceRequest entity = AttendanceRequest.builder()
+        Request entity = Request.builder()
                 .clockIn(clockIn)
                 .clockOut(clockOut)
-                .date(date)
+                .dates(Collections.singletonList(date))
                 .notes(notes)
                 .status(RequestStatus.REQUESTED)
                 .employeeId(user.getEmployeeId())
@@ -83,7 +84,7 @@ public class RequestAttendanceCommandImplTests {
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
         Mockito.when(userRepository.findByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
-        Mockito.when(attendanceRequestRepository.save(entity))
+        Mockito.when(leaveRequestRepository.save(entity))
                 .thenReturn(Mono.just(entity));
 
         AttendanceRequestResponse expected = AttendanceRequestResponse.builder()
@@ -105,7 +106,7 @@ public class RequestAttendanceCommandImplTests {
 
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(attendanceRequestRepository, Mockito.times(1)).save(entity);
+        Mockito.verify(leaveRequestRepository, Mockito.times(1)).save(entity);
     }
 
 }

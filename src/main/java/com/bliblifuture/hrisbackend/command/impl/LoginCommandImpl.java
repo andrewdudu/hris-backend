@@ -97,7 +97,7 @@ public class LoginCommandImpl implements LoginCommand {
                 .collectList()
                 .map(leaves -> {
                     response.getUserResponse()
-                            .setLeaveResponse(LeaveResponse.builder()
+                            .setLeave(LeaveResponse.builder()
                                     .remaining(countLeaves(leaves))
                                     .build());
 

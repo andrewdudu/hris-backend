@@ -2,8 +2,9 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAttendanceSummaryCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.EmployeeLeaveSummary;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.EmployeeLeaveSummaryRepository;
@@ -70,7 +71,7 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
                         .flatMap(yearAttendance -> {
                             responses.get(1).setAttendance(yearAttendance);
                             return leaveRequestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId())
-                                    .switchIfEmpty(Flux.just(LeaveRequest.builder().dates(new ArrayList<>()).build()))
+                                    .switchIfEmpty(Flux.just(Request.builder().dates(new ArrayList<>()).build()))
                                     .collectList();
                         })
                         .map(this::countThisMonthLeave)
@@ -96,10 +97,13 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
                 + thisYearLeaves.getExtraLeave() + thisYearLeaves.getSubtituteLeave();
     }
 
-    private int countThisMonthLeave(List<LeaveRequest> thisMonthLeaves) {
+    private int countThisMonthLeave(List<Request> thisMonthLeaves) {
         int total = 0;
-        for (LeaveRequest request : thisMonthLeaves) {
-            total += request.getDates().size();
+        for (Request request : thisMonthLeaves) {
+            if ( !( request.getType().equals(RequestType.ATTENDANCE) || request.getType().equals(RequestType.EXTEND_ANNUAL_LEAVE) ) )
+            {
+                total += request.getDates().size();
+            }
         }
         return total;
     }
