@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Data
-public class RequestResponse {
+public class IncomingRequestResponse {
 
     private int incoming;
 }

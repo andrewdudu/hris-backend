@@ -2,7 +2,7 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetExtendLeaveDataCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.model.entity.Leave;
 import com.bliblifuture.hrisbackend.model.entity.User;
@@ -75,7 +75,7 @@ public class GetExtendLeaveDataCommandImplTests {
         Mockito.when(leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateDesc(user.getEmployeeId(), LeaveType.annual, currentDate))
                 .thenReturn(Flux.just(annualLeave));
 
-        Mockito.when(leaveRequestRepository.findByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestLeaveType.EXTEND_ANNUAL_LEAVE, extensionDate))
+        Mockito.when(leaveRequestRepository.findByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, extensionDate))
                 .thenReturn(Mono.empty());
 
         ExtendLeaveQuotaResponse quota = ExtendLeaveQuotaResponse.builder()
@@ -96,7 +96,7 @@ public class GetExtendLeaveDataCommandImplTests {
 
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(leaveRequestRepository, Mockito.times(1)).findByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestLeaveType.EXTEND_ANNUAL_LEAVE, extensionDate);
+        Mockito.verify(leaveRequestRepository, Mockito.times(1)).findByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, extensionDate);
         Mockito.verify(leaveRepository, Mockito.times(1)).findByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateDesc(user.getEmployeeId(), LeaveType.annual, currentDate);
     }
 

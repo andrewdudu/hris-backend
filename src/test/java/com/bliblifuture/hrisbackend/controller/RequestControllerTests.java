@@ -2,18 +2,14 @@ package com.bliblifuture.hrisbackend.controller;
 
 import com.blibli.oss.command.CommandExecutor;
 import com.blibli.oss.common.response.Response;
-import com.bliblifuture.hrisbackend.command.GetExtendLeaveDataCommand;
-import com.bliblifuture.hrisbackend.command.RequestAttendanceCommand;
-import com.bliblifuture.hrisbackend.command.RequestExtendLeaveCommand;
-import com.bliblifuture.hrisbackend.command.RequestLeaveCommand;
+import com.bliblifuture.hrisbackend.command.*;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
-import com.bliblifuture.hrisbackend.model.response.AttendanceRequestResponse;
-import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
-import com.bliblifuture.hrisbackend.model.response.LeaveRequestResponse;
+import com.bliblifuture.hrisbackend.model.response.*;
 import com.bliblifuture.hrisbackend.model.response.util.ExtendLeaveQuotaResponse;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.apache.commons.io.FileUtils;
@@ -37,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 
 @RunWith(SpringRunner.class)
 @WebFluxTest(controllers = RequestController.class)
@@ -170,6 +167,7 @@ public class RequestControllerTests {
     public void getExtendLeaveDataTest() throws ParseException {
         String dateString = "2020-05-25";
         Date date = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(dateString);
+        System.out.println(date.getTime());
 
         ExtendLeaveQuotaResponse quota = ExtendLeaveQuotaResponse.builder()
                 .remaining(3)
@@ -235,6 +233,45 @@ public class RequestControllerTests {
                 });
 
         Mockito.verify(commandExecutor, Mockito.times(1)).execute(RequestExtendLeaveCommand.class, request);
+    }
+
+    @Test
+    public void getIncomingRequestsTest() {
+        String type = "REQUESTED";
+
+        RequestResponse data1 = RequestResponse.builder()
+                .user(UserResponse.builder().username("name1").build())
+                .status(RequestStatus.REQUESTED)
+                .type(RequestType.ATTENDANCE)
+                .build();
+
+        RequestResponse data2 = RequestResponse.builder()
+                .user(UserResponse.builder().username("name2").build())
+                .status(RequestStatus.REQUESTED)
+                .type(RequestType.LEAVE)
+                .build();
+
+        List<RequestResponse> responseData = Arrays.asList(data1, data2);
+
+        Mockito.when(commandExecutor.execute(GetIncomingRequestCommand.class, type))
+                .thenReturn(Mono.just(responseData));
+
+        Response<List<RequestResponse>> expected = new Response<>();
+        expected.setData(Arrays.asList(data1, data2));
+        expected.setCode(HttpStatus.OK.value());
+        expected.setStatus(HttpStatus.OK.name());
+
+        requestController.getIncomingRequests(type)
+                .subscribe(response -> {
+                    Assert.assertEquals(expected.getCode(), response.getCode());
+                    Assert.assertEquals(expected.getStatus(), response.getStatus());
+
+                    for (int i = 0; i < response.getData().size(); i++) {
+                        Assert.assertEquals(expected.getData().get(i) , response.getData().get(i));
+                    }
+                });
+
+        Mockito.verify(commandExecutor, Mockito.times(1)).execute(GetIncomingRequestCommand.class, type);
     }
 
 

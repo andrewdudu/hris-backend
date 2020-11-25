@@ -5,7 +5,8 @@ import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.config.JwtTokenUtil;
 import com.bliblifuture.hrisbackend.config.PassEncoder;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ public class DummyController {
     @GetMapping("/test")
     public Mono<Response<String>> cookieTest(ServerWebExchange swe){
         User userEntity = User.builder().username("test").password("test")
-                .roles(Arrays.asList("ADMIN", "EMPLOYEE"))
+                .roles(Arrays.asList(UserRole.ADMIN, UserRole.EMPLOYEE))
                 .build();
         ResponseCookie cookie = ResponseCookie
                 .from("userToken",jwtTokenUtil.generateToken(userEntity))
@@ -58,7 +59,7 @@ public class DummyController {
     }
 
     @GetMapping("/get-test")
-    public Mono<Response<LeaveRequest>> getCookieTest(ServerWebExchange swe) throws ParseException {
+    public Mono<Response<Request>> getCookieTest(ServerWebExchange swe) throws ParseException {
 //        String token = swe.getRequest().getCookies().getFirst("userToken").getValue();
 //        String t = swe.getRequest().getHeaders().getFirst(HttpHeaders.SET_COOKIE);
 
@@ -72,7 +73,7 @@ public class DummyController {
 //
 //        return Mono.just(ResponseHelper.ok(tanggal + " " + bulan + " " + tahun));
 
-        LeaveRequest summary = LeaveRequest.builder().build();
+        Request summary = Request.builder().build();
         System.out.println(summary.getDates());
 
         return Mono.just(ResponseHelper.ok(summary));

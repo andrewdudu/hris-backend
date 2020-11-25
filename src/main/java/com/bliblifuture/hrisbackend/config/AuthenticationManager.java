@@ -2,6 +2,7 @@ package com.bliblifuture.hrisbackend.config;
 
 import com.blibli.oss.command.CommandExecutor;
 import com.bliblifuture.hrisbackend.command.GetUserDetailsByUsernameCommand;
+import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,7 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
         if(jwtTokenUtil.validateToken(token)){
             List<GrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority("ROLE_EMPLOYEE"));
-            if (user.getRoles().contains("ADMIN")){
+            if (user.getRoles().contains(UserRole.ADMIN)){
                 authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
             }
             return Mono.just(new UsernamePasswordAuthenticationToken(jwtTokenUtil.getUsernameFromToken(token), null, authorities));

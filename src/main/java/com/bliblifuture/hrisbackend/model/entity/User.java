@@ -1,5 +1,6 @@
 package com.bliblifuture.hrisbackend.model.entity;
 
+import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -24,6 +25,6 @@ public class User extends BaseEntity{
     private String password;
 
     @Field(name = "roles")
-    private List<String> roles;
+    private List<UserRole> roles;
 
 }

@@ -2,9 +2,9 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetExtendLeaveDataCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
 import com.bliblifuture.hrisbackend.model.response.util.ExtendLeaveQuotaResponse;
 import com.bliblifuture.hrisbackend.repository.*;
@@ -41,17 +41,17 @@ public class GetExtendLeaveDataCommandImpl implements GetExtendLeaveDataCommand 
 
         return userRepository.findByUsername(username)
                 .flatMap(user -> leaveRequestRepository
-                        .findByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestLeaveType.EXTEND_ANNUAL_LEAVE, extensionDate)
-                        .switchIfEmpty(Mono.just(LeaveRequest.builder().build()))
+                        .findByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, extensionDate)
+                        .switchIfEmpty(Mono.just(Request.builder().build()))
                         .map(leaveRequest -> setResponseStatus(leaveRequest, currentDate))
                         .flatMap(response -> setResponseQuota(response, user.getEmployeeId(), currentDate, extensionDate))
                 );
     }
 
-    private ExtendLeaveResponse setResponseStatus(LeaveRequest leaveRequest, Date currentDate) {
+    private ExtendLeaveResponse setResponseStatus(Request request, Date currentDate) {
         ExtendLeaveResponse response = ExtendLeaveResponse.builder().build();
-        if (leaveRequest.getId() != null){
-            response.setStatus(leaveRequest.getStatus());
+        if (request.getId() != null){
+            response.setStatus(request.getStatus());
         }
         else {
             if (currentDate.getMonth() == 11){

@@ -1,8 +1,8 @@
 package com.bliblifuture.hrisbackend.repository;
 
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
@@ -13,15 +13,17 @@ import reactor.core.publisher.Mono;
 import java.util.Date;
 
 @Repository
-public interface LeaveRequestRepository extends ReactiveMongoRepository<LeaveRequest, String> {
+public interface LeaveRequestRepository extends ReactiveMongoRepository<Request, String> {
 
     @Query("{ id: { $exists: true }}")
-    Flux<LeaveRequest> findAll(final Pageable pageable);
+    Flux<Request> findAll(final Pageable pageable);
 
-    Flux<LeaveRequest> findByDatesAfterAndStatusAndEmployeeId(Date currentDate, RequestStatus status, String employeeId);
+    Flux<Request> findByDatesAfterAndStatusAndEmployeeId(Date currentDate, RequestStatus status, String employeeId);
 
-    Mono<LeaveRequest> findByEmployeeIdAndTypeAndDatesContains(String employeeId, RequestLeaveType type, Date date);
+    Mono<Request> findByEmployeeIdAndTypeAndDatesContains(String employeeId, RequestType type, Date date);
 
     Mono<Integer> countByCreatedDateAfterAndStatus(Date currentDate, RequestStatus status);
+
+    Flux<Request> findByStatusOrderByCreatedDateDesc(RequestStatus status);
 
 }

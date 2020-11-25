@@ -20,6 +20,8 @@ public interface AttendanceRepository extends ReactiveMongoRepository<Attendance
 
     Flux<Attendance> findAllByEmployeeIdOrderByStartTimeDesc(String employeeId, Pageable pageable);
 
+    Flux<Attendance> findByEmployeeIdAndStartTimeAfterAndStartTimeBeforeOrderByDateAsc(String employeeId, Date start, Date end);
+
     Mono<Attendance> findFirstByEmployeeIdAndDate(String employeeId, Date date);
 
 

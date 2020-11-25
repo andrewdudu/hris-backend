@@ -4,8 +4,8 @@ import com.bliblifuture.hrisbackend.command.RequestLeaveCommand;
 import com.bliblifuture.hrisbackend.command.impl.helper.*;
 import com.bliblifuture.hrisbackend.constant.LeaveTypeConstant;
 import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.LeaveRequestResponse;
@@ -45,7 +45,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
                 .map(RequestLeaveCommandImpl::createResponse);
     }
 
-    private Mono<LeaveRequest> callHelper(LeaveRequestData request, User user) {
+    private Mono<Request> callHelper(LeaveRequestData request, User user) {
         long currentDateTime = dateUtil.getNewDate().getTime();
         switch (request.getType()){
             case LeaveTypeConstant.ANNUAL_LEAVE:
@@ -76,25 +76,25 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
         }
     }
 
-    private static LeaveRequestResponse createResponse(LeaveRequest leaveRequest) {
+    private static LeaveRequestResponse createResponse(Request request) {
         List<String> dates = new ArrayList<>();
-        for (Date dateString : leaveRequest.getDates()) {
+        for (Date dateString : request.getDates()) {
             String date = new SimpleDateFormat(DateUtil.DATE_FORMAT).format(dateString);
             dates.add(date);
         }
 
         LeaveRequestResponse response = LeaveRequestResponse.builder()
-                .files(leaveRequest.getFiles())
+                .files(request.getFiles())
                 .dates(dates)
-                .notes(leaveRequest.getNotes())
+                .notes(request.getNotes())
                 .build();
-        if (leaveRequest.getType().equals(RequestLeaveType.SPECIAL_LEAVE)){
-            response.setType(leaveRequest.getSpecialLeaveType().toString());
+        if (request.getType().equals(RequestType.SPECIAL_LEAVE)){
+            response.setType(request.getSpecialLeaveType().toString());
         }
         else {
-            response.setType(leaveRequest.getType().toString());
+            response.setType(request.getType().toString());
         }
-        response.setId(leaveRequest.getId());
+        response.setId(request.getId());
 
         return response;
     }

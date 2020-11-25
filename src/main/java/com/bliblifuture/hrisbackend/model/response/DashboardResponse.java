@@ -2,7 +2,7 @@ package com.bliblifuture.hrisbackend.model.response;
 
 import com.bliblifuture.hrisbackend.model.response.util.CalendarResponse;
 import com.bliblifuture.hrisbackend.model.response.util.ReportResponse;
-import com.bliblifuture.hrisbackend.model.response.util.RequestResponse;
+import com.bliblifuture.hrisbackend.model.response.util.IncomingRequestResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,12 +16,12 @@ import java.util.List;
 @AllArgsConstructor
 public class DashboardResponse {
 
-    private ReportResponse reportResponse;
+    private ReportResponse report;
 
-    private RequestResponse requestResponse;
+    private IncomingRequestResponse request;
 
-    private CalendarResponse calendarResponse;
+    private CalendarResponse calendar;
 
-    private List<ClockInClockOutResponse> attendance;
+    private List<AttendanceResponse> attendance;
 
 }

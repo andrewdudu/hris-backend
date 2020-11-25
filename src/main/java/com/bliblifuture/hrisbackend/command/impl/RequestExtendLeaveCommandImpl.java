@@ -1,9 +1,9 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.RequestExtendLeaveCommand;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
@@ -51,12 +51,12 @@ public class RequestExtendLeaveCommandImpl implements RequestExtendLeaveCommand 
                 });
     }
 
-    private LeaveRequest createLeaveRequest(LeaveRequestData request, Date currentDate, User user) {
+    private Request createLeaveRequest(LeaveRequestData request, Date currentDate, User user) {
         String employeeId = user.getEmployeeId();
 
-        LeaveRequest leaveRequest = LeaveRequest.builder()
+        Request leaveRequest = Request.builder()
                 .status(RequestStatus.REQUESTED)
-                .type(RequestLeaveType.EXTEND_ANNUAL_LEAVE)
+                .type(RequestType.EXTEND_ANNUAL_LEAVE)
                 .notes(request.getNotes())
                 .employeeId(employeeId)
                 .build();
