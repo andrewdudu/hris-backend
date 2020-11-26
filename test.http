@@ -3,10 +3,47 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "username": "user",
-  "password": "pass",
-  "employeeId": "ADMIN123",
-  "roles": ["ADMIN", "USER"]
+  "username": "admin",
+  "password": "adminpass",
+  "employeeId": "EMP-456",
+  "roles": ["EMPLOYEE", "ADMIN"]
+}
+
+###
+POST http://localhost:8080/api/dummy/create-employee
+Content-Type: application/json
+Accept: application/json
+
+{
+  "id": "EMP-456",
+  "name": "ADMIN",
+  "email": "admin@mail.com",
+  "position": "HR",
+  "depId": "DEP-2",
+  "organizationUnit": "05",
+  "officeId": "OFFICE-1"
+}
+
+###
+POST http://localhost:8080/api/dummy/create-office
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "MAIN OFFICE",
+  "code": "OFFICE-1",
+  "lat": 2.15,
+  "lon": 2.3
+}
+
+###
+POST http://localhost:8080/api/dummy/create-dep
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Human Resources and Development",
+  "code": "DEP-2"
 }
 
 ###
