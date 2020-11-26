@@ -26,6 +26,4 @@ public interface RequestRepository extends ReactiveMongoRepository<Request, Stri
 
     Mono<Integer> countByCreatedDateAfterAndStatus(Date currentDate, RequestStatus status);
 
-    Mono<Request> findById(String id);
-
 }

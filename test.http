@@ -1,3 +1,9 @@
+GET http://localhost:8080/api/users/current-user
+Content-Type: application/json
+Accept: application/json
+Cookie: userToken=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhbmRyZXdAbWFpbC5jb20iLCJpYXQiOjE2MDY0MDUzMzcsImV4cCI6MTYwNjQ2NTMzN30.4YQ7hmI6qcawdbq1B84dMVVd7JUMYQYL4omtsaQdHI0DTmEZcR7XLsAVkORLHX_7zVQh3vNdnLiEuZRsWrb-lA; Max-Age=25200; Expires=Thu, 26 Nov 2020 22:42:17 GMT; HttpOnly
+
+###
 POST http://localhost:8080/api/dummy/create-user
 Content-Type: application/json
 Accept: application/json

@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
-@Document(collection = "leave_request")
+@Document(collection = "request")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
