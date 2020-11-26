@@ -45,9 +45,8 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
         if (httpCookies != null){
             for (HttpCookie cookie:httpCookies) {
                 if (cookie.getName().equals(accessTokenName)){
-                    String token = cookie.getValue();
-                    System.out.println(token);
-                    return token;
+                    System.out.println(cookie.getValue());
+                    return cookie.getValue();
                 }
             }
         }
