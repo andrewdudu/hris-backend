@@ -46,7 +46,7 @@ public class UserResponseHelper {
     }
 
     private Mono<UserResponse> setDepartmentById(UserResponse response, String depId){
-        return Mono.from(departmentRepository.findById(depId))
+        return departmentRepository.findById(depId)
                 .map(department -> {
                     response.setDepartment(department.getName());
                     return response;

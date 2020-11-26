@@ -48,9 +48,9 @@ public class ClockOutCommandImpl implements ClockOutCommand {
     }
 
     private AttendanceResponse createResponse(Attendance attendance) {
-        LocationResponse locationResponse = LocationResponse.builder().lat(attendance.getStartLat()).lon(attendance.getStartLon()).build();
+        LocationResponse location = LocationResponse.builder().lat(attendance.getStartLat()).lon(attendance.getStartLon()).build();
         AttendanceResponse response = AttendanceResponse.builder()
-                .location(locationResponse)
+                .location(location)
                 .build();
 
         return response;
@@ -59,21 +59,20 @@ public class ClockOutCommandImpl implements ClockOutCommand {
     @SneakyThrows
     private Mono<Attendance> getTodayAttendance(User user) {
         Date date = dateUtil.getNewDate();
-        String dateString = date.getDate() + "/" + date.getMonth() + 1 + "/" + date.getYear() + 1900;
+        String dateString = (date.getYear() + 1900) + "-" + (date.getMonth() + 1) + "-" + date.getDate();
 
         String startTime = " 00:00:00";
-        Date startOfDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(dateString + startTime);
 
         return attendanceRepository.findFirstByEmployeeIdAndDate(user.getEmployeeId(), startOfDate)
-                .map(this::checkValidity);
+                .doOnSuccess(this::checkValidity);
     }
 
-    private Attendance checkValidity(Attendance attendance) {
-        if (attendance.getStartTime() == null){
+    private void checkValidity(Attendance attendance) {
+        if (attendance == null || attendance.getStartTime() == null){
             throw new NullPointerException("Clock-out not available");
         }
-        return attendance;
     }
 
 }

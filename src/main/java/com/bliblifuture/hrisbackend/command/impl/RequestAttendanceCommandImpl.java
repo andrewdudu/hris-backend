@@ -5,7 +5,7 @@ import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
 import com.bliblifuture.hrisbackend.model.response.AttendanceRequestResponse;
-import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
     private UserRepository userRepository;
 
     @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
+    private RequestRepository requestRepository;
 
     @Autowired
     private DateUtil dateUtil;
@@ -32,7 +32,7 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
     public Mono<AttendanceRequestResponse> execute(AttendanceRequestData request) {
         return userRepository.findByUsername(request.getRequester())
                 .map(user -> createRequestEntity(request, user.getEmployeeId()))
-                .flatMap(entity -> leaveRequestRepository.save(entity))
+                .flatMap(entity -> requestRepository.save(entity))
                 .map(this::createResponse);
     }
 

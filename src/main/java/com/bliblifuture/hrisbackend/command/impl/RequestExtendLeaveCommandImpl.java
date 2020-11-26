@@ -7,7 +7,7 @@ import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
-import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
@@ -24,7 +24,7 @@ public class RequestExtendLeaveCommandImpl implements RequestExtendLeaveCommand 
     private UserRepository userRepository;
 
     @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
+    private RequestRepository requestRepository;
 
     @Autowired
     private DateUtil dateUtil;
@@ -44,7 +44,7 @@ public class RequestExtendLeaveCommandImpl implements RequestExtendLeaveCommand 
 
         return userRepository.findByUsername(request.getRequester())
                 .map(user -> createLeaveRequest(request, currentDate, user))
-                .flatMap(leaveRequest -> leaveRequestRepository.save(leaveRequest))
+                .flatMap(leaveRequest -> requestRepository.save(leaveRequest))
                 .map(leaveRequest -> {
                     response.setStatus(leaveRequest.getStatus());
                     return response;

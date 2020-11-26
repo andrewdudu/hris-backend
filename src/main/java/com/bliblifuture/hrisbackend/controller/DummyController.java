@@ -6,9 +6,13 @@ import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.config.JwtTokenUtil;
 import com.bliblifuture.hrisbackend.config.PassEncoder;
 import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
-import com.bliblifuture.hrisbackend.model.entity.Request;
-import com.bliblifuture.hrisbackend.model.entity.User;
+import com.bliblifuture.hrisbackend.model.entity.*;
+import com.bliblifuture.hrisbackend.repository.DepartmentRepository;
+import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
+import com.bliblifuture.hrisbackend.repository.OfficeRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
+import com.bliblifuture.hrisbackend.util.DateUtil;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +20,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 @RestController
@@ -34,12 +39,43 @@ public class DummyController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private OfficeRepository officeRepository;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
     @PostMapping("/create-user")
-    public Mono<Response<String>> createUser(@RequestBody User user){
+    public Mono<Response<User>> createUser(@RequestBody User user){
         user.setPassword(passEncoder.encode(user.getPassword()));
         user.setId("USER-" + user.getEmployeeId());
         return userRepository.save(user)
-                .map(res -> ResponseHelper.ok(res.getUsername()));
+                .map(res -> ResponseHelper.ok(res));
+    }
+
+    @PostMapping("/create-employee")
+    @SneakyThrows
+    public Mono<Response<Employee>> createEmployee(@RequestBody Employee employee){
+        employee.setJoinDate(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2017-06-25"));
+        return employeeRepository.save(employee)
+                .map(res -> ResponseHelper.ok(res));
+    }
+
+    @PostMapping("/create-office")
+    @SneakyThrows
+    public Mono<Response<Office>> createOfficce(@RequestBody Office office){
+        return officeRepository.save(office)
+                .map(res -> ResponseHelper.ok(res));
+    }
+
+    @PostMapping("/create-dep")
+    @SneakyThrows
+    public Mono<Response<Department>> createDep(@RequestBody Department department){
+        return departmentRepository.save(department)
+                .map(res -> ResponseHelper.ok(res));
     }
 
     @GetMapping("/test")

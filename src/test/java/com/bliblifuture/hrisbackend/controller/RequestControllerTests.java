@@ -8,6 +8,7 @@ import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
+import com.bliblifuture.hrisbackend.model.request.BaseRequest;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.*;
 import com.bliblifuture.hrisbackend.model.response.util.ExtendLeaveQuotaResponse;
@@ -272,6 +273,68 @@ public class RequestControllerTests {
                 });
 
         Mockito.verify(commandExecutor, Mockito.times(1)).execute(GetIncomingRequestCommand.class, type);
+    }
+
+    @Test
+    public void approveRequestTest() {
+        RequestResponse data = RequestResponse.builder()
+                .user(UserResponse.builder().username("name1").build())
+                .status(RequestStatus.APPROVED)
+                .type(RequestType.ATTENDANCE)
+                .build();
+
+        String id = "id123";
+        BaseRequest request = new BaseRequest();
+        request.setId(id);
+        request.setRequester(principal.getName());
+
+        Mockito.when(commandExecutor.execute(ApproveRequestCommand.class, request))
+                .thenReturn(Mono.just(data));
+
+        Response<RequestResponse> expected = new Response<>();
+        expected.setData(data);
+        expected.setCode(HttpStatus.OK.value());
+        expected.setStatus(HttpStatus.OK.name());
+
+        requestController.approveRequest(id, principal)
+                .subscribe(response -> {
+                    Assert.assertEquals(expected.getCode(), response.getCode());
+                    Assert.assertEquals(expected.getStatus(), response.getStatus());
+                    Assert.assertEquals(expected.getData(), response.getData());
+                });
+
+        Mockito.verify(commandExecutor, Mockito.times(1)).execute(ApproveRequestCommand.class, request);
+    }
+
+    @Test
+    public void rejectRequestTest() {
+        RequestResponse data = RequestResponse.builder()
+                .user(UserResponse.builder().username("name1").build())
+                .status(RequestStatus.REJECTED)
+                .type(RequestType.ATTENDANCE)
+                .build();
+
+        String id = "id123";
+        BaseRequest request = new BaseRequest();
+        request.setId(id);
+        request.setRequester(principal.getName());
+
+        Mockito.when(commandExecutor.execute(RejectRequestCommand.class, request))
+                .thenReturn(Mono.just(data));
+
+        Response<RequestResponse> expected = new Response<>();
+        expected.setData(data);
+        expected.setCode(HttpStatus.OK.value());
+        expected.setStatus(HttpStatus.OK.name());
+
+        requestController.rejectRequest(id, principal)
+                .subscribe(response -> {
+                    Assert.assertEquals(expected.getCode(), response.getCode());
+                    Assert.assertEquals(expected.getStatus(), response.getStatus());
+                    Assert.assertEquals(expected.getData(), response.getData());
+                });
+
+        Mockito.verify(commandExecutor, Mockito.times(1)).execute(RejectRequestCommand.class, request);
     }
 
 

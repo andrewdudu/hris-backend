@@ -10,7 +10,7 @@ import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.LeaveRequestResponse;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
-import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.apache.commons.io.FileUtils;
@@ -51,7 +51,7 @@ public class RequestLeaveCommandImplTests {
     private UserRepository userRepository;
 
     @MockBean
-    private LeaveRequestRepository leaveRequestRepository;
+    private RequestRepository requestRepository;
 
     @MockBean
     private LeaveRepository leaveRepository;
@@ -106,7 +106,7 @@ public class RequestLeaveCommandImplTests {
                 .thenReturn(Mono.just(user));
         Mockito.when(dateUtil.getNewDate())
                 .thenReturn(currentDate);
-        Mockito.when(leaveRequestRepository.save(Mockito.any()))
+        Mockito.when(requestRepository.save(Mockito.any()))
                 .thenReturn(Mono.just(entity));
 
         LeaveRequestResponse expected = LeaveRequestResponse.builder()
@@ -127,7 +127,7 @@ public class RequestLeaveCommandImplTests {
 
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(leaveRequestRepository, Mockito.times(1)).save(entity);
+        Mockito.verify(requestRepository, Mockito.times(1)).save(entity);
     }
 
 }

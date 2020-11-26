@@ -3,10 +3,59 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "username": "user",
-  "password": "pass",
-  "employeeId": "ADMIN123",
-  "roles": ["ADMIN", "USER"]
+  "username": "andrew@mail.com",
+  "password": "andrewpass",
+  "employeeId": "EMP-123",
+  "roles": ["EMPLOYEE"]
+}
+
+###
+POST http://localhost:8080/api/dummy/create-employee
+Content-Type: application/json
+Accept: application/json
+
+{
+  "id": "EMP-456",
+  "name": "ADMIN",
+  "email": "admin@mail.com",
+  "position": "HR",
+  "depId": "DEP-2",
+  "organizationUnit": "05",
+  "officeId": "OFFICE-1"
+}
+
+###
+POST http://localhost:8080/api/dummy/create-office
+Content-Type: application/json
+Accept: application/json
+
+{
+  "id": "OFFICE-1",
+  "name": "MAIN OFFICE",
+  "code": "OFFICE-1",
+  "lat": 2.15,
+  "lon": 2.3
+}
+
+###
+POST http://localhost:8080/api/dummy/create-dep
+Content-Type: application/json
+Accept: application/json
+
+{
+  "id": "DEP-1",
+  "name": "Information and Technology",
+  "code": "DEP-1"
+}
+
+###
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "andrew@mail.com",
+  "password": "andrewpass"
 }
 
 ###
@@ -21,9 +70,36 @@ Set-Cookie: userToken=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxNjA1Njk5O
 GET http://localhost:8080/api/users/get-test
 
 ###
+POST http://localhost:8080/api/attendances/_clock-in
+Content-Type: application/json
+Accept: application/json
+Set-Cookie: userToken=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhbmRyZXdAbWFpbC5jb20iLCJpYXQiOjE2MDYzODYzNzYsImV4cCI6MTYwNjQ0NjM3Nn0.QTgyfyRVhtd2vP9NQQ2ZrmAufFMMf4hXL56KbreBTOgXphFFhp7rTGnwEaQNA56LcQwX9npQQWFMDY65IAqXPQ; Max-Age=25200; Expires=Thu, 26 Nov 2020 17:26:16 GMT; Secure; HttpOnly
+
+{
+  "location": {
+    "lat": 2.14,
+    "lon": 2.29
+  }
+}
+
+###
+POST http://localhost:8080/api/attendances/_clock-out
+Content-Type: application/json
+Accept: application/json
+Set-Cookie: userToken=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhbmRyZXdAbWFpbC5jb20iLCJpYXQiOjE2MDYzODYzNzYsImV4cCI6MTYwNjQ0NjM3Nn0.QTgyfyRVhtd2vP9NQQ2ZrmAufFMMf4hXL56KbreBTOgXphFFhp7rTGnwEaQNA56LcQwX9npQQWFMDY65IAqXPQ; Max-Age=25200; Expires=Thu, 26 Nov 2020 17:26:16 GMT; Secure; HttpOnly
+
+{
+  "location": {
+    "lat": 2.13,
+    "lon": 2.28
+  }
+}
+
+###
 POST http://localhost:8080/api/request/leaves
 Content-Type: application/json
 Accept: application/json
+Set-Cookie: userToken=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhbmRyZXdAbWFpbC5jb20iLCJpYXQiOjE2MDYzODYzNzYsImV4cCI6MTYwNjQ0NjM3Nn0.QTgyfyRVhtd2vP9NQQ2ZrmAufFMMf4hXL56KbreBTOgXphFFhp7rTGnwEaQNA56LcQwX9npQQWFMDY65IAqXPQ; Max-Age=25200; Expires=Thu, 26 Nov 2020 17:26:16 GMT; Secure; HttpOnly
 
 {
   "dates": ["1/1/2020", "2/1/2020"],

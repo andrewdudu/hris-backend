@@ -8,7 +8,7 @@ import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.EmployeeLeaveSummaryRepository;
-import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
@@ -36,7 +36,7 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
     private AttendanceRepository attendanceRepository;
 
     @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
+    private RequestRepository requestRepository;
 
     @Autowired
     private DateUtil dateUtil;
@@ -70,7 +70,7 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
                         })
                         .flatMap(yearAttendance -> {
                             responses.get(1).setAttendance(yearAttendance);
-                            return leaveRequestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId())
+                            return requestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId())
                                     .switchIfEmpty(Flux.just(Request.builder().dates(new ArrayList<>()).build()))
                                     .collectList();
                         })

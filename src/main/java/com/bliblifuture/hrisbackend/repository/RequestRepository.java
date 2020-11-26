@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 import java.util.Date;
 
 @Repository
-public interface LeaveRequestRepository extends ReactiveMongoRepository<Request, String> {
+public interface RequestRepository extends ReactiveMongoRepository<Request, String> {
 
     @Query("{ id: { $exists: true }}")
     Flux<Request> findAll(final Pageable pageable);
@@ -22,8 +22,10 @@ public interface LeaveRequestRepository extends ReactiveMongoRepository<Request,
 
     Mono<Request> findByEmployeeIdAndTypeAndDatesContains(String employeeId, RequestType type, Date date);
 
+    Flux<Request> findByStatusOrderByCreatedDateDesc(RequestStatus status);
+
     Mono<Integer> countByCreatedDateAfterAndStatus(Date currentDate, RequestStatus status);
 
-    Flux<Request> findByStatusOrderByCreatedDateDesc(RequestStatus status);
+    Mono<Request> findById(String id);
 
 }

@@ -1,7 +1,7 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetIncomingRequestCommand;
-import com.bliblifuture.hrisbackend.command.impl.helper.UserResponseHelper;
+import com.bliblifuture.hrisbackend.command.impl.helper.RequestResponseHelper;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.Request;
@@ -12,8 +12,7 @@ import com.bliblifuture.hrisbackend.model.response.RequestResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
 import com.bliblifuture.hrisbackend.model.response.util.AttendanceTimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
-import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
-import com.bliblifuture.hrisbackend.repository.UserRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -49,13 +48,10 @@ public class GetIncomingRequestsCommandImplTests {
     private GetIncomingRequestCommand getIncomingRequestCommand;
 
     @MockBean
-    private UserRepository userRepository;
+    private RequestRepository requestRepository;
 
     @MockBean
-    private LeaveRequestRepository leaveRequestRepository;
-
-    @MockBean
-    private UserResponseHelper userResponseHelper;
+    private RequestResponseHelper requestResponseHelper;
 
     @Test
     public void test_execute() throws ParseException {
@@ -94,11 +90,8 @@ public class GetIncomingRequestsCommandImplTests {
                 .build();
         request2.setCreatedDate(date3);
 
-        Mockito.when(leaveRequestRepository.findByStatusOrderByCreatedDateDesc(RequestStatus.valueOf(type)))
+        Mockito.when(requestRepository.findByStatusOrderByCreatedDateDesc(RequestStatus.valueOf(type)))
                 .thenReturn(Flux.just(request1, request2));
-
-        Mockito.when(userRepository.findByEmployeeId(user1.getEmployeeId())).thenReturn(Mono.just(user1));
-        Mockito.when(userRepository.findByEmployeeId(user2.getEmployeeId())).thenReturn(Mono.just(user2));
 
         UserResponse userResponse1 = UserResponse.builder()
                 .username(user1.getUsername())
@@ -109,9 +102,6 @@ public class GetIncomingRequestsCommandImplTests {
                 .username(user2.getUsername())
                 .employeeId(user2.getEmployeeId())
                 .build();
-
-        Mockito.when(userResponseHelper.getUserResponse(user1)).thenReturn(Mono.just(userResponse1));
-        Mockito.when(userResponseHelper.getUserResponse(user2)).thenReturn(Mono.just(userResponse2));
 
         AttendanceTimeResponse date = AttendanceTimeResponse.builder()
                 .start(start)
@@ -148,6 +138,9 @@ public class GetIncomingRequestsCommandImplTests {
                 .date(date3)
                 .build();
 
+        Mockito.when(requestResponseHelper.createResponse(request1)).thenReturn(Mono.just(data1));
+        Mockito.when(requestResponseHelper.createResponse(request2)).thenReturn(Mono.just(data2));
+
         List<RequestResponse> expected = Arrays.asList(data1, data2);
 
         getIncomingRequestCommand.execute(type)
@@ -157,11 +150,9 @@ public class GetIncomingRequestsCommandImplTests {
                     }
                 });
 
-        Mockito.verify(userRepository, Mockito.times(1)).findByEmployeeId(user1.getEmployeeId());
-        Mockito.verify(userRepository, Mockito.times(1)).findByEmployeeId(user2.getEmployeeId());
-        Mockito.verify(userResponseHelper, Mockito.times(1)).getUserResponse(user1);
-        Mockito.verify(userResponseHelper, Mockito.times(1)).getUserResponse(user2);
-        Mockito.verify(leaveRequestRepository, Mockito.times(1)).findByStatusOrderByCreatedDateDesc(RequestStatus.valueOf(type));
+        Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(request1);
+        Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(request2);
+        Mockito.verify(requestRepository, Mockito.times(1)).findByStatusOrderByCreatedDateDesc(RequestStatus.valueOf(type));
     }
 
 }
