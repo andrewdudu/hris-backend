@@ -3,8 +3,6 @@ package com.bliblifuture.hrisbackend.model.request;
 import com.bliblifuture.hrisbackend.model.request.util.LocationRequest;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
-
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
@@ -14,7 +12,6 @@ public class ClockInClockOutRequest extends BaseRequest{
 
     private String image;
 
-    @NotBlank
     private LocationRequest location;
 
 }

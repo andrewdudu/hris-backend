@@ -2,8 +2,10 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.ApproveRequestCommand;
 import com.bliblifuture.hrisbackend.command.impl.helper.RequestResponseHelper;
+import com.bliblifuture.hrisbackend.constant.enumerator.AttendanceLocationType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
+import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.BaseRequest;
@@ -12,8 +14,11 @@ import com.bliblifuture.hrisbackend.model.response.RequestResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
 import com.bliblifuture.hrisbackend.model.response.util.AttendanceTimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
+import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
+import com.bliblifuture.hrisbackend.repository.LeaveRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
+import com.bliblifuture.hrisbackend.util.UuidUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,10 +54,19 @@ public class ApproveRequestCommandImplTest {
     private RequestRepository requestRepository;
 
     @MockBean
+    private AttendanceRepository attendanceRepository;
+
+    @MockBean
+    private LeaveRepository leaveRepository;
+
+    @MockBean
     private RequestResponseHelper requestResponseHelper;
 
     @MockBean
     private DateUtil dateUtil;
+
+    @MockBean
+    private UuidUtil uuidUtil;
 
     @Test
     public void test_execute() throws ParseException {
@@ -89,12 +103,12 @@ public class ApproveRequestCommandImplTest {
                 .start(start)
                 .end(end)
                 .build();
-        AttendanceResponse attendance = AttendanceResponse.builder()
+        AttendanceResponse attendanceResponse = AttendanceResponse.builder()
                 .date(date)
                 .notes(notes)
                 .build();
         RequestDetailResponse detail = RequestDetailResponse.builder()
-                .attendance(attendance)
+                .attendance(attendanceResponse)
                 .build();
 
         Date currentDate = new Date();
@@ -109,7 +123,21 @@ public class ApproveRequestCommandImplTest {
         Mockito.when(requestRepository.save(newRequest)).thenReturn(Mono.just(newRequest));
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
 
-        RequestResponse expeted = RequestResponse.builder()
+        String uuid = "ATT123";
+        Mockito.when(uuidUtil.getNewID()).thenReturn(uuid);
+
+        Attendance attendance = Attendance.builder()
+                .startTime(newRequest.getClockIn())
+                .endTime(newRequest.getClockOut())
+                .locationType(AttendanceLocationType.REQUESTED)
+                .date(newRequest.getDates().get(0))
+                .build();
+        attendance.setCreatedBy(newRequest.getApprovedBy());
+        attendance.setCreatedDate(currentDate);
+        attendance.setId(uuid);
+        Mockito.when(attendanceRepository.save(attendance)).thenReturn(Mono.just(attendance));
+
+        RequestResponse expected = RequestResponse.builder()
                 .user(userResponse)
                 .status(RequestStatus.APPROVED)
                 .type(RequestType.ATTENDANCE)
@@ -117,7 +145,7 @@ public class ApproveRequestCommandImplTest {
                 .detail(detail)
                 .approvedby(admin.getUsername())
                 .build();
-        Mockito.when(requestResponseHelper.createResponse(newRequest)).thenReturn(Mono.just(expeted));
+        Mockito.when(requestResponseHelper.createResponse(newRequest)).thenReturn(Mono.just(expected));
 
         BaseRequest reqData = new BaseRequest();
         reqData.setId(request.getId());
@@ -125,12 +153,14 @@ public class ApproveRequestCommandImplTest {
 
         approveRequestCommand.execute(reqData)
                 .subscribe(response -> {
-                    Assert.assertEquals(expeted, response);
+                    Assert.assertEquals(expected, response);
                 });
 
         Mockito.verify(requestRepository, Mockito.times(1)).findById(request.getId());
         Mockito.verify(requestRepository, Mockito.times(1)).save(newRequest);
-        Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
+        Mockito.verify(dateUtil, Mockito.times(2)).getNewDate();
+        Mockito.verify(uuidUtil, Mockito.times(1)).getNewID();
+        Mockito.verify(attendanceRepository, Mockito.times(1)).save(attendance);
         Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(newRequest);
     }
 

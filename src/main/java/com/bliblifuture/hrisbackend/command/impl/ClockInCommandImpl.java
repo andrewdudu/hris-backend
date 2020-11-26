@@ -1,6 +1,5 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
-import com.blibli.oss.command.exception.CommandValidationException;
 import com.bliblifuture.hrisbackend.command.ClockInCommand;
 import com.bliblifuture.hrisbackend.constant.AttendanceConfig;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
@@ -26,9 +25,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ClockInCommandImpl implements ClockInCommand {
@@ -56,10 +55,14 @@ public class ClockInCommandImpl implements ClockInCommand {
     }
 
     private AttendanceResponse createResponse(Attendance attendance) {
-        LocationResponse locationResponse = LocationResponse.builder().lat(attendance.getStartLat()).lon(attendance.getStartLon()).build();
+        LocationResponse location = LocationResponse.builder()
+                .lat(attendance.getStartLat())
+                .lon(attendance.getStartLon())
+                .type(attendance.getLocationType())
+                .build();
         AttendanceResponse response = AttendanceResponse.builder()
                 .image(attendance.getImage())
-                .location(locationResponse)
+                .location(location)
                 .build();
 
         return response;
@@ -80,12 +83,10 @@ public class ClockInCommandImpl implements ClockInCommand {
             if (distance < AttendanceConfig.RADIUS_ALLOWED){
                 type = AttendanceLocationType.INSIDE;
                 attendance.setOfficeCode(office.getCode());
-                break;
             }
-
             else if (i == officeList.size()-1){
                 if (imageBase64 == null || imageBase64.isEmpty()){
-                    throw new CommandValidationException(Collections.singleton("REQUIRED")); //Failed Attendance
+                    throw new SecurityException("NO_IMAGE"); //Failed Attendance
                 }
 
                 String filename = "EMP" + attendance.getEmployeeId() + "_" + attendance.getStartTime() + ".webp";
@@ -98,7 +99,7 @@ public class ClockInCommandImpl implements ClockInCommand {
                     imageByte = decoder.decodeBuffer(imageBase64);
                     Files.write(path, imageByte);
                 } catch (IOException e) {
-                    throw new CommandValidationException(Collections.singleton("INVALID_FORMAT"));
+                    throw new IllegalArgumentException("INVALID_REQUEST");
                 }
 
                 attendance.setImage(FileConstant.IMAGE_ATTENDANCE_BASE_URL + filename);
@@ -111,10 +112,10 @@ public class ClockInCommandImpl implements ClockInCommand {
     @SneakyThrows
     private Attendance createAttendance(User user, ClockInClockOutRequest request) {
         Date date = dateUtil.getNewDate();
-        String dateString = date.getDate() + "/" + date.getMonth() + 1 + "/" + date.getYear() + 1900;
+        String dateString = (date.getYear() + 1900) + "-" + (date.getMonth() + 1) + "-" + date.getDate();
 
         String startTime = " 00:00:00";
-        Date startOfDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(dateString + startTime);
 
         Attendance attendance = Attendance.builder()
@@ -125,6 +126,7 @@ public class ClockInCommandImpl implements ClockInCommand {
                 .startLat(request.getLocation().getLat())
                 .startLon(request.getLocation().getLon())
                 .build();
+        attendance.setId(UUID.randomUUID().toString());
 
         return attendance;
     }
