@@ -3,10 +3,10 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "username": "admin",
-  "password": "adminpass",
-  "employeeId": "EMP-456",
-  "roles": ["EMPLOYEE", "ADMIN"]
+  "username": "andrew@mail.com",
+  "password": "andrewpass",
+  "employeeId": "EMP-123",
+  "roles": ["EMPLOYEE"]
 }
 
 ###
@@ -30,6 +30,7 @@ Content-Type: application/json
 Accept: application/json
 
 {
+  "id": "OFFICE-1",
   "name": "MAIN OFFICE",
   "code": "OFFICE-1",
   "lat": 2.15,
@@ -42,8 +43,19 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "name": "Human Resources and Development",
-  "code": "DEP-2"
+  "id": "DEP-1",
+  "name": "Information and Technology",
+  "code": "DEP-1"
+}
+
+###
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "andrew@mail.com",
+  "password": "andrewpass"
 }
 
 ###
