@@ -6,7 +6,7 @@ import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
 import com.bliblifuture.hrisbackend.model.response.AttendanceRequestResponse;
-import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
@@ -43,7 +43,7 @@ public class RequestAttendanceCommandImplTests {
     private UserRepository userRepository;
 
     @MockBean
-    private LeaveRequestRepository leaveRequestRepository;
+    private RequestRepository requestRepository;
 
     @MockBean
     private DateUtil dateUtil;
@@ -84,7 +84,7 @@ public class RequestAttendanceCommandImplTests {
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
         Mockito.when(userRepository.findByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
-        Mockito.when(leaveRequestRepository.save(entity))
+        Mockito.when(requestRepository.save(entity))
                 .thenReturn(Mono.just(entity));
 
         AttendanceRequestResponse expected = AttendanceRequestResponse.builder()
@@ -106,7 +106,7 @@ public class RequestAttendanceCommandImplTests {
 
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(leaveRequestRepository, Mockito.times(1)).save(entity);
+        Mockito.verify(requestRepository, Mockito.times(1)).save(entity);
     }
 
 }

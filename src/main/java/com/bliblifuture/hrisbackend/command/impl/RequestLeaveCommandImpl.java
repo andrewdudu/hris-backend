@@ -10,7 +10,7 @@ import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.LeaveRequestResponse;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
-import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
     private UserRepository userRepository;
 
     @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
+    private RequestRepository requestRepository;
 
     @Autowired
     private LeaveRepository leaveRepository;
@@ -41,7 +41,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
     public Mono<LeaveRequestResponse> execute(LeaveRequestData request) {
         return userRepository.findByUsername(request.getRequester())
                 .flatMap(user -> callHelper(request, user))
-                .flatMap(leaveRequest -> leaveRequestRepository.save(leaveRequest))
+                .flatMap(leaveRequest -> requestRepository.save(leaveRequest))
                 .map(RequestLeaveCommandImpl::createResponse);
     }
 

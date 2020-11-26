@@ -40,7 +40,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     private EventRepository eventRepository;
 
     @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
+    private RequestRepository requestRepository;
 
     @Autowired
     private DateUtil dateUtil;
@@ -87,7 +87,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                         return eventRepository.findByDate(startOfDate);
                     })
                     .map(event -> setCalendarResponse(startOfDate, response, event))
-                    .flatMap(res -> leaveRequestRepository.countByCreatedDateAfterAndStatus(startOfDate, RequestStatus.REQUESTED))
+                    .flatMap(res -> requestRepository.countByCreatedDateAfterAndStatus(startOfDate, RequestStatus.REQUESTED))
                     .map(totalIncomingRequest -> {
                         response.getRequest().setIncoming(totalIncomingRequest);
                         return response;

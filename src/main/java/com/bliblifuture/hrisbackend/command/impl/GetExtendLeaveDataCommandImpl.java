@@ -27,7 +27,7 @@ public class GetExtendLeaveDataCommandImpl implements GetExtendLeaveDataCommand 
     private LeaveRepository leaveRepository;
 
     @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
+    private RequestRepository requestRepository;
 
     @Autowired
     private DateUtil dateUtil;
@@ -40,7 +40,7 @@ public class GetExtendLeaveDataCommandImpl implements GetExtendLeaveDataCommand 
         Date extensionDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse((year+1) + "-3-1 00:00:00");
 
         return userRepository.findByUsername(username)
-                .flatMap(user -> leaveRequestRepository
+                .flatMap(user -> requestRepository
                         .findByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, extensionDate)
                         .switchIfEmpty(Mono.just(Request.builder().build()))
                         .map(leaveRequest -> setResponseStatus(leaveRequest, currentDate))

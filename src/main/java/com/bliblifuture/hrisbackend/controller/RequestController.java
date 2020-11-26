@@ -5,6 +5,7 @@ import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.*;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
+import com.bliblifuture.hrisbackend.model.request.BaseRequest;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.AttendanceRequestResponse;
 import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
@@ -61,9 +62,31 @@ public class RequestController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/api/requests")
+    @GetMapping("/api/requests")
     public Mono<Response<List<RequestResponse>>> getIncomingRequests(@RequestParam("type") String type){
         return commandExecutor.execute(GetIncomingRequestCommand.class, type)
+                .map(ResponseHelper::ok)
+                .subscribeOn(Schedulers.elastic());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/api/requests/{id}/_approve")
+    public Mono<Response<RequestResponse>> approveRequest(@PathVariable("id") String id, Principal principal){
+        BaseRequest request = new BaseRequest();
+        request.setId(id);
+        request.setRequester(principal.getName());
+        return commandExecutor.execute(ApproveRequestCommand.class, request)
+                .map(ResponseHelper::ok)
+                .subscribeOn(Schedulers.elastic());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/api/requests/{id}/_reject")
+    public Mono<Response<RequestResponse>> rejectRequest(@PathVariable("id") String id, Principal principal){
+        BaseRequest request = new BaseRequest();
+        request.setId(id);
+        request.setRequester(principal.getName());
+        return commandExecutor.execute(RejectRequestCommand.class, request)
                 .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());
     }
