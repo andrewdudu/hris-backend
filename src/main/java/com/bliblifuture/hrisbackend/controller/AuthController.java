@@ -32,7 +32,7 @@ public class AuthController extends WebMvcProperties {
                             .addCookie(ResponseCookie
                                     .from("userToken", loginResponse.getAccessToken())
                                     .maxAge(7*3600)
-                                    .secure(true)
+                                    .secure(false)
                                     .httpOnly(true)
                                     .build());
                     return ResponseHelper.ok(loginResponse.getUserResponse());
