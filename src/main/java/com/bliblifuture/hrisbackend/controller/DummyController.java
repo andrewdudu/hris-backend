@@ -83,6 +83,7 @@ public class DummyController {
     @SneakyThrows
     public Mono<Response<Leave>> createLeave(@RequestBody Leave leave){
         leave.setId(UUID.randomUUID().toString());
+        leave.setExpDate(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2021-1-1"));
         return leaveRepository.save(leave)
                 .map(res -> ResponseHelper.ok(res));
     }

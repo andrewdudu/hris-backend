@@ -44,7 +44,7 @@ public class GetLeavesQuotaCommandImpl implements GetLeavesQuotaCommand {
         List<LeaveResponse> responses = Arrays.asList(
                 LeaveResponse.builder().type(LeaveType.annual).build(),
                 LeaveResponse.builder().type(LeaveType.extra).build(),
-                LeaveResponse.builder().type(LeaveType.subtitute)
+                LeaveResponse.builder().type(LeaveType.substitute)
                         .expiries(new ArrayList<>()).remaining(0).used(0).build()
         );
 

@@ -58,7 +58,7 @@ public class UserControllerTests {
     public void getAvailableRequestsTest(){
         List<RequestType> requestTypes = Arrays.asList(
                 RequestType.ANNUAL_LEAVE, RequestType.ATTENDANCE, RequestType.SPECIAL_LEAVE,
-                RequestType.SUBTITUTE_LEAVE, RequestType.EXTRA_LEAVE, RequestType.EXTEND_ANNUAL_LEAVE);
+                RequestType.SUBSTITUTE_LEAVE, RequestType.EXTRA_LEAVE, RequestType.EXTEND_ANNUAL_LEAVE);
 
         Mockito.when(commandExecutor.execute(GetAvailableRequestsCommand.class, username))
                 .thenReturn(Mono.just(requestTypes));

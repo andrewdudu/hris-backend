@@ -55,7 +55,7 @@ public class RequestResponseHelper {
             case ANNUAL_LEAVE:
             case EXTRA_LEAVE:
             case SPECIAL_LEAVE:
-            case SUBTITUTE_LEAVE:
+            case SUBSTITUTE_LEAVE:
                 response.setType(RequestType.LEAVE);
                 return setLeaveRequestResponse(response, request);
             default:

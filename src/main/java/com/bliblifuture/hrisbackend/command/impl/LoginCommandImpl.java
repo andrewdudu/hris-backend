@@ -47,7 +47,6 @@ public class LoginCommandImpl implements LoginCommand {
             String token = jwtTokenUtil.generateToken(user);
             LoginResponse response = LoginResponse.builder()
                     .accessToken(token).build();
-
             return userResponseHelper.getUserResponse(user)
                     .map(userResponse -> {
                         response.setUserResponse(userResponse);

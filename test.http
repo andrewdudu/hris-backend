@@ -37,12 +37,10 @@ Accept: application/json
 
 {
   "employeeId": "EMP-123",
-  "name": "ADMIN",
-  "email": "admin@mail.com",
-  "position": "HR",
-  "depId": "DEP-2",
-  "organizationUnit": "05",
-  "officeId": "OFFICE-1"
+  "code": "SUBS",
+  "type": "substitute",
+  "remaining": 3,
+  "used": 0
 }
 
 ###

@@ -55,7 +55,7 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
         response.add(RequestType.ATTENDANCE);
         response.add(RequestType.ANNUAL_LEAVE);
         response.add(RequestType.SPECIAL_LEAVE);
-        response.add(RequestType.SUBTITUTE_LEAVE);
+        response.add(RequestType.SUBSTITUTE_LEAVE);
 
         Date currentDate = dateUtil.getNewDate();
 

@@ -64,8 +64,8 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
                         .thenReturn(request);
             case EXTEND_ANNUAL_LEAVE:
                 return approveExtendAnnualLeave(request);
-            case SUBTITUTE_LEAVE:
-                leaveType = LeaveType.subtitute;
+            case SUBSTITUTE_LEAVE:
+                leaveType = LeaveType.substitute;
                 return applyLeave(request, leaveType);
             case EXTRA_LEAVE:
                 leaveType = LeaveType.extra;
