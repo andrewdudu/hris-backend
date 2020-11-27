@@ -31,6 +31,21 @@ Accept: application/json
 }
 
 ###
+POST http://localhost:8080/api/dummy/create-leave
+Content-Type: application/json
+Accept: application/json
+
+{
+  "employeeId": "EMP-123",
+  "name": "ADMIN",
+  "email": "admin@mail.com",
+  "position": "HR",
+  "depId": "DEP-2",
+  "organizationUnit": "05",
+  "officeId": "OFFICE-1"
+}
+
+###
 POST http://localhost:8080/api/dummy/create-office
 Content-Type: application/json
 Accept: application/json

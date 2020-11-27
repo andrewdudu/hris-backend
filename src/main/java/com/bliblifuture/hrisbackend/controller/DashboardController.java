@@ -7,7 +7,7 @@ import com.bliblifuture.hrisbackend.command.GetDashboardSummaryCommand;
 import com.bliblifuture.hrisbackend.model.response.DashboardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
@@ -23,7 +23,7 @@ public class DashboardController {
     private CommandExecutor commandExecutor;
 
     @PreAuthorize("hasRole('EMPLOYEE')")
-    @PostMapping("/summary")
+    @GetMapping("/summary")
     public Mono<Response<DashboardResponse>> getEmployeeDashboard(Principal principal){
         return commandExecutor.execute(GetDashboardSummaryCommand.class, principal.getName())
                 .map(ResponseHelper::ok)

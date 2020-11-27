@@ -7,10 +7,7 @@ import com.bliblifuture.hrisbackend.config.JwtTokenUtil;
 import com.bliblifuture.hrisbackend.config.PassEncoder;
 import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
 import com.bliblifuture.hrisbackend.model.entity.*;
-import com.bliblifuture.hrisbackend.repository.DepartmentRepository;
-import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
-import com.bliblifuture.hrisbackend.repository.OfficeRepository;
-import com.bliblifuture.hrisbackend.repository.UserRepository;
+import com.bliblifuture.hrisbackend.repository.*;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +19,7 @@ import reactor.core.publisher.Mono;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/dummy")
@@ -41,6 +39,9 @@ public class DummyController {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private LeaveRepository leaveRepository;
 
     @Autowired
     private OfficeRepository officeRepository;
@@ -75,6 +76,14 @@ public class DummyController {
     @SneakyThrows
     public Mono<Response<Department>> createDep(@RequestBody Department department){
         return departmentRepository.save(department)
+                .map(res -> ResponseHelper.ok(res));
+    }
+
+    @PostMapping("/create-leave")
+    @SneakyThrows
+    public Mono<Response<Leave>> createLeave(@RequestBody Leave leave){
+        leave.setId(UUID.randomUUID().toString());
+        return leaveRepository.save(leave)
                 .map(res -> ResponseHelper.ok(res));
     }
 
