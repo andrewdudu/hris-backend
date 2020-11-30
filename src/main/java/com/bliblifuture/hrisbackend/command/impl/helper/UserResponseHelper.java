@@ -41,6 +41,7 @@ public class UserResponseHelper {
                 .username(user.getUsername())
                 .employeeId(user.getEmployeeId())
                 .build();
+        userResponse.setId(user.getEmployeeId());
 
         return employeeRepository.findById(user.getEmployeeId())
                 .flatMap(employee -> {

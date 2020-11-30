@@ -16,6 +16,7 @@ import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class ClockOutCommandImpl implements ClockOutCommand {
@@ -42,13 +43,13 @@ public class ClockOutCommandImpl implements ClockOutCommand {
     private Attendance updateAttendance(Attendance attendance, ClockInClockOutRequest request) {
         attendance.setEndLat(request.getLocation().getLat());
         attendance.setEndLon(request.getLocation().getLon());
-        attendance.setEndTime(dateUtil.getNewDate());
 
         return attendance;
     }
 
     private AttendanceResponse createResponse(Attendance attendance) {
-        LocationResponse location = LocationResponse.builder().lat(attendance.getStartLat()).lon(attendance.getStartLon()).build();
+        LocationResponse location = LocationResponse.builder()
+                .lat(attendance.getEndLat()).lon(attendance.getEndLon()).build();
         AttendanceResponse response = AttendanceResponse.builder()
                 .location(location)
                 .build();
@@ -58,20 +59,30 @@ public class ClockOutCommandImpl implements ClockOutCommand {
 
     @SneakyThrows
     private Mono<Attendance> getTodayAttendance(User user) {
-        Date date = dateUtil.getNewDate();
-        String dateString = (date.getYear() + 1900) + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+        Date currentTime = dateUtil.getNewDate();
+        String dateString = (currentTime.getYear() + 1900) + "-" + (currentTime.getMonth() + 1) + "-" + currentTime.getDate();
 
         String startTime = " 00:00:00";
         Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(dateString + startTime);
 
         return attendanceRepository.findFirstByEmployeeIdAndDate(user.getEmployeeId(), startOfDate)
-                .doOnSuccess(this::checkValidity);
+                .doOnSuccess(attendance -> checkValidity(attendance, currentTime))
+                .map(attendance -> {
+                    attendance.setEndTime(currentTime);
+                    return attendance;
+                });
     }
 
-    private void checkValidity(Attendance attendance) {
-        if (attendance == null || attendance.getStartTime() == null){
-            throw new NullPointerException("Clock-out not available");
+    private void checkValidity(Attendance attendance, Date currentTime) {
+        if (attendance == null){
+            throw new IllegalArgumentException("Clock-out not available");
+        }
+
+        long availableClockoutTime = attendance.getStartTime().getTime() + TimeUnit.HOURS.toMillis(8);
+        Date clockoutAvailable = new Date(availableClockoutTime);
+        if (attendance.getStartTime() == null || currentTime.before(clockoutAvailable) || attendance.getEndTime() != null){
+            throw new SecurityException("Clock-out not available");
         }
     }
 

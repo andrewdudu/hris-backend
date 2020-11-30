@@ -1,6 +1,7 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetDashboardSummaryCommand;
+import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
@@ -20,7 +21,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -54,10 +54,10 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     @SneakyThrows
     private Mono<DashboardResponse> getResponse(User user) {
         Date now = dateUtil.getNewDate();
-        String startDate = now.getDate() + "/" + now.getMonth()+1 + "/" + now.getYear()+1900;
+        String startDate = (now.getYear()+1900) + "-" + (now.getMonth()+1) + "-" + now.getDate();
 
         String startTime = " 00:00:00";
-        Date startOfDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(startDate + startTime);
 
         CalendarResponse calendarResponse = CalendarResponse.builder().date(startOfDate).build();
@@ -93,12 +93,14 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                         return response;
                     });
         }
-
         Pageable pageable = PageRequest.of(0, 2);
 
         return attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable).collectList()
-                .map(attendanceList -> setAttendanceResponse(attendanceList, response, startOfDate))
+                .map(attendanceList -> {
+                    return setAttendanceResponse(attendanceList, response, startOfDate);
+                })
                 .flatMap(res -> eventRepository.findByDate(startOfDate))
+                .switchIfEmpty(Mono.just(Event.builder().build()))
                 .map(event -> setCalendarResponse(startOfDate, response, event));
     }
 
@@ -116,49 +118,66 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     }
 
     private DashboardResponse setAttendanceResponse(List<Attendance> res, DashboardResponse response, Date currentStartDate) {
-        AttendanceTimeResponse date = AttendanceTimeResponse.builder().build();
-        LocationResponse location = LocationResponse.builder().build();
-
-        AttendanceResponse current = AttendanceResponse.builder().date(date).location(location).build();
-        AttendanceResponse latest = AttendanceResponse.builder().date(date).location(location).build();
+        AttendanceResponse current = AttendanceResponse.builder().build();
+        AttendanceResponse latest = AttendanceResponse.builder().build();
 
         if (res.get(0).getStartTime().before(currentStartDate)){
             Attendance latestAttendance = res.get(0);
-            latest.getDate().setStart(latestAttendance.getStartTime());
-            latest.getDate().setEnd(latestAttendance.getEndTime());
-            latest.getLocation().setType(latestAttendance.getLocationType());
-
-            current.getDate().setStart(null);
-            current.getDate().setEnd(null);
-            current.getLocation().setType(null);
+            latest.setDate(
+                    AttendanceTimeResponse.builder()
+                            .start(latestAttendance.getStartTime())
+                            .end(latestAttendance.getEndTime())
+                            .build()
+            );
+            latest.setLocation(
+                    LocationResponse.builder()
+                            .type(latestAttendance.getLocationType())
+                            .build()
+            );
         }
         else{
             Attendance latestAttendance = res.get(1);
-            latest.getDate().setStart(latestAttendance.getStartTime());
-            latest.getDate().setEnd(latestAttendance.getEndTime());
-            latest.getLocation().setType(latestAttendance.getLocationType());
+            latest.setDate(
+                    AttendanceTimeResponse.builder()
+                            .start(latestAttendance.getStartTime())
+                            .end(latestAttendance.getEndTime())
+                            .build()
+            );
+            latest.setLocation(
+                    LocationResponse.builder()
+                            .type(latestAttendance.getLocationType())
+                            .build()
+            );
 
             Attendance currentAttendance = res.get(0);
-            current.getDate().setStart(currentAttendance.getStartTime());
-            current.getDate().setEnd(currentAttendance.getEndTime());
-            current.getLocation().setType(currentAttendance.getLocationType());
+            current.setDate(
+                    AttendanceTimeResponse.builder()
+                            .start(currentAttendance.getStartTime())
+                            .end(currentAttendance.getEndTime())
+                            .build()
+            );
+            current.setLocation(
+                    LocationResponse.builder()
+                            .type(currentAttendance.getLocationType())
+                            .build()
+            );
         }
 
-        response.setAttendance(Arrays.asList(current, latest));
+        response.setAttendance(
+                DashboardAttendanceResponse.builder().current(current).latest(latest).build()
+        );
         return response;
     }
 
     private DashboardResponse setCalendarResponse(Date currentDate, DashboardResponse response, Event event) {
-        response.getCalendar().setDate(currentDate);
-        response.getCalendar().setStatus(getStatusHoliday(response, event));
-        return response;
-    }
-
-    private String getStatusHoliday(DashboardResponse res, Event event){
-        if (event.getStatus().equals("HOLIDAY")){
-            res.getCalendar().setStatus(event.getStatus());
+        if (event.getId() == null){
+            response.getCalendar().setStatus(CalendarStatus.WORKING);
         }
-        return "WORKING";
+        else{
+            response.getCalendar().setStatus(event.getStatus());
+        }
+        response.getCalendar().setDate(currentDate);
+        return response;
     }
 
 }

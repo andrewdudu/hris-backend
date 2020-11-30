@@ -38,10 +38,10 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
     @Override
     public Mono<LeavesReportResponse> execute(String employeeId) {
         Date currentDate = dateUtil.getNewDate();
-        int year = currentDate.getYear() + 1899;
+        int year = currentDate.getYear() + 1900;
 
         Date lastTimeOfLastYear = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
-                .parse("31/12/" + year + " 23:59:59");
+                .parse("31/12/" + (year-1) + " 23:59:59");
 
         String theYear = String.valueOf(year);
 
@@ -53,7 +53,7 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
                 .map(employeeLeaveSummary -> setLeavesData(employeeLeaveSummary, response))
                 .flatMap(res -> attendanceRepository.countByEmployeeIdAndDateAfter(employeeId, lastTimeOfLastYear))
                 .flatMap(attendance -> {
-                    response.setAttendance(attendance);
+                    response.setAttendance(Math.toIntExact(attendance));
                     return leaveRepository.findByEmployeeIdAndExpDateAfterAndTypeOrType(employeeId, lastTimeOfLastYear, LeaveType.annual, LeaveType.extra)
                             .collectList();
                 })

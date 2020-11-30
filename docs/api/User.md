@@ -17,6 +17,7 @@
   "code": 200,
   "status": "Success",
   "data": {
+    "id": "nik employee",
     "username": "example@example.com",
     "name": "John Doe",
     "roles": ["EMPLOYEE"],

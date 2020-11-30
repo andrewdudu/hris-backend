@@ -1,5 +1,6 @@
 package com.bliblifuture.hrisbackend.model.entity;
 
+import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -24,5 +25,5 @@ public class Event extends BaseEntity {
     private String description;
 
     @Field(name = "status")
-    private String status;
+    private CalendarStatus status;
 }

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
@@ -38,6 +39,7 @@ public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
                 .parse("31/12/" + year + " 23:59:59");
 
         return eventRepository.findAllByDateAfterOrderByDateAsc(lastTimeOfLastYear, pageable)
+                .switchIfEmpty(Flux.empty())
                 .map(events -> events.createResponse(events, new AnnouncementResponse()))
                 .collectList()
                 .flatMap(announcementResponseList -> {

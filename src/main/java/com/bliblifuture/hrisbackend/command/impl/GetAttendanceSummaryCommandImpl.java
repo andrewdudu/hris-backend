@@ -65,11 +65,11 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
         return userRepository.findByUsername(username)
                 .flatMap(user -> attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentMonth)
                         .flatMap(monthAttendance -> {
-                            responses.get(0).setAttendance(monthAttendance);
+                            responses.get(0).setAttendance(Math.toIntExact(monthAttendance));
                             return attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentYear);
                         })
                         .flatMap(yearAttendance -> {
-                            responses.get(1).setAttendance(yearAttendance);
+                            responses.get(1).setAttendance(Math.toIntExact(yearAttendance));
                             return requestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId())
                                     .switchIfEmpty(Flux.just(Request.builder().dates(new ArrayList<>()).build()))
                                     .collectList();

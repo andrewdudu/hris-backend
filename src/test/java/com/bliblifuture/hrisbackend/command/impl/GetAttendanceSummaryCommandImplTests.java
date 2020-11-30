@@ -79,14 +79,14 @@ public class GetAttendanceSummaryCommandImplTests {
 
         Date startOfCurrentMonth = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-11-1");
 
-        Integer thisMonthAttendance = 15;
+        long thisMonthAttendance = 15;
 
         Mockito.when(attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentMonth))
                 .thenReturn(Mono.just(thisMonthAttendance));
 
         Date startOfCurrentYear = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-1-1");
 
-        Integer thisYearAttendance = 215;
+        long thisYearAttendance = 215;
 
         Mockito.when(attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentYear))
                 .thenReturn(Mono.just(thisYearAttendance));
@@ -128,12 +128,12 @@ public class GetAttendanceSummaryCommandImplTests {
 
         AttendanceSummaryResponse month = AttendanceSummaryResponse.builder()
                 .absent(expectedThisMonthLeaves)
-                .attendance(thisMonthAttendance)
+                .attendance((int) thisMonthAttendance)
                 .build();
 
         AttendanceSummaryResponse year = AttendanceSummaryResponse.builder()
                 .absent(expectedThisYearLeaves)
-                .attendance(thisYearAttendance)
+                .attendance((int) thisYearAttendance)
                 .build();
 
         List<AttendanceSummaryResponse> expected = Arrays.asList(month, year);

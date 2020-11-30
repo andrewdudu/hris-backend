@@ -16,7 +16,7 @@ public interface AttendanceRepository extends ReactiveMongoRepository<Attendance
     @Query("{ id: { $exists: true }}")
     Flux<Attendance> findAll(final Pageable pageable);
 
-    Mono<Integer> countByEmployeeIdAndDateAfter(String employeeId, Date date);
+    Mono<Long> countByEmployeeIdAndDateAfter(String employeeId, Date date);
 
     Flux<Attendance> findAllByEmployeeIdOrderByStartTimeDesc(String employeeId, Pageable pageable);
 

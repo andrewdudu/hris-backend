@@ -44,6 +44,9 @@ public class DummyController {
     private LeaveRepository leaveRepository;
 
     @Autowired
+    private EventRepository eventRepository;
+
+    @Autowired
     private OfficeRepository officeRepository;
 
     @Autowired
@@ -83,8 +86,17 @@ public class DummyController {
     @SneakyThrows
     public Mono<Response<Leave>> createLeave(@RequestBody Leave leave){
         leave.setId(UUID.randomUUID().toString());
-        leave.setExpDate(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2021-1-1"));
+        leave.setExpDate(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2021-1-3"));
         return leaveRepository.save(leave)
+                .map(res -> ResponseHelper.ok(res));
+    }
+
+    @PostMapping("/create-event")
+    @SneakyThrows
+    public Mono<Response<Event>> createEvent(@RequestBody Event event){
+        event.setId(UUID.randomUUID().toString());
+        event.setDate(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-2"));
+        return eventRepository.save(event)
                 .map(res -> ResponseHelper.ok(res));
     }
 

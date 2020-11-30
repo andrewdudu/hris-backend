@@ -48,7 +48,7 @@ public class ClockInCommandImpl implements ClockInCommand {
     public Mono<AttendanceResponse> execute(ClockInClockOutRequest request) {
         return Mono.fromCallable(request::getRequester)
                 .flatMap(username -> userRepository.findByUsername(username))
-                .map(user -> createAttendance(user, request))
+                .flatMap(user -> createAttendance(user, request))
                 .flatMap(attendance -> clockInProcess(attendance, request))
                 .flatMap(attendance -> attendanceRepository.save(attendance))
                 .map(this::createResponse);
@@ -74,7 +74,8 @@ public class ClockInCommandImpl implements ClockInCommand {
                 .map(officeList -> checkLocationAndImage(attendance, request.getImage(), officeList));
     }
 
-    private Attendance checkLocationAndImage(Attendance attendance, String imageBase64, List<Office> officeList) {
+    @SneakyThrows
+    private Attendance checkLocationAndImage(Attendance attendance, String base64, List<Office> officeList) {
         AttendanceLocationType type = AttendanceLocationType.OUTSIDE;
         for (int i = 0; i < officeList.size(); i++) {
             Office office = officeList.get(i);
@@ -85,8 +86,8 @@ public class ClockInCommandImpl implements ClockInCommand {
                 attendance.setOfficeCode(office.getCode());
             }
             else if (i == officeList.size()-1){
-                if (imageBase64 == null || imageBase64.isEmpty()){
-                    throw new SecurityException("NO_IMAGE"); //Failed Attendance
+                if (base64 == null || base64.isEmpty()){
+                    throw new IllegalArgumentException("INVALID_FORMAT");
                 }
 
                 String filename = "EMP" + attendance.getEmployeeId() + "_" + attendance.getStartTime() + ".webp";
@@ -96,10 +97,11 @@ public class ClockInCommandImpl implements ClockInCommand {
                 byte[] imageByte;
                 BASE64Decoder decoder = new BASE64Decoder();
                 try {
-                    imageByte = decoder.decodeBuffer(imageBase64);
+                    String[] base64Parts = base64.split(";");
+                    imageByte = decoder.decodeBuffer(base64Parts[1]);
                     Files.write(path, imageByte);
                 } catch (IOException e) {
-                    throw new IllegalArgumentException("INVALID_REQUEST");
+                    throw new IOException("IMAGE_ERROR");
                 }
 
                 attendance.setImage(FileConstant.IMAGE_ATTENDANCE_BASE_URL + filename);
@@ -110,7 +112,7 @@ public class ClockInCommandImpl implements ClockInCommand {
     }
 
     @SneakyThrows
-    private Attendance createAttendance(User user, ClockInClockOutRequest request) {
+    private Mono<Attendance> createAttendance(User user, ClockInClockOutRequest request) {
         Date date = dateUtil.getNewDate();
         String dateString = (date.getYear() + 1900) + "-" + (date.getMonth() + 1) + "-" + date.getDate();
 
@@ -128,7 +130,15 @@ public class ClockInCommandImpl implements ClockInCommand {
                 .build();
         attendance.setId(UUID.randomUUID().toString());
 
-        return attendance;
+        return attendanceRepository.findFirstByEmployeeIdAndDate(user.getEmployeeId(), startOfDate)
+                .doOnSuccess(this::checkIfExists)
+                .thenReturn(attendance);
+    }
+
+    private void checkIfExists(Attendance attendance) {
+        if (attendance != null){
+            throw new IllegalArgumentException("Clock-in not available");
+        }
     }
 
 }
