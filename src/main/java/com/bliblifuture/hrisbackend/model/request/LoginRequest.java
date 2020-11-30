@@ -13,10 +13,10 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 public class LoginRequest {
 
-    @NotBlank
+    @NotBlank(message = "Username is empty")
     private String username;
 
-    @NotBlank
+    @NotBlank(message = "Password is empty")
     private String password;
 
 }

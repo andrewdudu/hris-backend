@@ -1,9 +1,9 @@
 package com.bliblifuture.hrisbackend.command.impl.helper;
 
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.model.entity.Leave;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.util.DateUtil;
@@ -15,7 +15,7 @@ import java.util.List;
 
 public class AnnualLeaveRequestHelper {
 
-    public LeaveRequest processRequest(LeaveRequestData data, User user, List<Leave> leaves, long currentDateTime){
+    public Request processRequest(LeaveRequestData data, User user, List<Leave> leaves, long currentDateTime){
         checkRemainingLeave(leaves, data);
         return createRequest(data, user.getEmployeeId(), currentDateTime);
     }
@@ -31,7 +31,7 @@ public class AnnualLeaveRequestHelper {
         }
     }
 
-    private LeaveRequest createRequest(LeaveRequestData data, String employeeId, long currentDateTime) {
+    private Request createRequest(LeaveRequestData data, String employeeId, long currentDateTime) {
         List<Date> dates = new ArrayList<>();
         for (String dateString : data.getDates()) {
             try {
@@ -43,20 +43,20 @@ public class AnnualLeaveRequestHelper {
             }
         }
 
-        LeaveRequest leaveRequest = LeaveRequest.builder()
+        Request request = Request.builder()
                 .employeeId(employeeId)
                 .dates(dates)
                 .notes(data.getNotes())
-                .type(RequestLeaveType.valueOf(data.getType()))
+                .type(RequestType.valueOf(data.getType()))
                 .status(RequestStatus.REQUESTED)
                 .build();
 
         if (data.getFiles() != null){
             List<String> files = FileHelper.saveFiles(data, employeeId, currentDateTime);
-            leaveRequest.setFiles(files);
+            request.setFiles(files);
         }
 
-        return leaveRequest;
+        return request;
     }
 
 }

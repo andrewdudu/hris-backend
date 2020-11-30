@@ -1,7 +1,7 @@
 package com.bliblifuture.hrisbackend.model.entity;
 
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -11,12 +11,12 @@ import java.util.Date;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
-@Document(collection = "leave_request")
+@Document(collection = "request")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class LeaveRequest extends BaseEntity {
+public class Request extends BaseEntity {
 
     @Field(name = "employee_id")
     private String employeeId;
@@ -25,13 +25,19 @@ public class LeaveRequest extends BaseEntity {
     private String notes;
 
     @Field(name = "type")
-    private RequestLeaveType type;
+    private RequestType type;
 
     @Field(name = "special_request_type")
     private SpecialLeaveType specialLeaveType;
 
     @Field(name = "dates")
     private List<Date> dates;
+
+    @Field(name = "clock_in")
+    private Date clockIn;
+
+    @Field(name = "clock_out")
+    private Date clockOut;
 
     @Field(name = "files")
     private List<String> files;

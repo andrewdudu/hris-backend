@@ -34,6 +34,10 @@ public class ErrorHandler implements ErrorWebFluxControllerHandler, MessageSourc
         return log;
     }
 
+//    public Map<String, List<String>> returnError(){
+//
+//    }
+
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(CommandValidationException.class)
     public Response<Object> commandValidationException(CommandValidationException e) {
@@ -59,7 +63,7 @@ public class ErrorHandler implements ErrorWebFluxControllerHandler, MessageSourc
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(SecurityException.class)
-    public Response<Object> unauthorizedException(SecurityException e) {
+    public Response<Object> credentialException(SecurityException e) {
         Response<Object> response = new Response<>();
 
         response.setCode(HttpStatus.BAD_REQUEST.value());
@@ -68,8 +72,8 @@ public class ErrorHandler implements ErrorWebFluxControllerHandler, MessageSourc
         return getErrorMessage(response, "credential", e.getMessage(), e);
     }
 
-    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
-    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(IllegalArgumentException.class)
     public Response<Object> notAcceptableRequest(IllegalArgumentException e) {
         Response<Object> response = new Response<>();
 

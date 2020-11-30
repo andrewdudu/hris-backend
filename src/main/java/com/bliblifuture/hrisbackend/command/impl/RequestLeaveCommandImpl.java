@@ -4,13 +4,13 @@ import com.bliblifuture.hrisbackend.command.RequestLeaveCommand;
 import com.bliblifuture.hrisbackend.command.impl.helper.*;
 import com.bliblifuture.hrisbackend.constant.LeaveTypeConstant;
 import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.LeaveRequestResponse;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
-import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
     private UserRepository userRepository;
 
     @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
+    private RequestRepository requestRepository;
 
     @Autowired
     private LeaveRepository leaveRepository;
@@ -41,11 +41,11 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
     public Mono<LeaveRequestResponse> execute(LeaveRequestData request) {
         return userRepository.findByUsername(request.getRequester())
                 .flatMap(user -> callHelper(request, user))
-                .flatMap(leaveRequest -> leaveRequestRepository.save(leaveRequest))
+                .flatMap(leaveRequest -> requestRepository.save(leaveRequest))
                 .map(RequestLeaveCommandImpl::createResponse);
     }
 
-    private Mono<LeaveRequest> callHelper(LeaveRequestData request, User user) {
+    private Mono<Request> callHelper(LeaveRequestData request, User user) {
         long currentDateTime = dateUtil.getNewDate().getTime();
         switch (request.getType()){
             case LeaveTypeConstant.ANNUAL_LEAVE:
@@ -53,7 +53,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
                         .collectList()
                         .map(leaves -> new AnnualLeaveRequestHelper().processRequest(request, user, leaves, currentDateTime));
             case LeaveTypeConstant.SUBTITUTE_LEAVE:
-                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(user.getEmployeeId(), LeaveType.subtitute, dateUtil.getNewDate(), 0)
+                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(user.getEmployeeId(), LeaveType.substitute, dateUtil.getNewDate(), 0)
                         .collectList()
                         .map(leaves -> new SubtituteLeaveRequestHelper().processRequest(request, user, leaves, currentDateTime));
             case LeaveTypeConstant.EXTRA_LEAVE:
@@ -76,25 +76,25 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
         }
     }
 
-    private static LeaveRequestResponse createResponse(LeaveRequest leaveRequest) {
+    private static LeaveRequestResponse createResponse(Request request) {
         List<String> dates = new ArrayList<>();
-        for (Date dateString : leaveRequest.getDates()) {
+        for (Date dateString : request.getDates()) {
             String date = new SimpleDateFormat(DateUtil.DATE_FORMAT).format(dateString);
             dates.add(date);
         }
 
         LeaveRequestResponse response = LeaveRequestResponse.builder()
-                .files(leaveRequest.getFiles())
+                .files(request.getFiles())
                 .dates(dates)
-                .notes(leaveRequest.getNotes())
+                .notes(request.getNotes())
                 .build();
-        if (leaveRequest.getType().equals(RequestLeaveType.SPECIAL_LEAVE)){
-            response.setType(leaveRequest.getSpecialLeaveType().toString());
+        if (request.getType().equals(RequestType.SPECIAL_LEAVE)){
+            response.setType(request.getSpecialLeaveType().toString());
         }
         else {
-            response.setType(leaveRequest.getType().toString());
+            response.setType(request.getType().toString());
         }
-        response.setId(leaveRequest.getId());
+        response.setId(request.getId());
 
         return response;
     }

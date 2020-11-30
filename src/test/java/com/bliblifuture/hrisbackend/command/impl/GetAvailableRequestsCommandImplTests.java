@@ -1,10 +1,12 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAvailableRequestsCommand;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
+import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
 import com.bliblifuture.hrisbackend.model.entity.Employee;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
+import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,6 +22,7 @@ import reactor.core.publisher.Mono;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -41,12 +44,16 @@ public class GetAvailableRequestsCommandImplTests {
     private EmployeeRepository employeeRepository;
 
     @MockBean
+    private UserRepository userRepository;
+
+    @MockBean
     private DateUtil dateUtil;
 
     @Test
     public void test_execute() throws ParseException {
 
-        User user = User.builder().username("username").build();
+        User user = User.builder().username("username")
+                .roles(Arrays.asList(UserRole.EMPLOYEE, UserRole.ADMIN)).build();
 
         Date currentDate = new SimpleDateFormat("dd/MM/yyyy").parse("11/12/2020");
 
@@ -58,16 +65,21 @@ public class GetAvailableRequestsCommandImplTests {
                 .joinDate(joinDate)
                 .build();
 
-        List<RequestLeaveType> expected = new ArrayList<>();
-        expected.add(RequestLeaveType.ATTENDANCE);
-        expected.add(RequestLeaveType.ANNUAL_LEAVE);
-        expected.add(RequestLeaveType.SPECIAL_LEAVE);
-        expected.add(RequestLeaveType.SUBTITUTE_LEAVE);
-        expected.add(RequestLeaveType.EXTRA_LEAVE);
-        expected.add(RequestLeaveType.EXTEND_ANNUAL_LEAVE);
+        List<RequestType> expected = new ArrayList<>();
+        expected.add(RequestType.ATTENDANCE);
+        expected.add(RequestType.ANNUAL_LEAVE);
+        expected.add(RequestType.SPECIAL_LEAVE);
+        expected.add(RequestType.SUBSTITUTE_LEAVE);
+        expected.add(RequestType.EXTRA_LEAVE);
+        expected.add(RequestType.EXTEND_ANNUAL_LEAVE);
+        expected.add(RequestType.INCOMING_REQUESTS);
+        expected.add(RequestType.SET_HOLIDAY);
+        expected.add(RequestType.EMPLOYEE);
 
         Mockito.when(employeeRepository.findByEmail(user.getUsername()))
                 .thenReturn(Mono.just(employee));
+        Mockito.when(userRepository.findByUsername(user.getUsername()))
+                .thenReturn(Mono.just(user));
         Mockito.when(dateUtil.getNewDate())
                 .thenReturn(currentDate);
 
@@ -79,6 +91,8 @@ public class GetAvailableRequestsCommandImplTests {
                 });
 
         Mockito.verify(employeeRepository, Mockito.times(1)).findByEmail(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
     }
 
 }

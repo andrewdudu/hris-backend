@@ -44,7 +44,7 @@ public class GetLeavesQuotaCommandImpl implements GetLeavesQuotaCommand {
         List<LeaveResponse> responses = Arrays.asList(
                 LeaveResponse.builder().type(LeaveType.annual).build(),
                 LeaveResponse.builder().type(LeaveType.extra).build(),
-                LeaveResponse.builder().type(LeaveType.subtitute)
+                LeaveResponse.builder().type(LeaveType.substitute)
                         .expiries(new ArrayList<>()).remaining(0).used(0).build()
         );
 
@@ -64,12 +64,10 @@ public class GetLeavesQuotaCommandImpl implements GetLeavesQuotaCommand {
                 int remaining = leave.getRemaining();
                 int used = leave.getUsed();
                 if (remaining > 0){
-                    subtituteResponse.setRemaining(remaining+1);
                     subtituteResponse.getExpiries().add(leave.getExpDate());
                 }
-                else{
-                    subtituteResponse.setUsed(used);
-                }
+                subtituteResponse.setRemaining(subtituteResponse.getRemaining() + remaining);
+                subtituteResponse.setUsed(subtituteResponse.getUsed() + used);
             }
         }
 

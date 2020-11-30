@@ -1,5 +1,6 @@
 package com.bliblifuture.hrisbackend.model.response.util;
 
+import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Data
-public class RequestResponse {
+public class DashboardAttendanceResponse {
 
-    private int incoming;
+    private AttendanceResponse current;
+
+    private AttendanceResponse latest;
 }

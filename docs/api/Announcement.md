@@ -22,7 +22,8 @@
       "id": "123767123-12837891273-aldfh123",
       "title": "title",
       "date": 787812738,
-      "description": "description"
+      "description": "description",
+      "status": "WORKING|HOLIDAY"
     }
   ],
   "paging": [

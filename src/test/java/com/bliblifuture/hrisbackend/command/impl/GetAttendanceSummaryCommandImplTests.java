@@ -1,16 +1,16 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAttendanceSummaryCommand;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.EmployeeLeaveSummary;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.EmployeeLeaveSummaryRepository;
-import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
@@ -56,7 +56,7 @@ public class GetAttendanceSummaryCommandImplTests {
     private AttendanceRepository attendanceRepository;
 
     @MockBean
-    private LeaveRequestRepository leaveRequestRepository;
+    private RequestRepository requestRepository;
 
     @MockBean
     private DateUtil dateUtil;
@@ -79,14 +79,14 @@ public class GetAttendanceSummaryCommandImplTests {
 
         Date startOfCurrentMonth = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-11-1");
 
-        Integer thisMonthAttendance = 15;
+        long thisMonthAttendance = 15;
 
         Mockito.when(attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentMonth))
                 .thenReturn(Mono.just(thisMonthAttendance));
 
         Date startOfCurrentYear = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-1-1");
 
-        Integer thisYearAttendance = 215;
+        long thisYearAttendance = 215;
 
         Mockito.when(attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentYear))
                 .thenReturn(Mono.just(thisYearAttendance));
@@ -95,21 +95,21 @@ public class GetAttendanceSummaryCommandImplTests {
         Date date2 = new SimpleDateFormat("dd/MM/yyyy").parse("12/8/2020");
         Date date3 = new SimpleDateFormat("dd/MM/yyyy").parse("13/8/2020");
 
-        LeaveRequest leave1 = LeaveRequest.builder()
+        Request leave1 = Request.builder()
                 .employeeId(user.getEmployeeId())
-                .type(RequestLeaveType.ANNUAL_LEAVE)
+                .type(RequestType.ANNUAL_LEAVE)
                 .dates(Collections.singletonList(date1))
                 .build();
 
-        LeaveRequest leave2 = LeaveRequest.builder()
+        Request leave2 = Request.builder()
                 .employeeId(user.getEmployeeId())
-                .type(RequestLeaveType.SPECIAL_LEAVE)
+                .type(RequestType.SPECIAL_LEAVE)
                 .specialLeaveType(SpecialLeaveType.SICK_WITH_MEDICAL_LETTER)
                 .dates(Arrays.asList(date2, date3))
                 .build();
 
         Mockito.when(
-                leaveRequestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId())
+                requestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId())
         ).thenReturn(Flux.just(leave1, leave2));
 
         String thisYear = "2020";
@@ -128,12 +128,12 @@ public class GetAttendanceSummaryCommandImplTests {
 
         AttendanceSummaryResponse month = AttendanceSummaryResponse.builder()
                 .absent(expectedThisMonthLeaves)
-                .attendance(thisMonthAttendance)
+                .attendance((int) thisMonthAttendance)
                 .build();
 
         AttendanceSummaryResponse year = AttendanceSummaryResponse.builder()
                 .absent(expectedThisYearLeaves)
-                .attendance(thisYearAttendance)
+                .attendance((int) thisYearAttendance)
                 .build();
 
         List<AttendanceSummaryResponse> expected = Arrays.asList(month, year);
@@ -149,7 +149,7 @@ public class GetAttendanceSummaryCommandImplTests {
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(attendanceRepository, Mockito.times(1)).countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentMonth);
         Mockito.verify(attendanceRepository, Mockito.times(1)).countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentYear);
-        Mockito.verify(leaveRequestRepository, Mockito.times(1)).findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId());
+        Mockito.verify(requestRepository, Mockito.times(1)).findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId());
         Mockito.verify(employeeLeaveSummaryRepository, Mockito.times(1)).findByYearAndEmployeeId(thisYear, user.getEmployeeId());
     }
 

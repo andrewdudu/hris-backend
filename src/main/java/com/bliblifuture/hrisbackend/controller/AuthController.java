@@ -31,34 +31,14 @@ public class AuthController extends WebMvcProperties {
                     swe.getResponse()
                             .addCookie(ResponseCookie
                                     .from("userToken", loginResponse.getAccessToken())
-                                    .maxAge(7*3600)
-                                    .secure(true)
+                                    .maxAge(14*3600)
+                                    .secure(false)
                                     .httpOnly(true)
+                                    .path("/")
                                     .build());
                     return ResponseHelper.ok(loginResponse.getUserResponse());
                 })
                 .subscribeOn(Schedulers.elastic());
     }
-
-//    @GetMapping("/test")
-//    public Mono<Response<String>> cookieTest(ServerWebExchange swe){
-//        ResponseCookie cookie = ResponseCookie
-//                .from("userToken","token123")
-//                .maxAge(5*3600)
-//                .secure(true)
-//                .httpOnly(true)
-//                .build();
-//
-//        swe.getResponse().addCookie(cookie);
-//        return Mono.just(ResponseHelper.ok("test"));
-//    }
-//
-//    @GetMapping("/get-test")
-//    public Mono<Response<String>> getCookieTest(ServerWebExchange swe){
-//        String token = swe.getRequest().getCookies().getFirst("userToken").getValue();
-//        String t = swe.getRequest().getHeaders().getFirst(HttpHeaders.SET_COOKIE);
-//
-//        return Mono.just(ResponseHelper.ok(t));
-//    }
 
 }

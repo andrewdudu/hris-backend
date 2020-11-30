@@ -1,13 +1,13 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.RequestExtendLeaveCommand;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
-import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
@@ -43,7 +43,7 @@ public class RequestExtendLeaveCommandImplTests {
     private UserRepository userRepository;
 
     @MockBean
-    private LeaveRequestRepository leaveRequestRepository;
+    private RequestRepository requestRepository;
 
     @MockBean
     private DateUtil dateUtil;
@@ -65,15 +65,15 @@ public class RequestExtendLeaveCommandImplTests {
         Mockito.when(userRepository.findByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
-        LeaveRequest entity = LeaveRequest.builder()
+        Request entity = Request.builder()
                 .status(RequestStatus.REQUESTED)
-                .type(RequestLeaveType.EXTEND_ANNUAL_LEAVE)
+                .type(RequestType.EXTEND_ANNUAL_LEAVE)
                 .notes(notes)
                 .employeeId(user.getEmployeeId())
                 .build();
         entity.setId(id);
 
-        Mockito.when(leaveRequestRepository.save(entity))
+        Mockito.when(requestRepository.save(entity))
                 .thenReturn(Mono.just(entity));
 
         ExtendLeaveResponse expected = ExtendLeaveResponse.builder()
@@ -89,7 +89,7 @@ public class RequestExtendLeaveCommandImplTests {
 
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(leaveRequestRepository, Mockito.times(1)).save(entity);
+        Mockito.verify(requestRepository, Mockito.times(1)).save(entity);
     }
 
 }

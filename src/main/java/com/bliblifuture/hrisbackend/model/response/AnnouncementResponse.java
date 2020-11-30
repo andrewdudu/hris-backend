@@ -1,5 +1,6 @@
 package com.bliblifuture.hrisbackend.model.response;
 
+import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,5 +20,5 @@ public class AnnouncementResponse extends BaseResponse{
 
     private String description;
 
-    private String status;
+    private CalendarStatus status;
 }

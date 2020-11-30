@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 @EqualsAndHashCode(callSuper = false)
-@Document(collection = "attendace")
+@Document(collection = "department")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

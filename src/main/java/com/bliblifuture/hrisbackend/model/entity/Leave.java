@@ -18,9 +18,6 @@ public class Leave extends BaseEntity{
     @Field(name = "employee_id")
     private String employeeId;
 
-    @Field(name = "name")
-    private String name;
-
     @Field(name = "code")
     private String code;
 

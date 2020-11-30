@@ -2,12 +2,13 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAttendanceSummaryCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.EmployeeLeaveSummary;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.EmployeeLeaveSummaryRepository;
-import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
@@ -35,7 +36,7 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
     private AttendanceRepository attendanceRepository;
 
     @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
+    private RequestRepository requestRepository;
 
     @Autowired
     private DateUtil dateUtil;
@@ -64,13 +65,13 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
         return userRepository.findByUsername(username)
                 .flatMap(user -> attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentMonth)
                         .flatMap(monthAttendance -> {
-                            responses.get(0).setAttendance(monthAttendance);
+                            responses.get(0).setAttendance(Math.toIntExact(monthAttendance));
                             return attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentYear);
                         })
                         .flatMap(yearAttendance -> {
-                            responses.get(1).setAttendance(yearAttendance);
-                            return leaveRequestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId())
-                                    .switchIfEmpty(Flux.just(LeaveRequest.builder().dates(new ArrayList<>()).build()))
+                            responses.get(1).setAttendance(Math.toIntExact(yearAttendance));
+                            return requestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId())
+                                    .switchIfEmpty(Flux.just(Request.builder().dates(new ArrayList<>()).build()))
                                     .collectList();
                         })
                         .map(this::countThisMonthLeave)
@@ -96,10 +97,13 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
                 + thisYearLeaves.getExtraLeave() + thisYearLeaves.getSubtituteLeave();
     }
 
-    private int countThisMonthLeave(List<LeaveRequest> thisMonthLeaves) {
+    private int countThisMonthLeave(List<Request> thisMonthLeaves) {
         int total = 0;
-        for (LeaveRequest request : thisMonthLeaves) {
-            total += request.getDates().size();
+        for (Request request : thisMonthLeaves) {
+            if ( !( request.getType().equals(RequestType.ATTENDANCE) || request.getType().equals(RequestType.EXTEND_ANNUAL_LEAVE) ) )
+            {
+                total += request.getDates().size();
+            }
         }
         return total;
     }

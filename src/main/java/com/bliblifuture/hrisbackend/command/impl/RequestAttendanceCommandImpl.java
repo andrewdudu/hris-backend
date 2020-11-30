@@ -2,10 +2,10 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.RequestAttendanceCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
-import com.bliblifuture.hrisbackend.model.entity.AttendanceRequest;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
 import com.bliblifuture.hrisbackend.model.response.AttendanceRequestResponse;
-import com.bliblifuture.hrisbackend.repository.AttendanceRequestRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 @Service
@@ -22,7 +23,7 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
     private UserRepository userRepository;
 
     @Autowired
-    private AttendanceRequestRepository attendanceRequestRepository;
+    private RequestRepository requestRepository;
 
     @Autowired
     private DateUtil dateUtil;
@@ -31,12 +32,12 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
     public Mono<AttendanceRequestResponse> execute(AttendanceRequestData request) {
         return userRepository.findByUsername(request.getRequester())
                 .map(user -> createRequestEntity(request, user.getEmployeeId()))
-                .flatMap(entity -> attendanceRequestRepository.save(entity))
+                .flatMap(entity -> requestRepository.save(entity))
                 .map(this::createResponse);
     }
 
-    private AttendanceRequestResponse createResponse(AttendanceRequest attendanceRequest) {
-        String date = new SimpleDateFormat(DateUtil.DATE_FORMAT).format(attendanceRequest.getDate());
+    private AttendanceRequestResponse createResponse(Request attendanceRequest) {
+        String date = new SimpleDateFormat(DateUtil.DATE_FORMAT).format(attendanceRequest.getDates().get(0));
         String clockIn = new SimpleDateFormat(DateUtil.TIME_FORMAT).format(attendanceRequest.getClockIn());
         String clockOut = new SimpleDateFormat(DateUtil.TIME_FORMAT).format(attendanceRequest.getClockOut());
 
@@ -51,7 +52,7 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
         return response;
     }
 
-    private AttendanceRequest createRequestEntity(AttendanceRequestData data, String employeeId){
+    private Request createRequestEntity(AttendanceRequestData data, String employeeId){
         Date clockIn, clockOut, date;
         try {
             clockIn = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
@@ -64,10 +65,10 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
         catch (Exception e){
             throw new IllegalArgumentException("INVALID_FORMAT");
         }
-        AttendanceRequest request = AttendanceRequest.builder()
+        Request request = Request.builder()
                 .clockIn(clockIn)
                 .clockOut(clockOut)
-                .date(date)
+                .dates(Arrays.asList(date))
                 .notes(data.getNotes())
                 .status(RequestStatus.REQUESTED)
                 .employeeId(employeeId)

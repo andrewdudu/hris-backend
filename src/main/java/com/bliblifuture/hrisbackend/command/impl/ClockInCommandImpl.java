@@ -1,6 +1,5 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
-import com.blibli.oss.command.exception.CommandValidationException;
 import com.bliblifuture.hrisbackend.command.ClockInCommand;
 import com.bliblifuture.hrisbackend.constant.AttendanceConfig;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
@@ -9,7 +8,7 @@ import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.Office;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.ClockInClockOutRequest;
-import com.bliblifuture.hrisbackend.model.response.ClockInClockOutResponse;
+import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.OfficeRepository;
@@ -26,9 +25,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ClockInCommandImpl implements ClockInCommand {
@@ -46,20 +45,24 @@ public class ClockInCommandImpl implements ClockInCommand {
     private DateUtil dateUtil;
 
     @Override
-    public Mono<ClockInClockOutResponse> execute(ClockInClockOutRequest request) {
+    public Mono<AttendanceResponse> execute(ClockInClockOutRequest request) {
         return Mono.fromCallable(request::getRequester)
                 .flatMap(username -> userRepository.findByUsername(username))
-                .map(user -> createAttendance(user, request))
+                .flatMap(user -> createAttendance(user, request))
                 .flatMap(attendance -> clockInProcess(attendance, request))
                 .flatMap(attendance -> attendanceRepository.save(attendance))
                 .map(this::createResponse);
     }
 
-    private ClockInClockOutResponse createResponse(Attendance attendance) {
-        LocationResponse locationResponse = LocationResponse.builder().lat(attendance.getStartLat()).lon(attendance.getStartLon()).build();
-        ClockInClockOutResponse response = ClockInClockOutResponse.builder()
+    private AttendanceResponse createResponse(Attendance attendance) {
+        LocationResponse location = LocationResponse.builder()
+                .lat(attendance.getStartLat())
+                .lon(attendance.getStartLon())
+                .type(attendance.getLocationType())
+                .build();
+        AttendanceResponse response = AttendanceResponse.builder()
                 .image(attendance.getImage())
-                .locationResponse(locationResponse)
+                .location(location)
                 .build();
 
         return response;
@@ -71,7 +74,8 @@ public class ClockInCommandImpl implements ClockInCommand {
                 .map(officeList -> checkLocationAndImage(attendance, request.getImage(), officeList));
     }
 
-    private Attendance checkLocationAndImage(Attendance attendance, String imageBase64, List<Office> officeList) {
+    @SneakyThrows
+    private Attendance checkLocationAndImage(Attendance attendance, String base64, List<Office> officeList) {
         AttendanceLocationType type = AttendanceLocationType.OUTSIDE;
         for (int i = 0; i < officeList.size(); i++) {
             Office office = officeList.get(i);
@@ -80,12 +84,10 @@ public class ClockInCommandImpl implements ClockInCommand {
             if (distance < AttendanceConfig.RADIUS_ALLOWED){
                 type = AttendanceLocationType.INSIDE;
                 attendance.setOfficeCode(office.getCode());
-                break;
             }
-
             else if (i == officeList.size()-1){
-                if (imageBase64 == null || imageBase64.isEmpty()){
-                    throw new CommandValidationException(Collections.singleton("REQUIRED")); //Failed Attendance
+                if (base64 == null || base64.isEmpty()){
+                    throw new IllegalArgumentException("INVALID_FORMAT");
                 }
 
                 String filename = "EMP" + attendance.getEmployeeId() + "_" + attendance.getStartTime() + ".webp";
@@ -95,26 +97,27 @@ public class ClockInCommandImpl implements ClockInCommand {
                 byte[] imageByte;
                 BASE64Decoder decoder = new BASE64Decoder();
                 try {
-                    imageByte = decoder.decodeBuffer(imageBase64);
+                    String[] base64Parts = base64.split(";");
+                    imageByte = decoder.decodeBuffer(base64Parts[1]);
                     Files.write(path, imageByte);
                 } catch (IOException e) {
-                    throw new CommandValidationException(Collections.singleton("INVALID_FORMAT"));
+                    throw new IOException("IMAGE_ERROR");
                 }
 
                 attendance.setImage(FileConstant.IMAGE_ATTENDANCE_BASE_URL + filename);
             }
         }
-        attendance.setLocation(type);
+        attendance.setLocationType(type);
         return attendance;
     }
 
     @SneakyThrows
-    private Attendance createAttendance(User user, ClockInClockOutRequest request) {
+    private Mono<Attendance> createAttendance(User user, ClockInClockOutRequest request) {
         Date date = dateUtil.getNewDate();
-        String dateString = date.getDate() + "/" + date.getMonth() + 1 + "/" + date.getYear() + 1900;
+        String dateString = (date.getYear() + 1900) + "-" + (date.getMonth() + 1) + "-" + date.getDate();
 
         String startTime = " 00:00:00";
-        Date startOfDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(dateString + startTime);
 
         Attendance attendance = Attendance.builder()
@@ -125,8 +128,17 @@ public class ClockInCommandImpl implements ClockInCommand {
                 .startLat(request.getLocation().getLat())
                 .startLon(request.getLocation().getLon())
                 .build();
+        attendance.setId(UUID.randomUUID().toString());
 
-        return attendance;
+        return attendanceRepository.findFirstByEmployeeIdAndDate(user.getEmployeeId(), startOfDate)
+                .doOnSuccess(this::checkIfExists)
+                .thenReturn(attendance);
+    }
+
+    private void checkIfExists(Attendance attendance) {
+        if (attendance != null){
+            throw new IllegalArgumentException("Clock-in not available");
+        }
     }
 
 }

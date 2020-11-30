@@ -35,6 +35,9 @@ public class Employee extends BaseEntity{
     @Field(name = "organization_unit")
     private String organizationUnit;
 
+    @Field(name = "level")
+    private String level;
+
     @Field(name = "office_id")
     private String officeId;
 

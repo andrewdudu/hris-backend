@@ -2,15 +2,15 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.RequestLeaveCommand;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.LeaveRequestResponse;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
-import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.apache.commons.io.FileUtils;
@@ -51,7 +51,7 @@ public class RequestLeaveCommandImplTests {
     private UserRepository userRepository;
 
     @MockBean
-    private LeaveRequestRepository leaveRequestRepository;
+    private RequestRepository requestRepository;
 
     @MockBean
     private LeaveRepository leaveRepository;
@@ -92,10 +92,10 @@ public class RequestLeaveCommandImplTests {
         String pathFile2 = FileConstant.REQUEST_FILE_BASE_URL + request.getType() + "-" + user.getEmployeeId()
                 + "-2-" + currentDate.getTime() + ".webp";;
 
-        LeaveRequest entity = LeaveRequest.builder()
+        Request entity = Request.builder()
                 .files(Arrays.asList(pathFile1, pathFile2))
                 .dates(Arrays.asList(date1, date2))
-                .type(RequestLeaveType.SPECIAL_LEAVE)
+                .type(RequestType.SPECIAL_LEAVE)
                 .specialLeaveType(SpecialLeaveType.SICK_WITH_MEDICAL_LETTER)
                 .status(RequestStatus.REQUESTED)
                 .employeeId(user.getEmployeeId())
@@ -106,7 +106,7 @@ public class RequestLeaveCommandImplTests {
                 .thenReturn(Mono.just(user));
         Mockito.when(dateUtil.getNewDate())
                 .thenReturn(currentDate);
-        Mockito.when(leaveRequestRepository.save(Mockito.any()))
+        Mockito.when(requestRepository.save(Mockito.any()))
                 .thenReturn(Mono.just(entity));
 
         LeaveRequestResponse expected = LeaveRequestResponse.builder()
@@ -127,7 +127,7 @@ public class RequestLeaveCommandImplTests {
 
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(leaveRequestRepository, Mockito.times(1)).save(entity);
+        Mockito.verify(requestRepository, Mockito.times(1)).save(entity);
     }
 
 }

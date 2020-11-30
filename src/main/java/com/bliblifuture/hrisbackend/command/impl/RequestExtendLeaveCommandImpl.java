@@ -1,13 +1,13 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.RequestExtendLeaveCommand;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
-import com.bliblifuture.hrisbackend.model.entity.LeaveRequest;
+import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
-import com.bliblifuture.hrisbackend.repository.LeaveRequestRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
@@ -24,7 +24,7 @@ public class RequestExtendLeaveCommandImpl implements RequestExtendLeaveCommand 
     private UserRepository userRepository;
 
     @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
+    private RequestRepository requestRepository;
 
     @Autowired
     private DateUtil dateUtil;
@@ -44,19 +44,19 @@ public class RequestExtendLeaveCommandImpl implements RequestExtendLeaveCommand 
 
         return userRepository.findByUsername(request.getRequester())
                 .map(user -> createLeaveRequest(request, currentDate, user))
-                .flatMap(leaveRequest -> leaveRequestRepository.save(leaveRequest))
+                .flatMap(leaveRequest -> requestRepository.save(leaveRequest))
                 .map(leaveRequest -> {
                     response.setStatus(leaveRequest.getStatus());
                     return response;
                 });
     }
 
-    private LeaveRequest createLeaveRequest(LeaveRequestData request, Date currentDate, User user) {
+    private Request createLeaveRequest(LeaveRequestData request, Date currentDate, User user) {
         String employeeId = user.getEmployeeId();
 
-        LeaveRequest leaveRequest = LeaveRequest.builder()
+        Request leaveRequest = Request.builder()
                 .status(RequestStatus.REQUESTED)
-                .type(RequestLeaveType.EXTEND_ANNUAL_LEAVE)
+                .type(RequestType.EXTEND_ANNUAL_LEAVE)
                 .notes(request.getNotes())
                 .employeeId(employeeId)
                 .build();
