@@ -8,7 +8,8 @@ import com.bliblifuture.hrisbackend.command.GetAvailableSpecialRequestsCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.User;
-import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
+import com.bliblifuture.hrisbackend.model.response.UserReportResponse;
+import com.bliblifuture.hrisbackend.model.response.util.AttendanceSummaryResponse;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -126,12 +127,12 @@ public class UserControllerTests {
                 .attendance(220)
                 .build();
 
-        List<AttendanceSummaryResponse> summary = Arrays.asList(month, year);
+        UserReportResponse summary = UserReportResponse.builder().month(month).year(year).build();
 
         Mockito.when(commandExecutor.execute(GetAttendanceSummaryCommand.class, username))
                 .thenReturn(Mono.just(summary));
 
-        Response<List<AttendanceSummaryResponse>> expected = new Response<>();
+        Response<UserReportResponse> expected = new Response<>();
         expected.setData(summary);
         expected.setCode(HttpStatus.OK.value());
         expected.setStatus(HttpStatus.OK.name());
@@ -140,12 +141,7 @@ public class UserControllerTests {
                 .subscribe(response -> {
                     Assert.assertEquals(expected.getCode(), response.getCode());
                     Assert.assertEquals(expected.getStatus(), response.getStatus());
-                    for (int i = 0; i < expected.getData().size(); i++) {
-                        AttendanceSummaryResponse ex = expected.getData().get(i);
-                        AttendanceSummaryResponse res = response.getData().get(i);
-                        Assert.assertEquals(ex.getAbsent(), res.getAbsent());
-                        Assert.assertEquals(ex.getAttendance(), res.getAttendance());
-                    }
+                    Assert.assertEquals(expected.getData(), response.getData());
                 });
 
         Mockito.verify(commandExecutor, Mockito.times(1)).execute(GetAttendanceSummaryCommand.class, username);

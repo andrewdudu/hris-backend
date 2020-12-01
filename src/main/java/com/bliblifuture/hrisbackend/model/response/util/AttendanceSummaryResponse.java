@@ -1,5 +1,6 @@
-package com.bliblifuture.hrisbackend.model.response;
+package com.bliblifuture.hrisbackend.model.response.util;
 
+import com.bliblifuture.hrisbackend.model.response.BaseResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AttendanceSummaryResponse extends BaseResponse{
+public class AttendanceSummaryResponse extends BaseResponse {
 
     private int attendance;
 

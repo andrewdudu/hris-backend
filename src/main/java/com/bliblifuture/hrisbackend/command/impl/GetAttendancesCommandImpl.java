@@ -10,6 +10,7 @@ import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
@@ -28,7 +29,8 @@ public class GetAttendancesCommandImpl implements GetAttendancesCommand {
     public Mono<List<AttendanceResponse>> execute(AttendanceListRequest request) {
         return userRepository.findByUsername(request.getUsername())
                 .flatMap(user -> attendanceRepository
-                        .findByEmployeeIdAndStartTimeAfterAndStartTimeBeforeOrderByDateAsc(user.getEmployeeId(), request.getStartDate(), request.getEndDate())
+                        .findByEmployeeIdAndStartTimeBetweenOrderByStartTimeDesc(user.getEmployeeId(), request.getStartDate(), request.getEndDate())
+                        .switchIfEmpty(Flux.empty())
                         .collectList())
                 .map(this::getResponse);
     }

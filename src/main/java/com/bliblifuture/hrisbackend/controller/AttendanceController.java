@@ -46,12 +46,15 @@ public class AttendanceController {
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping
-    public Mono<Response<List<AttendanceResponse>>> getAttendances(@RequestParam Date startDate, @RequestParam Date endDate, Principal principal){
+    public Mono<Response<List<AttendanceResponse>>> getAttendances(@RequestParam String startDate, @RequestParam String endDate, Principal principal){
+        Date start = new Date(Long.parseLong(startDate));
+        Date end = new Date(Long.parseLong(endDate));
         AttendanceListRequest request = AttendanceListRequest.builder()
-                .startDate(startDate)
-                .endDate(endDate)
+                .startDate(start)
+                .endDate(end)
                 .username(principal.getName())
                 .build();
+
         return commandExecutor.execute(GetAttendancesCommand.class, request)
                 .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());

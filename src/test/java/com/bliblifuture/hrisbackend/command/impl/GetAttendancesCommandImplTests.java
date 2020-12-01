@@ -88,7 +88,7 @@ public class GetAttendancesCommandImplTests {
                 .endTime(endTime2)
                 .build();
 
-        Mockito.when(attendanceRepository.findByEmployeeIdAndStartTimeAfterAndStartTimeBeforeOrderByDateAsc(user.getEmployeeId(), startDate, endDate))
+        Mockito.when(attendanceRepository.findByEmployeeIdAndStartTimeBetweenOrderByStartTimeDesc(user.getEmployeeId(), startDate, endDate))
                 .thenReturn(Flux.just(attendance1, attendance2));
 
         AttendanceResponse data1 = AttendanceResponse.builder()
@@ -132,7 +132,7 @@ public class GetAttendancesCommandImplTests {
                 });
 
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
-        Mockito.verify(attendanceRepository, Mockito.times(1)).findByEmployeeIdAndStartTimeAfterAndStartTimeBeforeOrderByDateAsc(user.getEmployeeId(), startDate, endDate);
+        Mockito.verify(attendanceRepository, Mockito.times(1)).findByEmployeeIdAndStartTimeBetweenOrderByStartTimeDesc(user.getEmployeeId(), startDate, endDate);
 
     }
 }

@@ -1,13 +1,14 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAttendanceSummaryCommand;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.EmployeeLeaveSummary;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
-import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
+import com.bliblifuture.hrisbackend.model.response.UserReportResponse;
+import com.bliblifuture.hrisbackend.model.response.util.AttendanceSummaryResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.EmployeeLeaveSummaryRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
@@ -30,7 +31,6 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
 @RunWith(SpringRunner.class)
 public class GetAttendanceSummaryCommandImplTests {
@@ -136,14 +136,11 @@ public class GetAttendanceSummaryCommandImplTests {
                 .attendance((int) thisYearAttendance)
                 .build();
 
-        List<AttendanceSummaryResponse> expected = Arrays.asList(month, year);
+        UserReportResponse expected = UserReportResponse.builder().month(month).year(year).build();
 
         getAttendanceSummaryCommand.execute(user.getUsername())
                 .subscribe(response -> {
-                    for (int i = 0; i < expected.size(); i++) {
-                        Assert.assertEquals(expected.get(i).getAbsent(), response.get(i).getAbsent());
-                        Assert.assertEquals(expected.get(i).getAttendance(), response.get(i).getAttendance());
-                    }
+                    Assert.assertEquals(expected, response);
                 });
 
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();

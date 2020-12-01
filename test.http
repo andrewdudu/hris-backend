@@ -89,11 +89,11 @@ Accept: application/json
 }
 
 ###
-GET http://localhost:8080/api/users/test
+GET http://localhost:8080/api/dummy/test
 Accept: application/json
 
 ###
-GET http://localhost:8080/api/users/get-test
+GET http://localhost:8080/api/dummy/get-test
 Content-Type: application/json
 Set-Cookie: userToken=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxNjA1Njk5ODk1LCJleHAiOjE2MDU3NTk4OTV9.eFEuWGupIHzrsncW7apeMsa6YBJJiu7cpZF78NK1qkY_3WEf9vILNNe6SpUKvqtDMk_9mHrrqPEDoZhPnir3iQ; Max-Age=18000; Expires=Wed, 18 Nov 2020 16:44:55 GMT; Secure; HttpOnly
 ###

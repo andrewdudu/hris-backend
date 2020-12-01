@@ -62,7 +62,6 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
         int date = employee.getJoinDate().getDate();
         int month = employee.getJoinDate().getMonth()+1;
         int year = employee.getJoinDate().getYear()+1900;
-        System.out.println(employee.getJoinDate());
 
         Date dateToGetExtraLeave = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse((year+3) + "-" + month + "-" + date);
 

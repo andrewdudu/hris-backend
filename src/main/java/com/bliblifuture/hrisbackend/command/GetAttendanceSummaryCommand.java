@@ -1,10 +1,8 @@
 package com.bliblifuture.hrisbackend.command;
 
 import com.blibli.oss.command.Command;
-import com.bliblifuture.hrisbackend.model.response.AttendanceSummaryResponse;
+import com.bliblifuture.hrisbackend.model.response.UserReportResponse;
 
-import java.util.List;
-
-public interface GetAttendanceSummaryCommand extends Command<String, List<AttendanceSummaryResponse>> {
+public interface GetAttendanceSummaryCommand extends Command<String, UserReportResponse> {
 
 }
