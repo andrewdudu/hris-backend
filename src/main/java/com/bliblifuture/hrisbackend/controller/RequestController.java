@@ -12,6 +12,7 @@ import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
 import com.bliblifuture.hrisbackend.model.response.LeaveRequestResponse;
 import com.bliblifuture.hrisbackend.model.response.RequestResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -88,6 +89,18 @@ public class RequestController {
         request.setRequester(principal.getName());
         return commandExecutor.execute(RejectRequestCommand.class, request)
                 .map(ResponseHelper::ok)
+                .subscribeOn(Schedulers.elastic());
+    }
+
+    @GetMapping(value = "api/request/file/image/{filename}", produces = "image/webp")
+    public Mono<byte[]> getImage(@PathVariable String filename){
+        return commandExecutor.execute(GetFileCommand.class, filename)
+                .subscribeOn(Schedulers.elastic());
+    }
+
+    @GetMapping(value = "api/request/file/pdf/{filename}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public Mono<byte[]> getPDF(@PathVariable String filename){
+        return commandExecutor.execute(GetFileCommand.class, filename)
                 .subscribeOn(Schedulers.elastic());
     }
 

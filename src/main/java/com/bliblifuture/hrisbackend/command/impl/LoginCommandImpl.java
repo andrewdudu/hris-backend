@@ -38,7 +38,7 @@ public class LoginCommandImpl implements LoginCommand {
 
     private void checkNull(User user) {
         if (user == null){
-            throw new SecurityException("DOES_NOT_MATCH");
+            throw new IllegalArgumentException("DOES_NOT_MATCH");
         }
     }
 
@@ -54,7 +54,7 @@ public class LoginCommandImpl implements LoginCommand {
                     });
         }
         else{
-            throw new SecurityException("DOES_NOT_MATCH");
+            throw new IllegalArgumentException("DOES_NOT_MATCH");
         }
     }
 

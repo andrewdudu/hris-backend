@@ -35,7 +35,13 @@ public class FileHelper {
             } catch (IOException e) {
                 throw new CommandValidationException(Collections.singleton("INVALID_FORMAT"));
             }
-            filesPath.add(FileConstant.REQUEST_FILE_BASE_URL + filename);
+
+            if (extension.equals(".webp")){
+                filesPath.add(FileConstant.REQUEST_IMAGE_BASE_URL + filename);
+            }
+            else {
+                filesPath.add(FileConstant.REQUEST_FILE_BASE_URL + filename);
+            }
         }
         return filesPath;
     }

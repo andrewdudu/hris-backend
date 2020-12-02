@@ -82,7 +82,7 @@ public class ClockOutCommandImpl implements ClockOutCommand {
         long availableClockoutTime = attendance.getStartTime().getTime() + TimeUnit.HOURS.toMillis(8);
         Date clockoutAvailable = new Date(availableClockoutTime);
         if (attendance.getStartTime() == null || currentTime.before(clockoutAvailable) || attendance.getEndTime() != null){
-            throw new SecurityException("Clock-out not available");
+            throw new IllegalArgumentException("Clock-out not available");
         }
     }
 

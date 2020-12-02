@@ -26,7 +26,10 @@ public class WebSecurityConfig {
                 .exceptionHandling()
                 .authenticationEntryPoint((swe, e) -> Mono.fromRunnable(() -> {
                     swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                })).and()
+                })).accessDeniedHandler((swe, e) -> Mono.fromRunnable(() -> {
+                    swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                }))
+                .and()
                 .csrf().disable()
                 .formLogin().disable()
                 .httpBasic().disable()
@@ -36,6 +39,7 @@ public class WebSecurityConfig {
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
                 .pathMatchers( "/auth/login").permitAll()
                 .pathMatchers("/api/dummy/**").permitAll()
+                .pathMatchers(HttpMethod.GET,"/api/request/file/**").permitAll()
                 .pathMatchers(HttpMethod.POST, "/api/request/leaves").permitAll()
                 .anyExchange().authenticated()
                 .and().build();

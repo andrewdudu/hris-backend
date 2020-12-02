@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -61,15 +62,14 @@ public class ErrorHandler implements ErrorWebFluxControllerHandler, MessageSourc
         return getErrorMessage(response, "credential", e.getMessage(), e);
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(SecurityException.class)
-    public Response<Object> credentialException(SecurityException e) {
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(AccessDeniedException.class)
+    public Response<Object> credentialException(AccessDeniedException e) {
         Response<Object> response = new Response<>();
+        response.setCode(HttpStatus.UNAUTHORIZED.value());
+        response.setStatus(HttpStatus.UNAUTHORIZED.name());
 
-        response.setCode(HttpStatus.BAD_REQUEST.value());
-        response.setStatus(HttpStatus.BAD_REQUEST.name());
-
-        return getErrorMessage(response, "credential", e.getMessage(), e);
+        return response;
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -77,10 +77,10 @@ public class ErrorHandler implements ErrorWebFluxControllerHandler, MessageSourc
     public Response<Object> notAcceptableRequest(IllegalArgumentException e) {
         Response<Object> response = new Response<>();
 
-        response.setCode(HttpStatus.NOT_ACCEPTABLE.value());
-        response.setStatus(HttpStatus.NOT_ACCEPTABLE.name());
+        response.setCode(HttpStatus.BAD_REQUEST.value());
+        response.setStatus(HttpStatus.BAD_REQUEST.name());
 
-        return getErrorMessage(response, "message", e.getMessage(), e);
+        return getErrorMessage(response, "credential", e.getMessage(), e);
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

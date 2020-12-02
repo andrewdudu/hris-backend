@@ -17,7 +17,7 @@ public class AnnualLeaveRequestHelper {
 
     public Request processRequest(LeaveRequestData data, User user, List<Leave> leaves, long currentDateTime){
         checkRemainingLeave(leaves, data);
-        return createRequest(data, user.getEmployeeId(), currentDateTime);
+        return createRequest(data, user, currentDateTime);
     }
 
     private void checkRemainingLeave(List<Leave> leaves, LeaveRequestData data) {
@@ -31,7 +31,7 @@ public class AnnualLeaveRequestHelper {
         }
     }
 
-    private Request createRequest(LeaveRequestData data, String employeeId, long currentDateTime) {
+    private Request createRequest(LeaveRequestData data, User user, long currentDateTime) {
         List<Date> dates = new ArrayList<>();
         for (String dateString : data.getDates()) {
             try {
@@ -44,15 +44,17 @@ public class AnnualLeaveRequestHelper {
         }
 
         Request request = Request.builder()
-                .employeeId(employeeId)
+                .employeeId(user.getEmployeeId())
                 .dates(dates)
                 .notes(data.getNotes())
                 .type(RequestType.valueOf(data.getType()))
                 .status(RequestStatus.REQUESTED)
                 .build();
+        request.setCreatedBy(user.getUsername());
+        request.setCreatedDate(new Date(currentDateTime));
 
         if (data.getFiles() != null){
-            List<String> files = FileHelper.saveFiles(data, employeeId, currentDateTime);
+            List<String> files = FileHelper.saveFiles(data, user.getEmployeeId(), currentDateTime);
             request.setFiles(files);
         }
 
