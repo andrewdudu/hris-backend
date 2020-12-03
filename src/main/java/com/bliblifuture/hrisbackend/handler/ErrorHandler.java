@@ -58,6 +58,7 @@ public class ErrorHandler implements ErrorWebFluxControllerHandler, MessageSourc
                 .split(",");
         for (String error : errors) {
             String[] partError = error.split("=");
+            System.out.println(partError);
             String key = partError[0];
             List<String> value = Collections.singletonList(
                     partError[1].replace("[", "").replace("]", "")

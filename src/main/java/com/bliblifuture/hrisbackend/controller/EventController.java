@@ -18,7 +18,7 @@ import reactor.core.scheduler.Schedulers;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/announcement")
+@RequestMapping("/api/announcements")
 public class EventController {
 
     @Autowired

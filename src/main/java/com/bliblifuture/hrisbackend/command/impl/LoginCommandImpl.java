@@ -44,7 +44,7 @@ public class LoginCommandImpl implements LoginCommand {
     private void checkNull(User user) {
         if (user == null){
             Map<String, List<String>> errors = new HashMap<>();
-            errors.put("credentials", Arrays.asList("DOES_NOT_MATCH"));
+            errors.put("credentials", Arrays.asList("DOES_NOT_MATCH, TEST"));
             String errorsMessage = errors.toString();
             throw new IllegalArgumentException(errorsMessage);
         }
