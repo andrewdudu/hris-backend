@@ -72,7 +72,8 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
             case LeaveTypeConstant.UNPAID_LEAVE:
                 return new SpecialLeaveRequestHelper().processRequest(request, user, currentDateTime);
             default:
-                throw new IllegalArgumentException("INVALID_TYPE_FORMAT");
+                String msg = "type=INVALID_FORMAT";
+                throw new IllegalArgumentException(msg);
         }
     }
 

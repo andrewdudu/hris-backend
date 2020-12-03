@@ -87,7 +87,8 @@ public class ClockInCommandImpl implements ClockInCommand {
             }
             else if (i == officeList.size()-1){
                 if (base64 == null || base64.isEmpty()){
-                    throw new IllegalArgumentException("INVALID_FORMAT");
+                    String errorsMessage = "image=EMPTY_FILE";
+                    throw new IllegalArgumentException(errorsMessage);
                 }
 
                 String filename = attendance.getEmployeeId() + "_" + attendance.getStartTime().getTime() + ".webp";
@@ -101,7 +102,8 @@ public class ClockInCommandImpl implements ClockInCommand {
                     imageByte = decoder.decodeBuffer(base64Parts[1]);
                     Files.write(path, imageByte);
                 } catch (IOException e) {
-                    throw new IOException("IMAGE_ERROR");
+                    String errorsMessage = "image=INVALID_FORMAT";
+                    throw new IllegalArgumentException(errorsMessage);
                 }
 
                 attendance.setImage(FileConstant.IMAGE_ATTENDANCE_BASE_URL + filename);
@@ -137,7 +139,8 @@ public class ClockInCommandImpl implements ClockInCommand {
 
     private void checkIfExists(Attendance attendance) {
         if (attendance != null){
-            throw new IllegalArgumentException("Clock-in not available");
+            String errorsMessage = "message=NOT_AVAILABLE";
+            throw new IllegalArgumentException(errorsMessage);
         }
     }
 

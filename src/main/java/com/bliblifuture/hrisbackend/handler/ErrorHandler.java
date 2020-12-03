@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.io.IOException;
 import java.util.*;
 
 @Slf4j
@@ -54,29 +53,29 @@ public class ErrorHandler implements ErrorWebFluxControllerHandler, MessageSourc
 
     private Map<String, List<String>> setMessage(String rawMessages) {
         Map<String, List<String>> messages = new HashMap<>();
-        String[] errors = rawMessages.replace("{", "").replace("}", "")
-                .split(",");
-        for (String error : errors) {
-            String[] partError = error.split("=");
-            System.out.println(partError);
-            String key = partError[0];
-            List<String> value = Collections.singletonList(
-                    partError[1].replace("[", "").replace("]", "")
-            );
-            messages.put(key, value);
+        String[] message = rawMessages.split(";");
+        for (String msg : message) {
+            String[] part = msg.split("=");
+            String key = part[0];
+
+            List<String> values = new ArrayList<>();
+            values.addAll(Arrays.asList(part[1].split(",")));
+
+            messages.put(key, values);
         }
         return messages;
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(IOException.class)
-    public Response<Object> IOException(IOException e) {
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(RuntimeException.class)
+    public Response<Object> InternalError(RuntimeException e) {
         Response<Object> response = new Response<>();
 
-        response.setCode(HttpStatus.BAD_REQUEST.value());
-        response.setStatus(HttpStatus.BAD_REQUEST.name());
+        response.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.name());
+        response.setErrors(setMessage(e.getMessage()));
 
-        return getErrorMessage(response, "credential", e.getMessage(), e);
+        return response;
     }
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)

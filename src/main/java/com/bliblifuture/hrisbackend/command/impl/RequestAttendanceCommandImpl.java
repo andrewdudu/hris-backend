@@ -65,7 +65,8 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
                     .parse(data.getDate());
         }
         catch (Exception e){
-            throw new IllegalArgumentException("INVALID_FORMAT");
+            String msg = "message=INTERNAL_ERROR";
+            throw new RuntimeException(msg);
         }
         Request request = Request.builder()
                 .clockIn(clockIn)

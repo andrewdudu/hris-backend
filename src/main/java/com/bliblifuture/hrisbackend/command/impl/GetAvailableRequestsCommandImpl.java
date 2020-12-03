@@ -8,11 +8,11 @@ import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -49,7 +49,6 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
         return response;
     }
 
-    @SneakyThrows
     private List<RequestType> getResponse(Employee employee){
         List<RequestType> response = new ArrayList<>();
         response.add(RequestType.ATTENDANCE);
@@ -63,7 +62,13 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
         int month = employee.getJoinDate().getMonth()+1;
         int year = employee.getJoinDate().getYear()+1900;
 
-        Date dateToGetExtraLeave = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse((year+3) + "-" + month + "-" + date);
+        Date dateToGetExtraLeave;
+        try {
+            dateToGetExtraLeave = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse((year+3) + "-" + month + "-" + date);
+        } catch (ParseException e) {
+            String errorsMessage = "message=INTERNAL_ERROR";
+            throw new RuntimeException(errorsMessage);
+        }
 
         if (currentDate.after(dateToGetExtraLeave)){
             response.add(RequestType.EXTRA_LEAVE);

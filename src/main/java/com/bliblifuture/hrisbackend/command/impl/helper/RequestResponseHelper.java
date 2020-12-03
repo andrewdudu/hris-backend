@@ -60,10 +60,12 @@ public class RequestResponseHelper {
                     response.setType(RequestType.LEAVE);
                     return setLeaveRequestResponse(response, request);
                 default:
-                    throw new IllegalArgumentException("INTERNAL_DATA_ERROR");
+                    String errorsMessage = "type=INVALID_REQUEST";
+                    throw new RuntimeException(errorsMessage);
             }
         }
-        throw new IllegalArgumentException("INTERNAL_DATA_ERROR");
+        String errorsMessage = "type=INVALID_REQUEST";
+        throw new RuntimeException(errorsMessage);
     }
 
     private RequestResponse setAttendanceRequestResponse(RequestResponse response, Request request) {

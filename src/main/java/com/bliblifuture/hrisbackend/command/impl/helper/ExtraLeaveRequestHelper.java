@@ -22,7 +22,8 @@ public class ExtraLeaveRequestHelper {
 
     private void checkRemainingLeave(Leave leave, LeaveRequestData data) {
         if (leave.getRemaining() < data.getDates().size()){
-            throw new IllegalArgumentException("QUOTA_NOT_AVAILABLE");
+            String errorsMessage = "dates=QUOTA_NOT_AVAILABLE";
+            throw new RuntimeException(errorsMessage);
         }
     }
 
@@ -34,7 +35,8 @@ public class ExtraLeaveRequestHelper {
                 dates.add(date);
             }
             catch (Exception e){
-                throw new IllegalArgumentException("INVALID_REQUEST");
+                String errorsMessage = "date=INVALID_FORMAT";
+                throw new RuntimeException(errorsMessage);
             }
         }
 
@@ -45,6 +47,7 @@ public class ExtraLeaveRequestHelper {
                 .type(RequestType.valueOf(data.getType()))
                 .status(RequestStatus.REQUESTED)
                 .build();
+        request.setId("EXTRA-" + user.getEmployeeId() + currentDateTime);
         request.setCreatedBy(user.getUsername());
         request.setCreatedDate(new Date(currentDateTime));
 

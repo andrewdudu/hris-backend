@@ -76,13 +76,15 @@ public class ClockOutCommandImpl implements ClockOutCommand {
 
     private void checkValidity(Attendance attendance, Date currentTime) {
         if (attendance == null){
-            throw new IllegalArgumentException("Clock-out not available");
+            String errorsMessage = "message=NOT_AVAILABLE";
+            throw new IllegalArgumentException(errorsMessage);
         }
 
         long availableClockoutTime = attendance.getStartTime().getTime() + TimeUnit.HOURS.toMillis(8);
         Date clockoutAvailable = new Date(availableClockoutTime);
         if (attendance.getStartTime() == null || currentTime.before(clockoutAvailable) || attendance.getEndTime() != null){
-            throw new IllegalArgumentException("Clock-out not available");
+            String errorsMessage = "message=NOT_AVAILABLE";
+            throw new IllegalArgumentException(errorsMessage);
         }
     }
 

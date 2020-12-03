@@ -37,7 +37,8 @@ public class RejectRequestCommandImpl implements RejectRequestCommand {
 
     private void checkValidity(Request data) {
         if (data == null || data.getStatus().equals(RequestStatus.APPROVED) || data.getStatus().equals(RequestStatus.REJECTED)){
-            throw new IllegalArgumentException("INVALID_REQUEST");
+            String msg = "message=NOT_AVAILABLE";
+            throw new IllegalArgumentException(msg);
         }
     }
 

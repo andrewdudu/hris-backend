@@ -120,14 +120,16 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
     }
 
     private void checkExtensionRequest(Leave leave, Date currentDate) {
-        if (leave.getExpDate().before(currentDate)){
-            throw new IllegalArgumentException("INVALID_REQUEST");
+        if (leave.getRemaining() < 0){
+            String errorsMessage = "message=NO_REMAINING_QUOTA";
+            throw new IllegalArgumentException(errorsMessage);
         }
     }
 
     private void checkValidity(Request request) {
         if (request == null || request.getStatus().equals(RequestStatus.APPROVED) || request.getStatus().equals(RequestStatus.REJECTED)){
-            throw new IllegalArgumentException("INVALID_REQUEST");
+            String errorsMessage = "message=NOT_AVAILABLE";
+            throw new IllegalArgumentException(errorsMessage);
         }
     }
 
