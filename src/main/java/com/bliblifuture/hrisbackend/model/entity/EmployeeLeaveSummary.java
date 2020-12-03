@@ -51,7 +51,7 @@ public class EmployeeLeaveSummary extends BaseEntity{
     @Field(name = "extra_leave")
     private int extraLeave;
 
-    @Field(name = "subtitute_leave")
-    private int subtituteLeave;
+    @Field(name = "substitute_leave")
+    private int substituteLeave;
 
 }

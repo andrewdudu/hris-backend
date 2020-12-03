@@ -95,7 +95,7 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
                 + thisYearLeaves.getHajj() + thisYearLeaves.getMainFamilyDeath()
                 + thisYearLeaves.getMaternity() + thisYearLeaves.getSick()
                 + thisYearLeaves.getUnpaidLeave() + thisYearLeaves.getAnnualLeave()
-                + thisYearLeaves.getExtraLeave() + thisYearLeaves.getSubtituteLeave();
+                + thisYearLeaves.getExtraLeave() + thisYearLeaves.getSubstituteLeave();
     }
 
     private int countThisMonthLeave(List<Request> thisMonthLeaves) {

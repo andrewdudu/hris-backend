@@ -15,5 +15,5 @@ public class LeaveQuotaResponse {
 
     private int extra;
 
-    private int subtitute;
+    private int substitute;
 }

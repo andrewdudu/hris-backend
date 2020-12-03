@@ -18,6 +18,5 @@ public class LeaveRequestData extends BaseRequest{
 
     private String notes;
 
-    @Pattern(regexp = "^[A-Z]*$", message = "INVALID_FORMAT")
     private String type;
 }

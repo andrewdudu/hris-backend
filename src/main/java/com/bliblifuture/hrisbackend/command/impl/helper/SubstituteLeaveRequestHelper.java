@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class SubtituteLeaveRequestHelper {
+public class SubstituteLeaveRequestHelper {
 
     public Request processRequest(LeaveRequestData data, User user, List<Leave> leaves, long currentDateTime){
         checkRemainingLeave(leaves.size(), data);

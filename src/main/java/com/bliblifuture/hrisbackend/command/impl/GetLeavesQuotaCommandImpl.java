@@ -60,14 +60,14 @@ public class GetLeavesQuotaCommandImpl implements GetLeavesQuotaCommand {
                 responses.get(1).setExpiry(leave.getExpDate());
             }
             else {
-                LeaveResponse subtituteResponse = responses.get(2);
+                LeaveResponse substituteResponse = responses.get(2);
                 int remaining = leave.getRemaining();
                 int used = leave.getUsed();
                 if (remaining > 0){
-                    subtituteResponse.getExpiries().add(leave.getExpDate());
+                    substituteResponse.getExpiries().add(leave.getExpDate());
                 }
-                subtituteResponse.setRemaining(subtituteResponse.getRemaining() + remaining);
-                subtituteResponse.setUsed(subtituteResponse.getUsed() + used);
+                substituteResponse.setRemaining(substituteResponse.getRemaining() + remaining);
+                substituteResponse.setUsed(substituteResponse.getUsed() + used);
             }
         }
 

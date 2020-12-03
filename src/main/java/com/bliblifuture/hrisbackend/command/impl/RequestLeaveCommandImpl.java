@@ -55,7 +55,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
             case LeaveTypeConstant.SUBSTITUTE_LEAVE:
                 return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(user.getEmployeeId(), LeaveType.substitute, dateUtil.getNewDate(), 0)
                         .collectList()
-                        .map(leaves -> new SubtituteLeaveRequestHelper().processRequest(request, user, leaves, currentDateTime));
+                        .map(leaves -> new SubstituteLeaveRequestHelper().processRequest(request, user, leaves, currentDateTime));
             case LeaveTypeConstant.EXTRA_LEAVE:
                 return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfter(user.getEmployeeId(), LeaveType.extra, dateUtil.getNewDate())
                         .map(leave -> new ExtraLeaveRequestHelper().processRequest(request, user, leave, currentDateTime));
