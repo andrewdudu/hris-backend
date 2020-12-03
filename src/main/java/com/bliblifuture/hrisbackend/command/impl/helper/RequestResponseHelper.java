@@ -45,22 +45,25 @@ public class RequestResponseHelper {
     }
 
     private RequestResponse setDetailResponse(RequestResponse response, Request request) {
-        switch (request.getType()) {
-            case ATTENDANCE:
-                response.setType(RequestType.ATTENDANCE);
-                return setAttendanceRequestResponse(response, request);
-            case EXTEND_ANNUAL_LEAVE:
-                response.setType(RequestType.EXTEND);
-                return setExtendLeaveRequestResponse(response, request);
-            case ANNUAL_LEAVE:
-            case EXTRA_LEAVE:
-            case SPECIAL_LEAVE:
-            case SUBSTITUTE_LEAVE:
-                response.setType(RequestType.LEAVE);
-                return setLeaveRequestResponse(response, request);
-            default:
-                throw new IllegalArgumentException("INTERNAL_DATA_ERROR");
+        if (request.getType() != null){
+            switch (request.getType()) {
+                case ATTENDANCE:
+                    response.setType(RequestType.ATTENDANCE);
+                    return setAttendanceRequestResponse(response, request);
+                case EXTEND_ANNUAL_LEAVE:
+                    response.setType(RequestType.EXTEND);
+                    return setExtendLeaveRequestResponse(response, request);
+                case ANNUAL_LEAVE:
+                case EXTRA_LEAVE:
+                case SPECIAL_LEAVE:
+                case SUBSTITUTE_LEAVE:
+                    response.setType(RequestType.LEAVE);
+                    return setLeaveRequestResponse(response, request);
+                default:
+                    throw new IllegalArgumentException("INTERNAL_DATA_ERROR");
+            }
         }
+        throw new IllegalArgumentException("INTERNAL_DATA_ERROR");
     }
 
     private RequestResponse setAttendanceRequestResponse(RequestResponse response, Request request) {

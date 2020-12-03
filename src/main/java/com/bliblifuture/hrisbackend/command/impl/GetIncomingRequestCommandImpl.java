@@ -8,6 +8,7 @@ import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class GetIncomingRequestCommandImpl implements GetIncomingRequestCommand 
     @Override
     public Mono<List<RequestResponse>> execute(String type) {
         return requestRepository.findByStatusOrderByCreatedDateDesc(RequestStatus.valueOf(type))
+                .switchIfEmpty(Flux.empty())
                 .flatMap(request -> requestResponseHelper.createResponse(request))
                 .collectList();
     }

@@ -2,6 +2,7 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.RequestAttendanceCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
@@ -73,6 +74,7 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
                 .notes(data.getNotes())
                 .status(RequestStatus.REQUESTED)
                 .employeeId(user.getEmployeeId())
+                .type(RequestType.ATTENDANCE)
                 .build();
         Date currentDateTime = dateUtil.getNewDate();
         request.setCreatedDate(currentDateTime);
