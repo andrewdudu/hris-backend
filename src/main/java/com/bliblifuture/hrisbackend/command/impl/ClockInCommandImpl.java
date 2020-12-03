@@ -90,7 +90,7 @@ public class ClockInCommandImpl implements ClockInCommand {
                     throw new IllegalArgumentException("INVALID_FORMAT");
                 }
 
-                String filename = "EMP" + attendance.getEmployeeId() + "_" + attendance.getStartTime().getTime() + ".webp";
+                String filename = attendance.getEmployeeId() + "_" + attendance.getStartTime().getTime() + ".webp";
                 String uploadPath = FileConstant.IMAGE_ATTENDANCE_PATH + filename;
                 Path path = Paths.get(uploadPath);
 
