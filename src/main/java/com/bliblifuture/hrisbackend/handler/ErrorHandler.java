@@ -17,10 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RestControllerAdvice
@@ -35,20 +32,39 @@ public class ErrorHandler implements ErrorWebFluxControllerHandler, MessageSourc
         return log;
     }
 
-//    public Map<String, List<String>> returnError(){
-//
-//    }
-
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(CommandValidationException.class)
     public Response<Object> commandValidationException(CommandValidationException e) {
-        this.getLogger().warn(CommandValidationException.class.getName(), e);
-
         Response<Object> response = new Response<>();
         response.setCode(HttpStatus.BAD_REQUEST.value());
         response.setStatus(HttpStatus.BAD_REQUEST.name());
         response.setErrors(Errors.from(e.getConstraintViolations()));
         return response;
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Response<Object> badRequest(IllegalArgumentException e) {
+        Response<Object> response = new Response<>();
+        response.setCode(HttpStatus.BAD_REQUEST.value());
+        response.setStatus(HttpStatus.BAD_REQUEST.name());
+        response.setErrors(setMessage(e.getMessage()));
+        return response;
+    }
+
+    private Map<String, List<String>> setMessage(String rawMessages) {
+        Map<String, List<String>> messages = new HashMap<>();
+        String[] errors = rawMessages.replace("{", "").replace("}", "")
+                .split(",");
+        for (String error : errors) {
+            String[] partError = error.split("=");
+            String key = partError[0];
+            List<String> value = Collections.singletonList(
+                    partError[1].replace("[", "").replace("]", "")
+            );
+            messages.put(key, value);
+        }
+        return messages;
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -70,17 +86,6 @@ public class ErrorHandler implements ErrorWebFluxControllerHandler, MessageSourc
         response.setStatus(HttpStatus.UNAUTHORIZED.name());
 
         return response;
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(IllegalArgumentException.class)
-    public Response<Object> notAcceptableRequest(IllegalArgumentException e) {
-        Response<Object> response = new Response<>();
-
-        response.setCode(HttpStatus.BAD_REQUEST.value());
-        response.setStatus(HttpStatus.BAD_REQUEST.name());
-
-        return getErrorMessage(response, "credential", e.getMessage(), e);
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

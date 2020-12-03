@@ -12,6 +12,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Service
 public class LoginCommandImpl implements LoginCommand {
 
@@ -38,7 +43,10 @@ public class LoginCommandImpl implements LoginCommand {
 
     private void checkNull(User user) {
         if (user == null){
-            throw new IllegalArgumentException("DOES_NOT_MATCH");
+            Map<String, List<String>> errors = new HashMap<>();
+            errors.put("credentials", Arrays.asList("DOES_NOT_MATCH"));
+            String errorsMessage = errors.toString();
+            throw new IllegalArgumentException(errorsMessage);
         }
     }
 
