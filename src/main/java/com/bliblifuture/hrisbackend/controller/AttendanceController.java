@@ -6,6 +6,8 @@ import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.ClockInCommand;
 import com.bliblifuture.hrisbackend.command.ClockOutCommand;
 import com.bliblifuture.hrisbackend.command.GetAttendancesCommand;
+import com.bliblifuture.hrisbackend.command.GetFileCommand;
+import com.bliblifuture.hrisbackend.constant.FileConstant;
 import com.bliblifuture.hrisbackend.model.request.AttendanceListRequest;
 import com.bliblifuture.hrisbackend.model.request.ClockInClockOutRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
@@ -60,5 +62,9 @@ public class AttendanceController {
                 .subscribeOn(Schedulers.elastic());
     }
 
-
+    @GetMapping(value = "/image/{filename}", produces = "image/webp")
+    public Mono<byte[]> getImage(@PathVariable String filename){
+        return commandExecutor.execute(GetFileCommand.class, FileConstant.IMAGE_ATTENDANCE_PATH + filename)
+                .subscribeOn(Schedulers.elastic());
+    }
 }

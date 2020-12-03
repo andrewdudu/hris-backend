@@ -4,6 +4,7 @@ import com.blibli.oss.command.CommandExecutor;
 import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.*;
+import com.bliblifuture.hrisbackend.constant.FileConstant;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
 import com.bliblifuture.hrisbackend.model.request.BaseRequest;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
@@ -94,13 +95,13 @@ public class RequestController {
 
     @GetMapping(value = "api/request/file/image/{filename}", produces = "image/webp")
     public Mono<byte[]> getImage(@PathVariable String filename){
-        return commandExecutor.execute(GetFileCommand.class, filename)
+        return commandExecutor.execute(GetFileCommand.class, FileConstant.REQUEST_FILE_PATH + filename)
                 .subscribeOn(Schedulers.elastic());
     }
 
     @GetMapping(value = "api/request/file/pdf/{filename}", produces = MediaType.APPLICATION_PDF_VALUE)
     public Mono<byte[]> getPDF(@PathVariable String filename){
-        return commandExecutor.execute(GetFileCommand.class, filename)
+        return commandExecutor.execute(GetFileCommand.class, FileConstant.REQUEST_FILE_PATH + filename)
                 .subscribeOn(Schedulers.elastic());
     }
 
