@@ -21,9 +21,9 @@ public class SpecialLeaveRequestHelper {
     }
 
     private Request createRequest(LeaveRequestData data, String employeeId, long currentDateTime) {
-        if (data.getType().equals(SpecialLeaveType.SICK.toString())){
-            if (data.getDates().size() > 1){
-                String errorsMessage = "dates=EXCEEDED";
+        if (data.getType().equals(SpecialLeaveType.SICK_WITH_MEDICAL_LETTER.toString())){
+            if (data.getFiles() == null || data.getFiles().isEmpty()){
+                String errorsMessage = "files=INVALID_REQUEST";
                 throw new RuntimeException(errorsMessage);
             }
         }

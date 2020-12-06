@@ -26,6 +26,8 @@ public interface RequestRepository extends ReactiveMongoRepository<Request, Stri
 
     Flux<Request> findByStatusOrderByCreatedDateDesc(RequestStatus status);
 
+    Flux<Request> findByStatusAndManagerOrderByCreatedDateDesc(RequestStatus status, String manager);
+
     Mono<Integer> countByCreatedDateAfterAndStatus(Date currentDate, RequestStatus status);
 
 }

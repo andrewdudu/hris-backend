@@ -7,8 +7,8 @@ import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
-import com.bliblifuture.hrisbackend.model.response.LeaveRequestResponse;
-import com.bliblifuture.hrisbackend.model.response.RequestResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
+import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
 import com.bliblifuture.hrisbackend.model.response.util.AttendanceTimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
@@ -114,7 +114,7 @@ public class GetIncomingRequestsCommandImplTests {
         RequestDetailResponse detail1 = RequestDetailResponse.builder()
                 .attendance(attendance)
                 .build();
-        RequestResponse data1 = RequestResponse.builder()
+        IncomingRequestResponse data1 = IncomingRequestResponse.builder()
                 .user(UserResponse.builder().username(user1.getUsername()).employeeId(user1.getEmployeeId()).build())
                 .status(RequestStatus.REQUESTED)
                 .type(RequestType.ATTENDANCE)
@@ -122,7 +122,7 @@ public class GetIncomingRequestsCommandImplTests {
                 .detail(detail1)
                 .build();
 
-        LeaveRequestResponse leave = LeaveRequestResponse.builder()
+        RequestLeaveResponse leave = RequestLeaveResponse.builder()
                 .dates(Collections.singletonList("2020-10-21"))
                 .notes(notes2)
                 .type(RequestType.ANNUAL_LEAVE.toString())
@@ -130,7 +130,7 @@ public class GetIncomingRequestsCommandImplTests {
         RequestDetailResponse detail2 = RequestDetailResponse.builder()
                 .leave(leave)
                 .build();
-        RequestResponse data2 = RequestResponse.builder()
+        IncomingRequestResponse data2 = IncomingRequestResponse.builder()
                 .user(UserResponse.builder().username(user2.getUsername()).employeeId(user2.getEmployeeId()).build())
                 .status(RequestStatus.REQUESTED)
                 .type(RequestType.LEAVE)
@@ -141,7 +141,7 @@ public class GetIncomingRequestsCommandImplTests {
         Mockito.when(requestResponseHelper.createResponse(request1)).thenReturn(Mono.just(data1));
         Mockito.when(requestResponseHelper.createResponse(request2)).thenReturn(Mono.just(data2));
 
-        List<RequestResponse> expected = Arrays.asList(data1, data2);
+        List<IncomingRequestResponse> expected = Arrays.asList(data1, data2);
 
         getIncomingRequestCommand.execute(type)
                 .subscribe(response -> {

@@ -8,7 +8,7 @@ import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.BaseRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
-import com.bliblifuture.hrisbackend.model.response.RequestResponse;
+import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
 import com.bliblifuture.hrisbackend.model.response.util.AttendanceTimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
@@ -109,7 +109,7 @@ public class RejectRequestCommandImplTest {
         Mockito.when(requestRepository.save(newRequest)).thenReturn(Mono.just(newRequest));
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
 
-        RequestResponse expeted = RequestResponse.builder()
+        IncomingRequestResponse expeted = IncomingRequestResponse.builder()
                 .user(userResponse)
                 .status(RequestStatus.REJECTED)
                 .type(RequestType.ATTENDANCE)

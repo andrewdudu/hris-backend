@@ -19,6 +19,8 @@ public class EmployeeResponse {
 
     private String name;
 
+    private boolean gender;
+
     private Department department;
 
     private PositionResponse positionResponse;

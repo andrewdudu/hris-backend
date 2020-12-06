@@ -80,7 +80,7 @@ public class ClockOutCommandImpl implements ClockOutCommand {
             throw new IllegalArgumentException(errorsMessage);
         }
 
-        long availableClockoutTime = attendance.getStartTime().getTime() + TimeUnit.HOURS.toMillis(8);
+        long availableClockoutTime = attendance.getStartTime().getTime() + TimeUnit.HOURS.toMillis(9);
         Date clockoutAvailable = new Date(availableClockoutTime);
         if (attendance.getStartTime() == null || currentTime.before(clockoutAvailable) || attendance.getEndTime() != null){
             String errorsMessage = "message=NOT_AVAILABLE";

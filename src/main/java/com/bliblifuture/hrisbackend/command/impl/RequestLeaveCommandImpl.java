@@ -8,7 +8,7 @@ import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
-import com.bliblifuture.hrisbackend.model.response.LeaveRequestResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
@@ -38,7 +38,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
     private DateUtil dateUtil;
 
     @Override
-    public Mono<LeaveRequestResponse> execute(LeaveRequestData request) {
+    public Mono<RequestLeaveResponse> execute(LeaveRequestData request) {
         return userRepository.findByUsername(request.getRequester())
                 .flatMap(user -> callHelper(request, user))
                 .flatMap(leaveRequest -> requestRepository.save(leaveRequest))
@@ -59,16 +59,41 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
             case LeaveTypeConstant.EXTRA_LEAVE:
                 return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfter(user.getEmployeeId(), LeaveType.extra, dateUtil.getNewDate())
                         .map(leave -> new ExtraLeaveRequestHelper().processRequest(request, user, leave, currentDateTime));
-            case LeaveTypeConstant.CHILD_BAPTISM:
-            case LeaveTypeConstant.CHILD_CIRCUMSION:
-            case LeaveTypeConstant.CHILDBIRTH:
             case LeaveTypeConstant.CLOSE_FAMILY_DEATH:
-            case LeaveTypeConstant.MAIN_FAMILY_DEATH:
-            case LeaveTypeConstant.HAJJ:
-            case LeaveTypeConstant.MARRIAGE:
-            case LeaveTypeConstant.MATERNITY:
             case LeaveTypeConstant.SICK:
+                if (request.getDates().size() > 1){
+                    String msg = "dates=EXCEED_ALLOWABLE_QUOTA";
+                    throw new IllegalArgumentException(msg);
+                }
+                return new SpecialLeaveRequestHelper().processRequest(request, user, currentDateTime);
+            case LeaveTypeConstant.CHILD_BAPTISM:
+            case LeaveTypeConstant.CHILDBIRTH:
+            case LeaveTypeConstant.MAIN_FAMILY_DEATH:
             case LeaveTypeConstant.SICK_WITH_MEDICAL_LETTER:
+                if (request.getDates().size() > 2){
+                    String msg = "dates=EXCEED_ALLOWABLE_QUOTA";
+                    throw new IllegalArgumentException(msg);
+                }
+                return new SpecialLeaveRequestHelper().processRequest(request, user, currentDateTime);
+            case LeaveTypeConstant.CHILD_CIRCUMSION:
+            case LeaveTypeConstant.MARRIAGE:
+                if (request.getDates().size() > 3){
+                    String msg = "dates=EXCEED_ALLOWABLE_QUOTA";
+                    throw new IllegalArgumentException(msg);
+                }
+                return new SpecialLeaveRequestHelper().processRequest(request, user, currentDateTime);
+            case LeaveTypeConstant.HAJJ:
+                if (request.getDates().size() > 30){
+                    String msg = "dates=EXCEED_ALLOWABLE_QUOTA";
+                    throw new IllegalArgumentException(msg);
+                }
+                return new SpecialLeaveRequestHelper().processRequest(request, user, currentDateTime);
+            case LeaveTypeConstant.MATERNITY:
+                if (request.getDates().size() > 90){
+                    String msg = "dates=EXCEED_ALLOWABLE_QUOTA";
+                    throw new IllegalArgumentException(msg);
+                }
+                return new SpecialLeaveRequestHelper().processRequest(request, user, currentDateTime);
             case LeaveTypeConstant.UNPAID_LEAVE:
                 return new SpecialLeaveRequestHelper().processRequest(request, user, currentDateTime);
             default:
@@ -77,14 +102,14 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
         }
     }
 
-    private static LeaveRequestResponse createResponse(Request request) {
+    private static RequestLeaveResponse createResponse(Request request) {
         List<String> dates = new ArrayList<>();
         for (Date dateString : request.getDates()) {
             String date = new SimpleDateFormat(DateUtil.DATE_FORMAT).format(dateString);
             dates.add(date);
         }
 
-        LeaveRequestResponse response = LeaveRequestResponse.builder()
+        RequestLeaveResponse response = RequestLeaveResponse.builder()
                 .files(request.getFiles())
                 .dates(dates)
                 .notes(request.getNotes())

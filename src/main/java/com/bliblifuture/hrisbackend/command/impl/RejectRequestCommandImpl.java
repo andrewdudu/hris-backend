@@ -5,7 +5,7 @@ import com.bliblifuture.hrisbackend.command.impl.helper.RequestResponseHelper;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.request.BaseRequest;
-import com.bliblifuture.hrisbackend.model.response.RequestResponse;
+import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
@@ -27,7 +27,7 @@ public class RejectRequestCommandImpl implements RejectRequestCommand {
 
     @SneakyThrows
     @Override
-    public Mono<RequestResponse> execute(BaseRequest data) {
+    public Mono<IncomingRequestResponse> execute(BaseRequest data) {
         return requestRepository.findById(data.getId())
                 .doOnSuccess(this::checkValidity)
                 .map(request -> approvedRequest(data, request))

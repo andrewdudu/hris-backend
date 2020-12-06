@@ -79,9 +79,9 @@ public class ClockInCommandImpl implements ClockInCommand {
         AttendanceLocationType type = AttendanceLocationType.OUTSIDE;
         for (int i = 0; i < officeList.size(); i++) {
             Office office = officeList.get(i);
-            double distance = Math.sqrt( Math.pow(attendance.getStartLat() - office.getLat(), 2) + Math.pow(attendance.getStartLat() - office.getLat(), 2) );
+            double distance = calc_distance(office.getLat(), office.getLon(), attendance.getStartLat(), attendance.getStartLon());
 
-            if (distance < AttendanceConfig.RADIUS_ALLOWED){
+            if (distance < AttendanceConfig.RADIUS_ALLOWED_KM){
                 type = AttendanceLocationType.INSIDE;
                 attendance.setOfficeCode(office.getCode());
             }
@@ -111,6 +111,18 @@ public class ClockInCommandImpl implements ClockInCommand {
         }
         attendance.setLocationType(type);
         return attendance;
+    }
+
+    private double calc_distance(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371.0710;
+        double rLat1 = lat1 * (Math.PI/180);
+        double rLat2 = lat1 * (Math.PI/180);
+        double diffLat = rLat2-rLat1;
+        double diffLon = (lon2-lon1) * (Math.PI/180);
+
+        return 2 * R * Math.asin(
+                Math.sqrt(Math.sin(diffLat/2) * Math.sin(diffLat/2) + Math.cos(rLat1) * Math.cos(rLat2) * Math.sin(diffLon/2) * Math.sin(diffLon/2))
+        );
     }
 
     @SneakyThrows

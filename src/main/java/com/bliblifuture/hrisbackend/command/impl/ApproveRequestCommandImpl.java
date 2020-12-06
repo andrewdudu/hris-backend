@@ -9,7 +9,7 @@ import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.Leave;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.request.BaseRequest;
-import com.bliblifuture.hrisbackend.model.response.RequestResponse;
+import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
@@ -46,7 +46,7 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
 
     @SneakyThrows
     @Override
-    public Mono<RequestResponse> execute(BaseRequest data) {
+    public Mono<IncomingRequestResponse> execute(BaseRequest data) {
         return requestRepository.findById(data.getId())
                 .doOnSuccess(this::checkValidity)
                 .map(request -> approvedRequest(data, request))
