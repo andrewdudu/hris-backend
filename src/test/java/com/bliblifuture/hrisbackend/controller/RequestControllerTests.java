@@ -9,6 +9,7 @@ import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
 import com.bliblifuture.hrisbackend.model.request.BaseRequest;
+import com.bliblifuture.hrisbackend.model.request.GetIncomingRequest;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.*;
 import com.bliblifuture.hrisbackend.model.response.util.ExtendLeaveQuotaResponse;
@@ -254,7 +255,10 @@ public class RequestControllerTests {
 
         List<IncomingRequestResponse> responseData = Arrays.asList(data1, data2);
 
-        Mockito.when(commandExecutor.execute(GetIncomingRequestCommand.class, type))
+        GetIncomingRequest request = GetIncomingRequest.builder().type(type).build();
+        request.setRequester(user.getUsername());
+
+        Mockito.when(commandExecutor.execute(GetIncomingRequestCommand.class, request))
                 .thenReturn(Mono.just(responseData));
 
         Response<List<IncomingRequestResponse>> expected = new Response<>();
@@ -262,7 +266,7 @@ public class RequestControllerTests {
         expected.setCode(HttpStatus.OK.value());
         expected.setStatus(HttpStatus.OK.name());
 
-        requestController.getIncomingRequests(type)
+        requestController.getIncomingRequests(type, principal)
                 .subscribe(response -> {
                     Assert.assertEquals(expected.getCode(), response.getCode());
                     Assert.assertEquals(expected.getStatus(), response.getStatus());
@@ -272,7 +276,7 @@ public class RequestControllerTests {
                     }
                 });
 
-        Mockito.verify(commandExecutor, Mockito.times(1)).execute(GetIncomingRequestCommand.class, type);
+        Mockito.verify(commandExecutor, Mockito.times(1)).execute(GetIncomingRequestCommand.class, request);
     }
 
     @Test

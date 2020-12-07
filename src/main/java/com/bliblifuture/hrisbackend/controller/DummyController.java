@@ -110,8 +110,8 @@ public class DummyController {
 //                .build();
 
 //        swe.getResponse().addCookie(cookie);
-        System.out.println(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-1-1").getTime());
-        System.out.println(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-31").getTime());
+        System.out.println(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-3").getTime());
+        System.out.println(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-4").getTime());
         return Mono.just(ResponseHelper.ok("test"));
     }
 

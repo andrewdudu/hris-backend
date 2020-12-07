@@ -6,15 +6,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class CalendarResponse {
+public class EventDetailResponse {
 
-    private Date date;
+    private String name;
+
+    private String notes;
 
     private CalendarStatus status;
+
 }
