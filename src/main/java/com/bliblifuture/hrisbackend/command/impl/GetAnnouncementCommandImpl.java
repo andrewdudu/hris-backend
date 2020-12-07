@@ -35,8 +35,8 @@ public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
         Date currentDate = dateUtil.getNewDate();
         int year = currentDate.getYear() + 1899;
 
-        Date lastTimeOfLastYear = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
-                .parse("31/12/" + year + " 23:59:59");
+        Date lastTimeOfLastYear = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                .parse(year + "-12-31" + " 23:59:59");
 
         return eventRepository.findAllByDateAfterOrderByDateAsc(lastTimeOfLastYear, pageable)
                 .switchIfEmpty(Flux.empty())

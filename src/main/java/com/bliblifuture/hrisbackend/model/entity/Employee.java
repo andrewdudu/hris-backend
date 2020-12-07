@@ -20,6 +20,9 @@ public class Employee extends BaseEntity{
     @Field(name = "email")
     private String email;
 
+    @Field(name = "gender")
+    private boolean gender;
+
     @Field(name = "image")
     private String image;
 
@@ -37,6 +40,9 @@ public class Employee extends BaseEntity{
 
     @Field(name = "level")
     private String level;
+
+    @Field(name = "manager_username")
+    private String managerUsername;
 
     @Field(name = "office_id")
     private String officeId;

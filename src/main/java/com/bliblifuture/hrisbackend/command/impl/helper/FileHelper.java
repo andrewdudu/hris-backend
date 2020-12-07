@@ -1,6 +1,5 @@
 package com.bliblifuture.hrisbackend.command.impl.helper;
 
-import com.blibli.oss.command.exception.CommandValidationException;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import sun.misc.BASE64Decoder;
@@ -10,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class FileHelper {
@@ -33,9 +31,16 @@ public class FileHelper {
                 imageByte = decoder.decodeBuffer(base64);
                 Files.write(path, imageByte);
             } catch (IOException e) {
-                throw new CommandValidationException(Collections.singleton("INVALID_FORMAT"));
+                String errorsMessage = "image=IMAGE_ERROR";
+                throw new RuntimeException(errorsMessage);
             }
-            filesPath.add(FileConstant.REQUEST_FILE_BASE_URL + filename);
+
+            if (extension.equals(".webp")){
+                filesPath.add(FileConstant.REQUEST_IMAGE_BASE_URL + filename);
+            }
+            else {
+                filesPath.add(FileConstant.REQUEST_FILE_BASE_URL + filename);
+            }
         }
         return filesPath;
     }

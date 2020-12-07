@@ -18,11 +18,15 @@ public interface RequestRepository extends ReactiveMongoRepository<Request, Stri
     @Query("{ id: { $exists: true }}")
     Flux<Request> findAll(final Pageable pageable);
 
+    Mono<Request> findByEmployeeIdAndTypeAndStatus(String employeeId, RequestType type, RequestStatus status);
+
     Flux<Request> findByDatesAfterAndStatusAndEmployeeId(Date currentDate, RequestStatus status, String employeeId);
 
     Mono<Request> findByEmployeeIdAndTypeAndDatesContains(String employeeId, RequestType type, Date date);
 
     Flux<Request> findByStatusOrderByCreatedDateDesc(RequestStatus status);
+
+    Flux<Request> findByStatusAndManagerOrderByCreatedDateDesc(RequestStatus status, String manager);
 
     Mono<Integer> countByCreatedDateAfterAndStatus(Date currentDate, RequestStatus status);
 

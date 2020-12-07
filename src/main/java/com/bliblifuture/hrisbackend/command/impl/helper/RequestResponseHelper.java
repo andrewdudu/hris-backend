@@ -4,8 +4,8 @@ import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
-import com.bliblifuture.hrisbackend.model.response.LeaveRequestResponse;
-import com.bliblifuture.hrisbackend.model.response.RequestResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
+import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
 import com.bliblifuture.hrisbackend.model.response.util.AttendanceTimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
@@ -28,8 +28,8 @@ public class RequestResponseHelper {
     @Autowired
     private UserResponseHelper userResponseHelper;
 
-    public Mono<RequestResponse> createResponse(Request request) {
-        RequestResponse response = RequestResponse.builder()
+    public Mono<IncomingRequestResponse> createResponse(Request request) {
+        IncomingRequestResponse response = IncomingRequestResponse.builder()
                 .date(request.getCreatedDate())
                 .status(request.getStatus())
                 .approvedby(request.getApprovedBy())
@@ -44,26 +44,31 @@ public class RequestResponseHelper {
                 });
     }
 
-    private RequestResponse setDetailResponse(RequestResponse response, Request request) {
-        switch (request.getType()) {
-            case ATTENDANCE:
-                response.setType(RequestType.ATTENDANCE);
-                return setAttendanceRequestResponse(response, request);
-            case EXTEND_ANNUAL_LEAVE:
-                response.setType(RequestType.EXTEND);
-                return setExtendLeaveRequestResponse(response, request);
-            case ANNUAL_LEAVE:
-            case EXTRA_LEAVE:
-            case SPECIAL_LEAVE:
-            case SUBSTITUTE_LEAVE:
-                response.setType(RequestType.LEAVE);
-                return setLeaveRequestResponse(response, request);
-            default:
-                throw new IllegalArgumentException("INTERNAL_DATA_ERROR");
+    private IncomingRequestResponse setDetailResponse(IncomingRequestResponse response, Request request) {
+        if (request.getType() != null){
+            switch (request.getType()) {
+                case ATTENDANCE:
+                    response.setType(RequestType.ATTENDANCE);
+                    return setAttendanceRequestResponse(response, request);
+                case EXTEND_ANNUAL_LEAVE:
+                    response.setType(RequestType.EXTEND);
+                    return setExtendLeaveRequestResponse(response, request);
+                case ANNUAL_LEAVE:
+                case EXTRA_LEAVE:
+                case SPECIAL_LEAVE:
+                case SUBSTITUTE_LEAVE:
+                    response.setType(RequestType.LEAVE);
+                    return setLeaveRequestResponse(response, request);
+                default:
+                    String errorsMessage = "type=INVALID_REQUEST";
+                    throw new RuntimeException(errorsMessage);
+            }
         }
+        String errorsMessage = "type=INVALID_REQUEST";
+        throw new RuntimeException(errorsMessage);
     }
 
-    private RequestResponse setAttendanceRequestResponse(RequestResponse response, Request request) {
+    private IncomingRequestResponse setAttendanceRequestResponse(IncomingRequestResponse response, Request request) {
         AttendanceTimeResponse date = AttendanceTimeResponse.builder()
                 .start(request.getClockIn())
                 .end(request.getClockOut())
@@ -83,7 +88,7 @@ public class RequestResponseHelper {
         return response;
     }
 
-    private RequestResponse setExtendLeaveRequestResponse(RequestResponse response, Request request) {
+    private IncomingRequestResponse setExtendLeaveRequestResponse(IncomingRequestResponse response, Request request) {
         ExtendLeaveResponse extend = ExtendLeaveResponse.builder()
                 .notes(request.getNotes())
                 .build();
@@ -97,8 +102,8 @@ public class RequestResponseHelper {
         return response;
     }
 
-    private RequestResponse setLeaveRequestResponse(RequestResponse response, Request request) {
-        LeaveRequestResponse leave = LeaveRequestResponse.builder()
+    private IncomingRequestResponse setLeaveRequestResponse(IncomingRequestResponse response, Request request) {
+        RequestLeaveResponse leave = RequestLeaveResponse.builder()
                 .dates(convertDatesToString(request.getDates()))
                 .files(request.getFiles())
                 .notes(request.getNotes())

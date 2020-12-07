@@ -8,7 +8,7 @@ import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
-import com.bliblifuture.hrisbackend.model.response.LeaveRequestResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
@@ -109,7 +109,7 @@ public class RequestLeaveCommandImplTests {
         Mockito.when(requestRepository.save(Mockito.any()))
                 .thenReturn(Mono.just(entity));
 
-        LeaveRequestResponse expected = LeaveRequestResponse.builder()
+        RequestLeaveResponse expected = RequestLeaveResponse.builder()
                 .dates(Arrays.asList(dateString1, dateString2))
                 .files(Arrays.asList(pathFile1, pathFile2))
                 .type(SpecialLeaveType.SICK_WITH_MEDICAL_LETTER.toString())

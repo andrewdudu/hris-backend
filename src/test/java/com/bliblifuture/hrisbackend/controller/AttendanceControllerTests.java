@@ -59,12 +59,12 @@ public class AttendanceControllerTests {
 
     @Test
     public void getAttendancesTests() throws ParseException {
-        Date startDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-10-1");
-        Date endDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-10-3");
+        String startDate = String.valueOf(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-10-1").getTime());
+        String endDate = String.valueOf(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-10-3").getTime());
 
         AttendanceListRequest request = AttendanceListRequest.builder()
-                .startDate(startDate)
-                .endDate(endDate)
+                .startDate(new Date(startDate))
+                .endDate(new Date(endDate))
                 .username(principal.getName())
                 .build();
 

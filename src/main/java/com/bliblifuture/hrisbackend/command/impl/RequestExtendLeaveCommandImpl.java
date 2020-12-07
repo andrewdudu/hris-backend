@@ -43,12 +43,21 @@ public class RequestExtendLeaveCommandImpl implements RequestExtendLeaveCommand 
         }
 
         return userRepository.findByUsername(request.getRequester())
-                .map(user -> createLeaveRequest(request, currentDate, user))
-                .flatMap(leaveRequest -> requestRepository.save(leaveRequest))
-                .map(leaveRequest -> {
-                    response.setStatus(leaveRequest.getStatus());
-                    return response;
-                });
+                .flatMap(user -> requestRepository.findByEmployeeIdAndTypeAndStatus(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, RequestStatus.REQUESTED)
+                        .doOnNext(this::checkRequest)
+                        .switchIfEmpty(Mono.just(createLeaveRequest(request, currentDate, user)))
+                        .flatMap(leaveRequest -> requestRepository.save(leaveRequest))
+                        .map(leaveRequest -> {
+                            response.setStatus(leaveRequest.getStatus());
+                            return response;
+                }));
+    }
+
+    private void checkRequest(Request req) {
+        if (req != null){
+            String msg = "status=REQUESTED";
+            throw new IllegalArgumentException(msg);
+        }
     }
 
     private Request createLeaveRequest(LeaveRequestData request, Date currentDate, User user) {

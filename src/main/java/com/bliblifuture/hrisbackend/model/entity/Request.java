@@ -42,6 +42,9 @@ public class Request extends BaseEntity {
     @Field(name = "files")
     private List<String> files;
 
+    @Field(name = "manager")
+    private String manager;
+
     @Field(name = "approved_by")
     private String approvedBy;
 

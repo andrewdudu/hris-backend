@@ -79,18 +79,19 @@ public class ClockInCommandImpl implements ClockInCommand {
         AttendanceLocationType type = AttendanceLocationType.OUTSIDE;
         for (int i = 0; i < officeList.size(); i++) {
             Office office = officeList.get(i);
-            double distance = Math.sqrt( Math.pow(attendance.getStartLat() - office.getLat(), 2) + Math.pow(attendance.getStartLat() - office.getLat(), 2) );
+            double distance = calc_distance(office.getLat(), office.getLon(), attendance.getStartLat(), attendance.getStartLon());
 
-            if (distance < AttendanceConfig.RADIUS_ALLOWED){
+            if (distance < AttendanceConfig.RADIUS_ALLOWED_KM){
                 type = AttendanceLocationType.INSIDE;
                 attendance.setOfficeCode(office.getCode());
             }
             else if (i == officeList.size()-1){
                 if (base64 == null || base64.isEmpty()){
-                    throw new IllegalArgumentException("INVALID_FORMAT");
+                    String errorsMessage = "image=EMPTY_FILE";
+                    throw new IllegalArgumentException(errorsMessage);
                 }
 
-                String filename = "EMP" + attendance.getEmployeeId() + "_" + attendance.getStartTime() + ".webp";
+                String filename = attendance.getEmployeeId() + "_" + attendance.getStartTime().getTime() + ".webp";
                 String uploadPath = FileConstant.IMAGE_ATTENDANCE_PATH + filename;
                 Path path = Paths.get(uploadPath);
 
@@ -101,7 +102,8 @@ public class ClockInCommandImpl implements ClockInCommand {
                     imageByte = decoder.decodeBuffer(base64Parts[1]);
                     Files.write(path, imageByte);
                 } catch (IOException e) {
-                    throw new IOException("IMAGE_ERROR");
+                    String errorsMessage = "image=INVALID_FORMAT";
+                    throw new IllegalArgumentException(errorsMessage);
                 }
 
                 attendance.setImage(FileConstant.IMAGE_ATTENDANCE_BASE_URL + filename);
@@ -109,6 +111,18 @@ public class ClockInCommandImpl implements ClockInCommand {
         }
         attendance.setLocationType(type);
         return attendance;
+    }
+
+    private double calc_distance(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371.0710;
+        double rLat1 = lat1 * (Math.PI/180);
+        double rLat2 = lat1 * (Math.PI/180);
+        double diffLat = rLat2-rLat1;
+        double diffLon = (lon2-lon1) * (Math.PI/180);
+
+        return 2 * R * Math.asin(
+                Math.sqrt(Math.sin(diffLat/2) * Math.sin(diffLat/2) + Math.cos(rLat1) * Math.cos(rLat2) * Math.sin(diffLon/2) * Math.sin(diffLon/2))
+        );
     }
 
     @SneakyThrows
@@ -137,7 +151,8 @@ public class ClockInCommandImpl implements ClockInCommand {
 
     private void checkIfExists(Attendance attendance) {
         if (attendance != null){
-            throw new IllegalArgumentException("Clock-in not available");
+            String errorsMessage = "message=NOT_AVAILABLE";
+            throw new IllegalArgumentException(errorsMessage);
         }
     }
 

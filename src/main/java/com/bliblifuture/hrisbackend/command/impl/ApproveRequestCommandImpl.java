@@ -9,7 +9,7 @@ import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.Leave;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.request.BaseRequest;
-import com.bliblifuture.hrisbackend.model.response.RequestResponse;
+import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
@@ -46,7 +46,7 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
 
     @SneakyThrows
     @Override
-    public Mono<RequestResponse> execute(BaseRequest data) {
+    public Mono<IncomingRequestResponse> execute(BaseRequest data) {
         return requestRepository.findById(data.getId())
                 .doOnSuccess(this::checkValidity)
                 .map(request -> approvedRequest(data, request))
@@ -120,14 +120,16 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
     }
 
     private void checkExtensionRequest(Leave leave, Date currentDate) {
-        if (leave.getExpDate().before(currentDate)){
-            throw new IllegalArgumentException("INVALID_REQUEST");
+        if (leave.getRemaining() < 0){
+            String errorsMessage = "message=NO_REMAINING_QUOTA";
+            throw new IllegalArgumentException(errorsMessage);
         }
     }
 
     private void checkValidity(Request request) {
         if (request == null || request.getStatus().equals(RequestStatus.APPROVED) || request.getStatus().equals(RequestStatus.REJECTED)){
-            throw new IllegalArgumentException("INVALID_REQUEST");
+            String errorsMessage = "message=NOT_AVAILABLE";
+            throw new IllegalArgumentException(errorsMessage);
         }
     }
 

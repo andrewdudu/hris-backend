@@ -5,13 +5,19 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AttendanceSummaryResponse extends BaseResponse{
+public class RequestLeaveResponse extends BaseResponse{
 
-    private int attendance;
+    private List<String> dates;
 
-    private int absent;
+    private List<String> files;
+
+    private String notes;
+
+    private String type;
 }

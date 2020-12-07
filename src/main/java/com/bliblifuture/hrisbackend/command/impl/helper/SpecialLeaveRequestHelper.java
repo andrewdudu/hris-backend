@@ -21,9 +21,10 @@ public class SpecialLeaveRequestHelper {
     }
 
     private Request createRequest(LeaveRequestData data, String employeeId, long currentDateTime) {
-        if (data.getType().equals(SpecialLeaveType.SICK.toString())){
-            if (data.getDates().size() > 1){
-                throw new IllegalArgumentException("INVALID");
+        if (data.getType().equals(SpecialLeaveType.SICK_WITH_MEDICAL_LETTER.toString())){
+            if (data.getFiles() == null || data.getFiles().isEmpty()){
+                String errorsMessage = "files=INVALID_REQUEST";
+                throw new RuntimeException(errorsMessage);
             }
         }
 
@@ -34,7 +35,8 @@ public class SpecialLeaveRequestHelper {
                 dates.add(date);
             }
             catch (Exception e){
-                throw new IllegalArgumentException("INVALID_REQUEST");
+                String errorsMessage = "date=INVALID_FORMAT";
+                throw new RuntimeException(errorsMessage);
             }
         }
 

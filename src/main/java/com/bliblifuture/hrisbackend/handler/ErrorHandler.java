@@ -11,15 +11,12 @@ import org.slf4j.Logger;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RestControllerAdvice
@@ -34,15 +31,9 @@ public class ErrorHandler implements ErrorWebFluxControllerHandler, MessageSourc
         return log;
     }
 
-//    public Map<String, List<String>> returnError(){
-//
-//    }
-
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(CommandValidationException.class)
     public Response<Object> commandValidationException(CommandValidationException e) {
-        this.getLogger().warn(CommandValidationException.class.getName(), e);
-
         Response<Object> response = new Response<>();
         response.setCode(HttpStatus.BAD_REQUEST.value());
         response.setStatus(HttpStatus.BAD_REQUEST.name());
@@ -51,36 +42,50 @@ public class ErrorHandler implements ErrorWebFluxControllerHandler, MessageSourc
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(IOException.class)
-    public Response<Object> IOException(IOException e) {
-        Response<Object> response = new Response<>();
-
-        response.setCode(HttpStatus.BAD_REQUEST.value());
-        response.setStatus(HttpStatus.BAD_REQUEST.name());
-
-        return getErrorMessage(response, "credential", e.getMessage(), e);
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(SecurityException.class)
-    public Response<Object> credentialException(SecurityException e) {
-        Response<Object> response = new Response<>();
-
-        response.setCode(HttpStatus.BAD_REQUEST.value());
-        response.setStatus(HttpStatus.BAD_REQUEST.name());
-
-        return getErrorMessage(response, "credential", e.getMessage(), e);
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(IllegalArgumentException.class)
-    public Response<Object> notAcceptableRequest(IllegalArgumentException e) {
+    public Response<Object> badRequest(IllegalArgumentException e) {
+        Response<Object> response = new Response<>();
+        response.setCode(HttpStatus.BAD_REQUEST.value());
+        response.setStatus(HttpStatus.BAD_REQUEST.name());
+        response.setErrors(setMessage(e.getMessage()));
+        return response;
+    }
+
+    private Map<String, List<String>> setMessage(String rawMessages) {
+        Map<String, List<String>> messages = new HashMap<>();
+        String[] message = rawMessages.split(";");
+        for (String msg : message) {
+            String[] part = msg.split("=");
+            String key = part[0];
+
+            List<String> values = new ArrayList<>();
+            values.addAll(Arrays.asList(part[1].split(",")));
+
+            messages.put(key, values);
+        }
+        return messages;
+    }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(RuntimeException.class)
+    public Response<Object> InternalError(RuntimeException e) {
         Response<Object> response = new Response<>();
 
-        response.setCode(HttpStatus.NOT_ACCEPTABLE.value());
-        response.setStatus(HttpStatus.NOT_ACCEPTABLE.name());
+        response.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.name());
+        response.setErrors(setMessage(e.getMessage()));
 
-        return getErrorMessage(response, "message", e.getMessage(), e);
+        return response;
+    }
+
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(AccessDeniedException.class)
+    public Response<Object> credentialException(AccessDeniedException e) {
+        Response<Object> response = new Response<>();
+        response.setCode(HttpStatus.UNAUTHORIZED.value());
+        response.setStatus(HttpStatus.UNAUTHORIZED.name());
+
+        return response;
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

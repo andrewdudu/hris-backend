@@ -50,6 +50,9 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
             if (user.getRoles().contains(UserRole.ADMIN)){
                 authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
             }
+            if (user.getRoles().contains(UserRole.MANAGER)){
+                authorities.add(new SimpleGrantedAuthority("ROLE_MANAGER"));
+            }
             return Mono.just(new UsernamePasswordAuthenticationToken(jwtTokenUtil.getUsernameFromToken(token), null, authorities));
         }
         return Mono.empty();

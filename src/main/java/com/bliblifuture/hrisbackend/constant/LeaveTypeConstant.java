@@ -15,7 +15,7 @@ public class LeaveTypeConstant {
     public final static String UNPAID_LEAVE = "UNPAID_LEAVE";
 
     public final static String ANNUAL_LEAVE = "ANNUAL_LEAVE";
-    public final static String SUBTITUTE_LEAVE = "SUBTITUTE_LEAVE";
+    public final static String SUBSTITUTE_LEAVE = "SUBSTITUTE_LEAVE";
     public final static String EXTRA_LEAVE = "EXTRA_LEAVE";
 
 }

@@ -1,19 +1,18 @@
 package com.bliblifuture.hrisbackend.model.response.util;
 
+import com.bliblifuture.hrisbackend.model.response.BaseResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Data
-public class LeaveQuotaResponse {
+public class AttendanceSummaryResponse extends BaseResponse {
 
-    private int annual;
+    private int attendance;
 
-    private int extra;
-
-    private int substitute;
+    private int absent;
 }

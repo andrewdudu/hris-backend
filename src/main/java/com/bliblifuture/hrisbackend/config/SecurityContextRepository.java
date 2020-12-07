@@ -34,6 +34,7 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
             Authentication auth = new UsernamePasswordAuthenticationToken(authToken, authToken);
             return this.authenticationManager.authenticate(auth).map(SecurityContextImpl::new);
         }
+
         return Mono.empty();
     }
 

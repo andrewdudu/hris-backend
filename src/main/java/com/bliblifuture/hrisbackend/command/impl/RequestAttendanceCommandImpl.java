@@ -2,7 +2,9 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.RequestAttendanceCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.Request;
+import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
 import com.bliblifuture.hrisbackend.model.response.AttendanceRequestResponse;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
@@ -13,7 +15,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 
 @Service
@@ -31,7 +33,7 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
     @Override
     public Mono<AttendanceRequestResponse> execute(AttendanceRequestData request) {
         return userRepository.findByUsername(request.getRequester())
-                .map(user -> createRequestEntity(request, user.getEmployeeId()))
+                .map(user -> createRequestEntity(request, user))
                 .flatMap(entity -> requestRepository.save(entity))
                 .map(this::createResponse);
     }
@@ -52,7 +54,7 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
         return response;
     }
 
-    private Request createRequestEntity(AttendanceRequestData data, String employeeId){
+    private Request createRequestEntity(AttendanceRequestData data, User user){
         Date clockIn, clockOut, date;
         try {
             clockIn = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
@@ -63,18 +65,23 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
                     .parse(data.getDate());
         }
         catch (Exception e){
-            throw new IllegalArgumentException("INVALID_FORMAT");
+            String msg = "message=INTERNAL_ERROR";
+            throw new RuntimeException(msg);
         }
         Request request = Request.builder()
                 .clockIn(clockIn)
                 .clockOut(clockOut)
-                .dates(Arrays.asList(date))
+                .dates(Collections.singletonList(date))
                 .notes(data.getNotes())
                 .status(RequestStatus.REQUESTED)
-                .employeeId(employeeId)
+                .employeeId(user.getEmployeeId())
+                .type(RequestType.ATTENDANCE)
                 .build();
+        Date currentDateTime = dateUtil.getNewDate();
+        request.setCreatedDate(currentDateTime);
+        request.setCreatedBy(user.getUsername());
 
-        request.setId("REQ_ATT-" + employeeId + "-" + dateUtil.getNewDate().getTime());
+        request.setId("REQ_ATT-" + user.getEmployeeId() + "-" + currentDateTime.getTime());
 
         return request;
     }

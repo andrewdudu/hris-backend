@@ -17,16 +17,17 @@ public class ExtraLeaveRequestHelper {
 
     public Request processRequest(LeaveRequestData data, User user, Leave leave, long currentDateTime){
         checkRemainingLeave(leave, data);
-        return createRequest(data, user.getEmployeeId(), currentDateTime);
+        return createRequest(data, user, currentDateTime);
     }
 
     private void checkRemainingLeave(Leave leave, LeaveRequestData data) {
         if (leave.getRemaining() < data.getDates().size()){
-            throw new IllegalArgumentException("QUOTA_NOT_AVAILABLE");
+            String errorsMessage = "dates=QUOTA_NOT_AVAILABLE";
+            throw new RuntimeException(errorsMessage);
         }
     }
 
-    private Request createRequest(LeaveRequestData data, String employeeId, long currentDateTime) {
+    private Request createRequest(LeaveRequestData data, User user, long currentDateTime) {
         List<Date> dates = new ArrayList<>();
         for (String dateString : data.getDates()) {
             try {
@@ -34,20 +35,24 @@ public class ExtraLeaveRequestHelper {
                 dates.add(date);
             }
             catch (Exception e){
-                throw new IllegalArgumentException("INVALID_REQUEST");
+                String errorsMessage = "date=INVALID_FORMAT";
+                throw new RuntimeException(errorsMessage);
             }
         }
 
         Request request = Request.builder()
-                .employeeId(employeeId)
+                .employeeId(user.getEmployeeId())
                 .dates(dates)
                 .notes(data.getNotes())
                 .type(RequestType.valueOf(data.getType()))
                 .status(RequestStatus.REQUESTED)
                 .build();
+        request.setId("EXTRA-" + user.getEmployeeId() + currentDateTime);
+        request.setCreatedBy(user.getUsername());
+        request.setCreatedDate(new Date(currentDateTime));
 
         if (data.getFiles() != null){
-            List<String> files = FileHelper.saveFiles(data, employeeId, currentDateTime);
+            List<String> files = FileHelper.saveFiles(data, user.getEmployeeId(), currentDateTime);
             request.setFiles(files);
         }
 

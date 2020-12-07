@@ -5,20 +5,17 @@ import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.config.JwtTokenUtil;
 import com.bliblifuture.hrisbackend.config.PassEncoder;
-import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
 import com.bliblifuture.hrisbackend.model.entity.*;
 import com.bliblifuture.hrisbackend.repository.*;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.UUID;
 
 @RestController
@@ -101,18 +98,20 @@ public class DummyController {
     }
 
     @GetMapping("/test")
-    public Mono<Response<String>> cookieTest(ServerWebExchange swe){
-        User userEntity = User.builder().username("test").password("test")
-                .roles(Arrays.asList(UserRole.ADMIN, UserRole.EMPLOYEE))
-                .build();
-        ResponseCookie cookie = ResponseCookie
-                .from("userToken",jwtTokenUtil.generateToken(userEntity))
-                .maxAge(5*3600)
-                .secure(true)
-                .httpOnly(true)
-                .build();
+    public Mono<Response<String>> cookieTest(ServerWebExchange swe) throws ParseException {
+//        User userEntity = User.builder().username("test").password("test")
+//                .roles(Arrays.asList(UserRole.ADMIN, UserRole.EMPLOYEE))
+//                .build();
+//        ResponseCookie cookie = ResponseCookie
+//                .from("userToken",jwtTokenUtil.generateToken(userEntity))
+//                .maxAge(5*3600)
+//                .secure(true)
+//                .httpOnly(true)
+//                .build();
 
-        swe.getResponse().addCookie(cookie);
+//        swe.getResponse().addCookie(cookie);
+        System.out.println(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-1-1").getTime());
+        System.out.println(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-31").getTime());
         return Mono.just(ResponseHelper.ok("test"));
     }
 

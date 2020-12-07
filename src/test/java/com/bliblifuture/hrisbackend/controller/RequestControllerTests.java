@@ -132,7 +132,7 @@ public class RequestControllerTests {
 
         String pathFile1 = FileConstant.REQUEST_FILE_BASE_URL + image1;
         String pathFile2 = FileConstant.REQUEST_FILE_BASE_URL + image2;
-        LeaveRequestResponse responseData = LeaveRequestResponse.builder()
+        RequestLeaveResponse responseData = RequestLeaveResponse.builder()
                 .files(Arrays.asList(pathFile1, pathFile2))
                 .dates(Arrays.asList(date1, date2))
                 .type(type)
@@ -142,7 +142,7 @@ public class RequestControllerTests {
         Mockito.when(commandExecutor.execute(RequestLeaveCommand.class, request))
                 .thenReturn(Mono.just(responseData));
 
-        Response<LeaveRequestResponse> expected = new Response<>();
+        Response<RequestLeaveResponse> expected = new Response<>();
         expected.setData(responseData);
         expected.setCode(HttpStatus.OK.value());
         expected.setStatus(HttpStatus.OK.name());
@@ -152,8 +152,8 @@ public class RequestControllerTests {
                     Assert.assertEquals(expected.getCode(), response.getCode());
                     Assert.assertEquals(expected.getStatus(), response.getStatus());
 
-                    LeaveRequestResponse ex = expected.getData();
-                    LeaveRequestResponse res = response.getData();
+                    RequestLeaveResponse ex = expected.getData();
+                    RequestLeaveResponse res = response.getData();
                     Assert.assertEquals(ex.getId(), res.getId());
                     Assert.assertEquals(ex.getFiles(), res.getFiles());
                     Assert.assertEquals(ex.getDates(), res.getDates());
@@ -240,24 +240,24 @@ public class RequestControllerTests {
     public void getIncomingRequestsTest() {
         String type = "REQUESTED";
 
-        RequestResponse data1 = RequestResponse.builder()
+        IncomingRequestResponse data1 = IncomingRequestResponse.builder()
                 .user(UserResponse.builder().username("name1").build())
                 .status(RequestStatus.REQUESTED)
                 .type(RequestType.ATTENDANCE)
                 .build();
 
-        RequestResponse data2 = RequestResponse.builder()
+        IncomingRequestResponse data2 = IncomingRequestResponse.builder()
                 .user(UserResponse.builder().username("name2").build())
                 .status(RequestStatus.REQUESTED)
                 .type(RequestType.LEAVE)
                 .build();
 
-        List<RequestResponse> responseData = Arrays.asList(data1, data2);
+        List<IncomingRequestResponse> responseData = Arrays.asList(data1, data2);
 
         Mockito.when(commandExecutor.execute(GetIncomingRequestCommand.class, type))
                 .thenReturn(Mono.just(responseData));
 
-        Response<List<RequestResponse>> expected = new Response<>();
+        Response<List<IncomingRequestResponse>> expected = new Response<>();
         expected.setData(Arrays.asList(data1, data2));
         expected.setCode(HttpStatus.OK.value());
         expected.setStatus(HttpStatus.OK.name());
@@ -277,7 +277,7 @@ public class RequestControllerTests {
 
     @Test
     public void approveRequestTest() {
-        RequestResponse data = RequestResponse.builder()
+        IncomingRequestResponse data = IncomingRequestResponse.builder()
                 .user(UserResponse.builder().username("name1").build())
                 .status(RequestStatus.APPROVED)
                 .type(RequestType.ATTENDANCE)
@@ -291,7 +291,7 @@ public class RequestControllerTests {
         Mockito.when(commandExecutor.execute(ApproveRequestCommand.class, request))
                 .thenReturn(Mono.just(data));
 
-        Response<RequestResponse> expected = new Response<>();
+        Response<IncomingRequestResponse> expected = new Response<>();
         expected.setData(data);
         expected.setCode(HttpStatus.OK.value());
         expected.setStatus(HttpStatus.OK.name());
@@ -308,7 +308,7 @@ public class RequestControllerTests {
 
     @Test
     public void rejectRequestTest() {
-        RequestResponse data = RequestResponse.builder()
+        IncomingRequestResponse data = IncomingRequestResponse.builder()
                 .user(UserResponse.builder().username("name1").build())
                 .status(RequestStatus.REJECTED)
                 .type(RequestType.ATTENDANCE)
@@ -322,7 +322,7 @@ public class RequestControllerTests {
         Mockito.when(commandExecutor.execute(RejectRequestCommand.class, request))
                 .thenReturn(Mono.just(data));
 
-        Response<RequestResponse> expected = new Response<>();
+        Response<IncomingRequestResponse> expected = new Response<>();
         expected.setData(data);
         expected.setCode(HttpStatus.OK.value());
         expected.setStatus(HttpStatus.OK.name());

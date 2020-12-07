@@ -4,14 +4,17 @@ import com.blibli.oss.command.CommandExecutor;
 import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.*;
+import com.bliblifuture.hrisbackend.constant.FileConstant;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
 import com.bliblifuture.hrisbackend.model.request.BaseRequest;
+import com.bliblifuture.hrisbackend.model.request.GetIncomingRequest;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.AttendanceRequestResponse;
 import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
-import com.bliblifuture.hrisbackend.model.response.LeaveRequestResponse;
-import com.bliblifuture.hrisbackend.model.response.RequestResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
+import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -38,7 +41,7 @@ public class RequestController {
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @PostMapping("/api/request/leaves")
-    public Mono<Response<LeaveRequestResponse>> requestLeave(@RequestBody LeaveRequestData requestData, Principal principal){
+    public Mono<Response<RequestLeaveResponse>> requestLeave(@RequestBody LeaveRequestData requestData, Principal principal){
         requestData.setRequester(principal.getName());
         return commandExecutor.execute(RequestLeaveCommand.class, requestData)
                 .map(ResponseHelper::ok)
@@ -61,17 +64,19 @@ public class RequestController {
                 .subscribeOn(Schedulers.elastic());
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping("/api/requests")
-    public Mono<Response<List<RequestResponse>>> getIncomingRequests(@RequestParam("type") String type){
-        return commandExecutor.execute(GetIncomingRequestCommand.class, type)
+    public Mono<Response<List<IncomingRequestResponse>>> getIncomingRequests(@RequestParam("type") String type, Principal principal){
+        GetIncomingRequest request = GetIncomingRequest.builder().type(type).build();
+        request.setRequester(principal.getName());
+        return commandExecutor.execute(GetIncomingRequestCommand.class, request)
                 .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/api/requests/{id}/_approve")
-    public Mono<Response<RequestResponse>> approveRequest(@PathVariable("id") String id, Principal principal){
+    public Mono<Response<IncomingRequestResponse>> approveRequest(@PathVariable("id") String id, Principal principal){
         BaseRequest request = new BaseRequest();
         request.setId(id);
         request.setRequester(principal.getName());
@@ -82,12 +87,24 @@ public class RequestController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/api/requests/{id}/_reject")
-    public Mono<Response<RequestResponse>> rejectRequest(@PathVariable("id") String id, Principal principal){
+    public Mono<Response<IncomingRequestResponse>> rejectRequest(@PathVariable("id") String id, Principal principal){
         BaseRequest request = new BaseRequest();
         request.setId(id);
         request.setRequester(principal.getName());
         return commandExecutor.execute(RejectRequestCommand.class, request)
                 .map(ResponseHelper::ok)
+                .subscribeOn(Schedulers.elastic());
+    }
+
+    @GetMapping(value = "api/request/file/image/{filename}", produces = "image/webp")
+    public Mono<byte[]> getImage(@PathVariable String filename){
+        return commandExecutor.execute(GetFileCommand.class, FileConstant.REQUEST_FILE_PATH + filename)
+                .subscribeOn(Schedulers.elastic());
+    }
+
+    @GetMapping(value = "api/request/file/pdf/{filename}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public Mono<byte[]> getPDF(@PathVariable String filename){
+        return commandExecutor.execute(GetFileCommand.class, FileConstant.REQUEST_FILE_PATH + filename)
                 .subscribeOn(Schedulers.elastic());
     }
 
