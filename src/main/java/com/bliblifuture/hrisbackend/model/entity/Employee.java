@@ -1,5 +1,6 @@
 package com.bliblifuture.hrisbackend.model.entity;
 
+import com.bliblifuture.hrisbackend.constant.enumerator.Gender;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -21,7 +22,7 @@ public class Employee extends BaseEntity{
     private String email;
 
     @Field(name = "gender")
-    private boolean gender;
+    private Gender gender;
 
     @Field(name = "image")
     private String image;

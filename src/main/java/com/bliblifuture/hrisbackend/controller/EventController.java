@@ -12,6 +12,7 @@ import com.bliblifuture.hrisbackend.model.request.SetHolidayRequest;
 import com.bliblifuture.hrisbackend.model.response.AnnouncementResponse;
 import com.bliblifuture.hrisbackend.model.response.CalendarResponse;
 import com.bliblifuture.hrisbackend.model.response.util.EventDetailResponse;
+import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,8 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.security.Principal;
-import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 @RestController
@@ -56,8 +58,8 @@ public class EventController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/calendar/days/{date}/events")
-    public Mono<Response<EventDetailResponse>> setHoliday(@PathVariable("date") long date, @RequestBody SetHolidayRequest request, Principal principal){
-        request.setDate(new Date(date));
+    public Mono<Response<EventDetailResponse>> setHoliday(@PathVariable("date") String date, @RequestBody SetHolidayRequest request, Principal principal) throws ParseException {
+        request.setDate(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(date));
         request.setRequester(principal.getName());
         return commandExecutor.execute(SetHolidayCommand.class, request)
                 .map(ResponseHelper::ok)
