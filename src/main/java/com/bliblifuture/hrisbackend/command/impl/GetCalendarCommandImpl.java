@@ -58,13 +58,18 @@ public class GetCalendarCommandImpl implements GetCalendarCommand {
         int year = lastDate.getYear()+1900;
 
         for (int i = 1; i <= lastDate.getDate(); i++) {
-            responses.add(
-                    CalendarResponse.builder()
-                            .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(year + "-" + month + "-" + i))
-                            .status(CalendarStatus.WORKING)
-                            .events(new ArrayList<>())
-                            .build()
-            );
+            Date thisDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(year + "-" + month + "-" + i);
+            CalendarResponse response = CalendarResponse.builder()
+                    .date(thisDate)
+                    .events(new ArrayList<>())
+                    .build();
+            if (thisDate.getDay() == 0){
+                response.setStatus(CalendarStatus.HOLIDAY);
+            }
+            else{
+                response.setStatus(CalendarStatus.WORKING);
+            }
+            responses.add(response);
         }
 
         if (!events.isEmpty()){
