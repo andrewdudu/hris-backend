@@ -8,6 +8,7 @@ import com.bliblifuture.hrisbackend.command.GetEmployeesCommand;
 import com.bliblifuture.hrisbackend.model.request.EmployeesRequest;
 import com.bliblifuture.hrisbackend.model.response.EmployeeDetailResponse;
 import com.bliblifuture.hrisbackend.model.response.EmployeeResponse;
+import com.mongodb.lang.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -25,10 +26,13 @@ public class EmployeeController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/employees")
-    public Mono<Response<List<EmployeeResponse>>> getEmployees(@RequestParam("department") String department){
-        EmployeesRequest request = EmployeesRequest.builder()
-                .department(department)
-                .build();
+    public Mono<Response<List<EmployeeResponse>>> getEmployees(@RequestParam(value = "department", required = false) @Nullable String department, @RequestParam(value = "name", required = false) String name,
+                                                               @RequestParam("page") int page, @RequestParam("size") int size){
+        EmployeesRequest request = new EmployeesRequest();
+        request.setDepartment(department);
+        request.setName(name);
+        request.setPage(page);
+        request.setSize(size);
         return commandExecutor.execute(GetEmployeesCommand.class, request)
                 .map(pagingResponse -> {
                     Response<List<EmployeeResponse>> response = ResponseHelper.ok(pagingResponse.getData());

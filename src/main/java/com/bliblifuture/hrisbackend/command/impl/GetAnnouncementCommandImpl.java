@@ -46,7 +46,7 @@ public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
                     response.setData(announcementResponseList);
                     return eventRepository.countAllByDateAfter(lastTimeOfLastYear);
                 })
-                .map(total -> response.getPagingResponse(request, Math.toIntExact(total)));
+                .map(total -> response.setPagingDetail(request, Math.toIntExact(total)));
     }
 
 }
