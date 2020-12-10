@@ -9,6 +9,7 @@ import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
+import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
@@ -32,6 +33,9 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
     private RequestRepository requestRepository;
 
     @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
     private LeaveRepository leaveRepository;
 
     @Autowired
@@ -40,7 +44,13 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
     @Override
     public Mono<RequestLeaveResponse> execute(LeaveRequestData request) {
         return userRepository.findByUsername(request.getRequester())
-                .flatMap(user -> callHelper(request, user))
+                .flatMap(user -> callHelper(request, user)
+                        .flatMap(entity -> employeeRepository.findById(user.getEmployeeId())
+                                .map(employee -> {
+                                    entity.setManager(employee.getManagerUsername());
+                                    return entity;
+                                }))
+                )
                 .flatMap(leaveRequest -> requestRepository.save(leaveRequest))
                 .map(RequestLeaveCommandImpl::createResponse);
     }
