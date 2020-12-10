@@ -70,8 +70,6 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
         if (user.getRoles().contains(UserRole.ADMIN)){
             ReportResponse report = new ReportResponse();
             IncomingRequestResponse request = new IncomingRequestResponse();
-            response.setReport(report);
-            response.setRequest(request);
 
             return dailyAttendanceReportRepository.findByDate(startOfDate)
                     .switchIfEmpty(
@@ -83,14 +81,17 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                     )
                     .doOnSuccess(this::checkNewEntity)
                     .flatMap(res -> {
-                        response.getReport().setWorking(res.getWorking());
-                        response.getReport().setAbsent(res.getAbsent());
+                        report.setWorking(res.getWorking());
+                        report.setAbsent(res.getAbsent());
                         return eventRepository.findByDate(startOfDate);
                     })
+                    .switchIfEmpty(Mono.just(Event.builder().status(CalendarStatus.WORKING).build()))
                     .map(event -> setCalendarResponse(startOfDate, response, event))
-                    .flatMap(res -> requestRepository.countByCreatedDateAfterAndStatus(startOfDate, RequestStatus.REQUESTED))
-                    .map(totalIncomingRequest -> {
-                        response.getRequest().setIncoming(totalIncomingRequest);
+                    .flatMap(res -> requestRepository.countByStatus(RequestStatus.REQUESTED))
+                    .map(incomingReqTotal -> {
+                        request.setIncoming(incomingReqTotal.intValue());
+                        response.setRequest(request);
+                        response.setReport(report);
                         return response;
                     });
         }
@@ -171,12 +172,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     }
 
     private DashboardResponse setCalendarResponse(Date currentDate, DashboardResponse response, Event event) {
-        if (event.getId() == null){
-            response.getCalendar().setStatus(CalendarStatus.WORKING);
-        }
-        else{
-            response.getCalendar().setStatus(event.getStatus());
-        }
+        response.getCalendar().setStatus(event.getStatus());
         response.getCalendar().setDate(currentDate);
         return response;
     }
