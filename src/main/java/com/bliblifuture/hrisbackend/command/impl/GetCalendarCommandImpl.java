@@ -84,16 +84,11 @@ public class GetCalendarCommandImpl implements GetCalendarCommand {
                     }
                 }
                 else{
-                    CalendarResponse response = CalendarResponse.builder()
-                            .date(event.getDate())
-                            .status(event.getStatus())
-                            .events(new ArrayList<>())
-                            .build();
-                    responses.get(event.getDate().getDate()-1).getEvents().add(EventDetailResponse.builder()
-                            .name(events.get(i).getTitle())
-                            .build()
-                    );
-                    responses.add(response);
+                    responses.get(event.getDate().getDate()-1)
+                            .getEvents()
+                            .add(EventDetailResponse.builder()
+                                .name(events.get(i).getTitle())
+                                .build());
                 }
             }
         }

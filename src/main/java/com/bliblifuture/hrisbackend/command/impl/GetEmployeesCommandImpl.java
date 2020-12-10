@@ -86,7 +86,7 @@ public class GetEmployeesCommandImpl implements GetEmployeesCommand {
         if (request.getName() == null || request.getName().isEmpty()){
             return departmentRepository.findByName(request.getDepartment())
                     .doOnSuccess(this::checkNull)
-                    .flatMap(department -> employeeRepository.findByDepId(department.getId().replace("-", ""))
+                    .flatMap(department -> employeeRepository.findByDepId(department.getId())
                             .flatMap(this::createResponse)
                             .collectList());
         }

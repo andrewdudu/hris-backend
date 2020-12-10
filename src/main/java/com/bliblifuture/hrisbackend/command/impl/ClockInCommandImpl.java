@@ -151,7 +151,7 @@ public class ClockInCommandImpl implements ClockInCommand {
 
     private void checkIfExists(Attendance attendance) {
         if (attendance != null){
-            String errorsMessage = "message=NOT_AVAILABLE";
+            String errorsMessage = "message=ALREADY_CLOCK_IN";
             throw new IllegalArgumentException(errorsMessage);
         }
     }
