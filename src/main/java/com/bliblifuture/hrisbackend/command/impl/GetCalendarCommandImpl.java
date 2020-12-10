@@ -16,6 +16,7 @@ import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class GetCalendarCommandImpl implements GetCalendarCommand {
@@ -41,33 +42,40 @@ public class GetCalendarCommandImpl implements GetCalendarCommand {
                     .parse(thisYear + "-" + (thisMonth +1) + "-1 00:00:00");
         }
 
+        Date lastDateThisMonth = new Date(before.getTime() - TimeUnit.SECONDS.toMillis(1));
+
         return eventRepository.findByDateBetweenOrderByDateAsc(start, before)
                 .switchIfEmpty(Flux.empty())
                 .collectList()
-                .map(this::createResponse);
+                .map(events -> createResponse(events, lastDateThisMonth));
     }
 
-    private List<CalendarResponse> createResponse(List<Event> events) {
+    @SneakyThrows
+    private List<CalendarResponse> createResponse(List<Event> events, Date lastDate) {
         List<CalendarResponse> responses = new ArrayList<>();
-        if (!events.isEmpty()){
-            CalendarResponse firstData = CalendarResponse.builder()
-                    .date(events.get(0).getDate())
-                    .status(events.get(0).getStatus())
-                    .events(new ArrayList<>())
-                    .build();
-            firstData.getEvents().add(EventDetailResponse.builder()
-                    .name(events.get(0).getTitle())
-                    .build()
+
+        int month = lastDate.getMonth()+1;
+        int year = lastDate.getYear()+1900;
+
+        for (int i = 1; i <= lastDate.getDate(); i++) {
+            responses.add(
+                    CalendarResponse.builder()
+                            .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(year + "-" + month + "-" + i))
+                            .status(CalendarStatus.WORKING)
+                            .events(new ArrayList<>())
+                            .build()
             );
-            responses.add(firstData);
-            for (int i = 1; i < events.size(); i++) {
-                CalendarResponse currentLastData = responses.get(responses.size()-1);
+        }
+
+        if (!events.isEmpty()){
+            for (int i = 0; i < events.size(); i++) {
                 Event event = events.get(i);
-                if (currentLastData.getDate().equals(event.getDate())){
+                CalendarResponse thisDateData = responses.get(event.getDate().getDate()-1);
+                if (thisDateData.getDate().equals(event.getDate())){
                     EventDetailResponse detail = EventDetailResponse.builder().name(event.getTitle()).build();
-                    currentLastData.getEvents().add(detail);
-                    if (currentLastData.getStatus().equals(CalendarStatus.WORKING) && event.getStatus().equals(CalendarStatus.HOLIDAY)){
-                        currentLastData.setStatus(CalendarStatus.HOLIDAY);
+                    thisDateData.getEvents().add(detail);
+                    if (event.getStatus().equals(CalendarStatus.WORKING)){
+                        thisDateData.setStatus(CalendarStatus.HOLIDAY);
                     }
                 }
                 else{
@@ -76,7 +84,7 @@ public class GetCalendarCommandImpl implements GetCalendarCommand {
                             .status(event.getStatus())
                             .events(new ArrayList<>())
                             .build();
-                    response.getEvents().add(EventDetailResponse.builder()
+                    responses.get(event.getDate().getDate()-1).getEvents().add(EventDetailResponse.builder()
                             .name(events.get(i).getTitle())
                             .build()
                     );
