@@ -29,7 +29,9 @@ public class EmployeeController {
     public Mono<Response<List<EmployeeResponse>>> getEmployees(@RequestParam(value = "department", required = false) @Nullable String department, @RequestParam(value = "name", required = false) String name,
                                                                @RequestParam("page") int page, @RequestParam("size") int size){
         EmployeesRequest request = new EmployeesRequest();
-        request.setDepartment(department);
+        if (department != null){
+            request.setDepartment(department.toUpperCase());
+        }
         request.setName(name);
         request.setPage(page);
         request.setSize(size);
