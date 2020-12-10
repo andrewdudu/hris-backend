@@ -9,10 +9,10 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "username": "manager@mail.com",
-  "password": "managerpass",
-  "employeeId": "EMP-789",
-  "roles": ["EMPLOYEE", "MANAGER"]
+  "username": "nana@mail.com",
+  "password": "nanapass",
+  "employeeId": "EMP-311",
+  "roles": ["EMPLOYEE", "ADMIN"]
 }
 
 ###
@@ -21,14 +21,15 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "id": "EMP-789",
-  "name": "MANAGER",
-  "gender": "MALE",
-  "email": "manager@mail.com",
-  "position": "Manager IT",
-  "depId": "DEP-1",
-  "organizationUnit": "05",
-  "officeId": "OFFICE-1"
+  "id": "EMP-311",
+  "name": "Nana nana",
+  "gender": "FEMALE",
+  "email": "nana@mail.com",
+  "position": "HR",
+  "depId": "DEP-2",
+  "organizationUnit": "03",
+  "officeId": "OFFICE-1",
+  "managerUsername": "admin@mail.com"
 }
 
 ###
