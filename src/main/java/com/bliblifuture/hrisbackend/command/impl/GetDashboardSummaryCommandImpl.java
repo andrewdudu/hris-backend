@@ -98,9 +98,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
         Pageable pageable = PageRequest.of(0, 2);
 
         return attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable).collectList()
-                .map(attendanceList -> {
-                    return setAttendanceResponse(attendanceList, response, startOfDate);
-                })
+                .map(attendanceList -> setAttendanceResponse(attendanceList, response, startOfDate))
                 .flatMap(res -> eventRepository.findByDate(startOfDate))
                 .switchIfEmpty(Mono.just(Event.builder().build()))
                 .map(event -> setCalendarResponse(startOfDate, response, event));

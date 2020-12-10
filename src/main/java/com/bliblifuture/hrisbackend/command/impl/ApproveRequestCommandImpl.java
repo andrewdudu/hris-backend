@@ -99,6 +99,7 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
                 .endTime(request.getClockOut())
                 .locationType(AttendanceLocationType.REQUESTED)
                 .date(request.getDates().get(0))
+                .employeeId(request.getEmployeeId())
                 .build();
         attendance.setCreatedBy(request.getApprovedBy());
         attendance.setCreatedDate(dateUtil.getNewDate());

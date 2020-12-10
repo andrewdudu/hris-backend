@@ -65,7 +65,7 @@ public class SetHolidayCommandImplTest {
                 .name(title)
                 .notes(desc)
                 .status(CalendarStatus.WORKING)
-                .date(date)
+                .date("2020-12-3")
                 .build();
         request.setRequester(user.getUsername());
 

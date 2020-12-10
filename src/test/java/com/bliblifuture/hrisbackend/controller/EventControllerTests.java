@@ -124,7 +124,7 @@ public class EventControllerTests {
                 .name("Work day")
                 .notes("Work")
                 .status(CalendarStatus.WORKING)
-                .date(date)
+                .date("2020-12-3")
                 .build();
         requestCommand.setRequester(principal.getName());
 
