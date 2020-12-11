@@ -30,4 +30,6 @@ public interface RequestRepository extends ReactiveMongoRepository<Request, Stri
 
     Mono<Long> countByStatus(RequestStatus status);
 
+    Mono<Long> countByStatusAndManager(RequestStatus status, String manager);
+
 }

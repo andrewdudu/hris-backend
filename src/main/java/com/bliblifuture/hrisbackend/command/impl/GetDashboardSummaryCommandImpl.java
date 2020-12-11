@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
@@ -99,11 +100,29 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                             .map(attendanceList -> setAttendanceResponse(attendanceList, response, startOfDate))
                     );
         }
+        else if(user.getRoles().contains(UserRole.MANAGER)){
+            IncomingRequestResponse request = new IncomingRequestResponse();
+
+            return eventRepository.findByDate(startOfDate)
+                    .switchIfEmpty(Mono.just(Event.builder().status(CalendarStatus.WORKING).build()))
+                    .map(event -> setCalendarResponse(startOfDate, response, event))
+                    .flatMap(res -> requestRepository.countByStatusAndManager(RequestStatus.REQUESTED, user.getUsername()))
+                    .map(incomingReqTotal -> {
+                        request.setIncoming(incomingReqTotal.intValue());
+                        response.setRequest(request);
+                        return response;
+                    })
+                    .flatMap(res -> attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable)
+                                    .switchIfEmpty(Flux.empty())
+                                    .collectList()
+                                    .map(attendanceList -> setAttendanceResponse(attendanceList, response, startOfDate))
+                    );
+        }
 
         return attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable).collectList()
                 .map(attendanceList -> setAttendanceResponse(attendanceList, response, startOfDate))
                 .flatMap(res -> eventRepository.findByDate(startOfDate))
-                .switchIfEmpty(Mono.just(Event.builder().build()))
+                .switchIfEmpty(Mono.just(Event.builder().status(CalendarStatus.WORKING).build()))
                 .map(event -> setCalendarResponse(startOfDate, response, event));
     }
 
@@ -121,49 +140,52 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     }
 
     private DashboardResponse setAttendanceResponse(List<Attendance> res, DashboardResponse response, Date currentStartDate) {
+        System.out.println("user");
         AttendanceResponse current = AttendanceResponse.builder().build();
         AttendanceResponse latest = AttendanceResponse.builder().build();
 
-        if (res.get(0).getStartTime().before(currentStartDate)){
-            Attendance latestAttendance = res.get(0);
-            latest.setDate(
-                    AttendanceTimeResponse.builder()
-                            .start(latestAttendance.getStartTime())
-                            .end(latestAttendance.getEndTime())
-                            .build()
-            );
-            latest.setLocation(
-                    LocationResponse.builder()
-                            .type(latestAttendance.getLocationType())
-                            .build()
-            );
-        }
-        else{
-            Attendance latestAttendance = res.get(1);
-            latest.setDate(
-                    AttendanceTimeResponse.builder()
-                            .start(latestAttendance.getStartTime())
-                            .end(latestAttendance.getEndTime())
-                            .build()
-            );
-            latest.setLocation(
-                    LocationResponse.builder()
-                            .type(latestAttendance.getLocationType())
-                            .build()
-            );
+        if (res.size() > 0){
+            if (res.get(0).getStartTime().before(currentStartDate)){
+                Attendance latestAttendance = res.get(0);
+                latest.setDate(
+                        AttendanceTimeResponse.builder()
+                                .start(latestAttendance.getStartTime())
+                                .end(latestAttendance.getEndTime())
+                                .build()
+                );
+                latest.setLocation(
+                        LocationResponse.builder()
+                                .type(latestAttendance.getLocationType())
+                                .build()
+                );
+            }
+            else{
+                Attendance latestAttendance = res.get(1);
+                latest.setDate(
+                        AttendanceTimeResponse.builder()
+                                .start(latestAttendance.getStartTime())
+                                .end(latestAttendance.getEndTime())
+                                .build()
+                );
+                latest.setLocation(
+                        LocationResponse.builder()
+                                .type(latestAttendance.getLocationType())
+                                .build()
+                );
 
-            Attendance currentAttendance = res.get(0);
-            current.setDate(
-                    AttendanceTimeResponse.builder()
-                            .start(currentAttendance.getStartTime())
-                            .end(currentAttendance.getEndTime())
-                            .build()
-            );
-            current.setLocation(
-                    LocationResponse.builder()
-                            .type(currentAttendance.getLocationType())
-                            .build()
-            );
+                Attendance currentAttendance = res.get(0);
+                current.setDate(
+                        AttendanceTimeResponse.builder()
+                                .start(currentAttendance.getStartTime())
+                                .end(currentAttendance.getEndTime())
+                                .build()
+                );
+                current.setLocation(
+                        LocationResponse.builder()
+                                .type(currentAttendance.getLocationType())
+                                .build()
+                );
+            }
         }
 
         response.setAttendance(
