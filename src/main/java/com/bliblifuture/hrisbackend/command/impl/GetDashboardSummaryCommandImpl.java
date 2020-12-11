@@ -67,6 +67,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                 .calendar(calendarResponse)
                 .build();
 
+        Pageable pageable = PageRequest.of(0, 2);
         if (user.getRoles().contains(UserRole.ADMIN)){
             ReportResponse report = new ReportResponse();
             IncomingRequestResponse request = new IncomingRequestResponse();
@@ -93,9 +94,11 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                         response.setRequest(request);
                         response.setReport(report);
                         return response;
-                    });
+                    })
+                    .flatMap(res -> attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable).collectList()
+                            .map(attendanceList -> setAttendanceResponse(attendanceList, response, startOfDate))
+                    );
         }
-        Pageable pageable = PageRequest.of(0, 2);
 
         return attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable).collectList()
                 .map(attendanceList -> setAttendanceResponse(attendanceList, response, startOfDate))
