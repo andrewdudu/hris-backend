@@ -140,7 +140,6 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     }
 
     private DashboardResponse setAttendanceResponse(List<Attendance> res, DashboardResponse response, Date currentStartDate) {
-        System.out.println("user");
         AttendanceResponse current = AttendanceResponse.builder().build();
         AttendanceResponse latest = AttendanceResponse.builder().build();
 
@@ -160,18 +159,20 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                 );
             }
             else{
-                Attendance latestAttendance = res.get(1);
-                latest.setDate(
-                        AttendanceTimeResponse.builder()
-                                .start(latestAttendance.getStartTime())
-                                .end(latestAttendance.getEndTime())
-                                .build()
-                );
-                latest.setLocation(
-                        LocationResponse.builder()
-                                .type(latestAttendance.getLocationType())
-                                .build()
-                );
+                if (res.size() > 1){
+                    Attendance latestAttendance = res.get(1);
+                    latest.setDate(
+                            AttendanceTimeResponse.builder()
+                                    .start(latestAttendance.getStartTime())
+                                    .end(latestAttendance.getEndTime())
+                                    .build()
+                    );
+                    latest.setLocation(
+                            LocationResponse.builder()
+                                    .type(latestAttendance.getLocationType())
+                                    .build()
+                    );
+                }
 
                 Attendance currentAttendance = res.get(0);
                 current.setDate(
