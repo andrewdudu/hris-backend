@@ -6,6 +6,7 @@ import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
+import com.bliblifuture.hrisbackend.model.request.GetIncomingRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
 import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
@@ -143,7 +144,10 @@ public class GetIncomingRequestsCommandImplTests {
 
         List<IncomingRequestResponse> expected = Arrays.asList(data1, data2);
 
-        getIncomingRequestCommand.execute(type)
+        GetIncomingRequest request = GetIncomingRequest.builder().type(type).build();
+        request.setRequester("admin");
+
+        getIncomingRequestCommand.execute(request)
                 .subscribe(response -> {
                     for (int i = 0; i < expected.size(); i++) {
                         Assert.assertEquals(expected.get(i), response.get(i));

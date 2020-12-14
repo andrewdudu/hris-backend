@@ -46,7 +46,7 @@
 {
   "name": "name",
   "notes": "notes",
-  "calendarStatus": "HOLIDAY"
+  "status": "HOLIDAY"
 }
 ```
 
@@ -59,7 +59,7 @@
   "data": {
     "name": "Independence Day",
     "notes": "notes",
-    "calendarStatus": "HOLIDAY"
+    "status": "HOLIDAY"
   }
 }
 ```

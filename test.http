@@ -73,9 +73,9 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "title": "Working day",
-  "description": "It's Working Day, Yeay!",
-  "status": "WORKING"
+  "title": "Holiday",
+  "description": "It's Holiday, Yeay!",
+  "status": "HOLIDAY"
 }
 
 ###
