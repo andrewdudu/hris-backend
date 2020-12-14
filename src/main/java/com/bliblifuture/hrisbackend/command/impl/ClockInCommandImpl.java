@@ -176,7 +176,7 @@ public class ClockInCommandImpl implements ClockInCommand {
             report.setCreatedDate(date);
             report.setUpdatedBy("SYSTEM");
             report.setUpdatedDate(date);
-            report.setId("DAR" + report.getDate());
+            report.setId("DAR" + report.getDate().getTime());
 
             dailyAttendanceReportRepository.save(report).subscribe();
         }

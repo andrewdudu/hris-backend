@@ -41,6 +41,9 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
     }
 
     private List<RequestType> addAdminRequest(User user, List<RequestType> response) {
+        if (user.getRoles().contains(UserRole.MANAGER)){
+            response.add(RequestType.INCOMING_REQUESTS);
+        }
         if (user.getRoles().contains(UserRole.ADMIN)){
             response.add(RequestType.INCOMING_REQUESTS);
             response.add(RequestType.SET_HOLIDAY);
