@@ -4,7 +4,7 @@ import com.bliblifuture.hrisbackend.command.GetLeavesReportCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
 import com.bliblifuture.hrisbackend.model.entity.EmployeeLeaveSummary;
 import com.bliblifuture.hrisbackend.model.entity.Leave;
-import com.bliblifuture.hrisbackend.model.response.LeaveReportResponse;
+import com.bliblifuture.hrisbackend.model.response.LeavesReportResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LeaveQuotaResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LeavesDataResponse;
 import com.bliblifuture.hrisbackend.repository.*;
@@ -36,7 +36,7 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
 
     @SneakyThrows
     @Override
-    public Mono<LeaveReportResponse> execute(String employeeId) {
+    public Mono<LeavesReportResponse> execute(String employeeId) {
         Date currentDate = dateUtil.getNewDate();
         int year = currentDate.getYear() + 1900;
 
@@ -45,7 +45,7 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
 
         String theYear = String.valueOf(year);
 
-        LeaveReportResponse response = LeaveReportResponse.builder().build();
+        LeavesReportResponse response = LeavesReportResponse.builder().build();
 
         return employeeLeaveSummaryRepository.findByYearAndEmployeeId(theYear, employeeId)
                 .switchIfEmpty(Mono.just(createLeaveSummary(employeeId, theYear)))
@@ -60,7 +60,7 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
                 .map(leaves -> setRemainingLeaves(leaves, response));
     }
 
-    private LeaveReportResponse setRemainingLeaves(List<Leave> leaves, LeaveReportResponse response) {
+    private LeavesReportResponse setRemainingLeaves(List<Leave> leaves, LeavesReportResponse response) {
         LeaveQuotaResponse quota = LeaveQuotaResponse.builder().build();
         for (Leave leave: leaves) {
             if (leave.getType().equals(LeaveType.annual)){
@@ -74,7 +74,7 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
         return response;
     }
 
-    private LeaveReportResponse setLeavesData(EmployeeLeaveSummary employeeLeaveSummary, LeaveReportResponse response) {
+    private LeavesReportResponse setLeavesData(EmployeeLeaveSummary employeeLeaveSummary, LeavesReportResponse response) {
         LeavesDataResponse leave = LeavesDataResponse.builder().build();
         BeanUtils.copyProperties(employeeLeaveSummary, leave);
         response.setLeave(leave);
@@ -84,23 +84,21 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
     private void checkNewEntity(EmployeeLeaveSummary report) {
         if (report.getId() == null){
             report.setId("ELS-" + report.getEmployeeId() + "-" + report.getYear());
+            report.setCreatedBy("SYSTEM");
+            report.setUpdatedBy("SYSTEM");
+            Date date = dateUtil.getNewDate();
+            report.setCreatedDate(date);
+            report.setUpdatedDate(date);
+
             employeeLeaveSummaryRepository.save(report).subscribe();
         }
     }
 
     private EmployeeLeaveSummary createLeaveSummary(String employeeId, String year) {
-        EmployeeLeaveSummary report = EmployeeLeaveSummary.builder()
+        return EmployeeLeaveSummary.builder()
                 .year(year)
                 .employeeId(employeeId)
                 .build();
-
-        report.setCreatedBy("SYSTEM");
-        report.setUpdatedBy("SYSTEM");
-        Date date = dateUtil.getNewDate();
-        report.setCreatedDate(date);
-        report.setUpdatedDate(date);
-
-        return report;
     }
 
 }

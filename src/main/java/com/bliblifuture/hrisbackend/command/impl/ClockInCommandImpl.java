@@ -51,16 +51,15 @@ public class ClockInCommandImpl implements ClockInCommand {
 
     @Override
     @SneakyThrows
-    public Mono<AttendanceResponse> execute(ClockInClockOutRequest request) {
-        Date currentDate = dateUtil.getNewDate();
-        String dateString = (currentDate.getYear() + 1900) + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate();
+    public Mono<AttendanceResponse> execute(ClockInClockOutRequest request) {Date date = dateUtil.getNewDate();
+        String dateString = (date.getYear() + 1900) + "-" + (date.getMonth() + 1) + "-" + date.getDate();
 
         String startTime = " 00:00:00";
         Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(dateString + startTime);
         return Mono.fromCallable(request::getRequester)
                 .flatMap(username -> userRepository.findByUsername(username))
-                .flatMap(user -> createAttendance(user, request, currentDate, startOfDate))
+                .flatMap(user -> createAttendance(user, request, date, startOfDate))
                 .flatMap(attendance -> clockInProcess(attendance, request))
                 .flatMap(attendance -> attendanceRepository.save(attendance))
                 .flatMap(attendance -> dailyAttendanceReportRepository.findByDate(startOfDate)
@@ -70,12 +69,8 @@ public class ClockInCommandImpl implements ClockInCommand {
                                         .working(0)
                                         .absent(0)
                                         .build()))
-                        .map(report -> createOrUpdateAttendanceReport(report, currentDate))
-                        .flatMap(report -> dailyAttendanceReportRepository.save(report))
-                        .map(dailyAttendanceReport -> {
-                            System.out.println(dailyAttendanceReport);
-                            return attendance;
-                        }))
+                        .doOnSuccess(this::checkNewEntity)
+                        .map(dailyAttendanceReport -> attendance))
                 .map(this::createResponse);
     }
 
@@ -174,18 +169,17 @@ public class ClockInCommandImpl implements ClockInCommand {
         }
     }
 
-    private DailyAttendanceReport createOrUpdateAttendanceReport(DailyAttendanceReport report, Date date) {
-        System.out.println(report.getId());
-        if (report.getId() == null || report.getId().isEmpty()){
+    private void checkNewEntity(DailyAttendanceReport report) {
+        if (report.getId() == null){
+            Date date = dateUtil.getNewDate();
             report.setCreatedBy("SYSTEM");
             report.setCreatedDate(date);
             report.setUpdatedBy("SYSTEM");
             report.setUpdatedDate(date);
-            report.setId("DA" + report.getDate().getTime());
-        }
-        report.setWorking(report.getWorking() + 1);
+            report.setId("DAR" + report.getDate().getTime());
 
-        return report;
+            dailyAttendanceReportRepository.save(report).subscribe();
+        }
     }
 
 }

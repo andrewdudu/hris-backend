@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LeaveReportResponse extends BaseResponse{
+public class LeavesReportResponse extends BaseResponse{
 
     private int attendance;
 

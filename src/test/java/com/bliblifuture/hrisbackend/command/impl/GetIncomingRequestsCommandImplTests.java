@@ -11,7 +11,7 @@ import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
 import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
-import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
+import com.bliblifuture.hrisbackend.model.response.util.AttendanceTimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
@@ -104,7 +104,7 @@ public class GetIncomingRequestsCommandImplTests {
                 .employeeId(user2.getEmployeeId())
                 .build();
 
-        TimeResponse date = TimeResponse.builder()
+        AttendanceTimeResponse date = AttendanceTimeResponse.builder()
                 .start(start)
                 .end(end)
                 .build();

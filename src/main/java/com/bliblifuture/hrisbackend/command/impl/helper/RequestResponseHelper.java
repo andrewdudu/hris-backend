@@ -6,7 +6,7 @@ import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
 import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
 import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
-import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
+import com.bliblifuture.hrisbackend.model.response.util.AttendanceTimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
@@ -69,7 +69,7 @@ public class RequestResponseHelper {
     }
 
     private IncomingRequestResponse setAttendanceRequestResponse(IncomingRequestResponse response, Request request) {
-        TimeResponse date = TimeResponse.builder()
+        AttendanceTimeResponse date = AttendanceTimeResponse.builder()
                 .start(request.getClockIn())
                 .end(request.getClockOut())
                 .build();

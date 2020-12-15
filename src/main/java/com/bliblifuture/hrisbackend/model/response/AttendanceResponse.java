@@ -1,6 +1,6 @@
 package com.bliblifuture.hrisbackend.model.response;
 
-import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
+import com.bliblifuture.hrisbackend.model.response.util.AttendanceTimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AttendanceResponse extends BaseResponse{
 
-    private TimeResponse date;
+    private AttendanceTimeResponse date;
 
     private LocationResponse location;
 

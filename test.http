@@ -38,10 +38,10 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "employeeId": "EMP-412",
-  "code": "ANNUAL",
-  "type": "annual",
-  "remaining": 10,
+  "employeeId": "EMP-123",
+  "code": "SUBS",
+  "type": "substitute",
+  "remaining": 1,
   "used": 0
 }
 

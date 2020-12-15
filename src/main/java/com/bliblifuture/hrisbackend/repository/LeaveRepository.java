@@ -17,7 +17,7 @@ public interface LeaveRepository extends ReactiveMongoRepository<Leave, String> 
     @Query("{ id: { $exists: true }}")
     Flux<Leave> findAll(final Pageable pageable);
 
-    Mono<Leave> findFirstByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(String employeeId, LeaveType type, Date date);
+    Mono<Leave> findByEmployeeIdAndTypeAndExpDateAfter(String employeeId, LeaveType type, Date date);
 
     Flux<Leave> findByEmployeeIdAndExpDateAfter(String username, Date currentDate);
 
