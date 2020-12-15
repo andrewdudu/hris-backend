@@ -94,14 +94,15 @@
   "data": {
     "attendance": 230,
     "leave": {
-      "pending": {
-        "sick": 5,
-        "childBaptism": 2
-      },
-      "approved": {
-        "sick": 10,
-        "childCircumcision": 2
-      } 
+      "sick": 5,
+      "marriage": 2,
+      "childBaptism": 2,
+      "childCircumcision": 0,
+      "childBirth": 0,
+      "hajj": 0,
+      "maternity": 0,
+      "mainFamilyDeath": 0,
+      "closeFamilyDeath": 0
     },
     "quota": {
       "annual": 8,
