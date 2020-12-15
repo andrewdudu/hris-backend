@@ -48,6 +48,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
                         .flatMap(entity -> employeeRepository.findById(user.getEmployeeId())
                                 .map(employee -> {
                                     entity.setManager(employee.getManagerUsername());
+                                    entity.setDepartmentId(employee.getDepId());
                                     return entity;
                                 }))
                 )
@@ -67,7 +68,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
                         .collectList()
                         .map(leaves -> new SubstituteLeaveRequestHelper().processRequest(request, user, leaves, currentDateTime));
             case LeaveTypeConstant.EXTRA_LEAVE:
-                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfter(user.getEmployeeId(), LeaveType.extra, dateUtil.getNewDate())
+                return leaveRepository.findFirstByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(user.getEmployeeId(), LeaveType.extra, dateUtil.getNewDate())
                         .map(leave -> new ExtraLeaveRequestHelper().processRequest(request, user, leave, currentDateTime));
             case LeaveTypeConstant.CLOSE_FAMILY_DEATH:
             case LeaveTypeConstant.SICK:

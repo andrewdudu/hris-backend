@@ -7,7 +7,7 @@
 - Query Param:
 
   - department `string`
-  - name `string`
+  - month `int`
 
 - Request Header :
   - Accept : `application/json`
@@ -38,12 +38,13 @@
         }
       },
       "dateString": "2020-05-25",
-      "type": "HAJJ",
       "typeLabel": "Hajj",
+      "files": ["url", "url"],
       "date": {
         "start": 7878123,
         "end": 78172312
       },
+      "approvedBy": "admin",
       "createdDate": 7878123,
       "createdBy": "username",
       "lastModifiedDate": 787123,

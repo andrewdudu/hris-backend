@@ -4,7 +4,7 @@ import com.bliblifuture.hrisbackend.command.GetAttendancesCommand;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.request.AttendanceListRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
-import com.bliblifuture.hrisbackend.model.response.util.AttendanceTimeResponse;
+import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
@@ -40,7 +40,7 @@ public class GetAttendancesCommandImpl implements GetAttendancesCommand {
         for (int i = 0; i < attendances.size(); i++) {
             Attendance attendance = attendances.get(i);
 
-            AttendanceTimeResponse date = AttendanceTimeResponse.builder()
+            TimeResponse date = TimeResponse.builder()
                     .start(attendance.getStartTime())
                     .end(attendance.getEndTime())
                     .build();

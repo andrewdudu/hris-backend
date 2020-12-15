@@ -6,7 +6,7 @@ import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceListRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
-import com.bliblifuture.hrisbackend.model.response.util.AttendanceTimeResponse;
+import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
@@ -92,7 +92,7 @@ public class GetAttendancesCommandImplTests {
                 .thenReturn(Flux.just(attendance1, attendance2));
 
         AttendanceResponse data1 = AttendanceResponse.builder()
-                .date(AttendanceTimeResponse.builder()
+                .date(TimeResponse.builder()
                         .start(startTime1)
                         .end(endTime1)
                         .build()
@@ -105,7 +105,7 @@ public class GetAttendancesCommandImplTests {
                 )
                 .build();
         AttendanceResponse data2 = AttendanceResponse.builder()
-                .date(AttendanceTimeResponse.builder()
+                .date(TimeResponse.builder()
                         .start(startTime2)
                         .end(endTime2)
                         .build()

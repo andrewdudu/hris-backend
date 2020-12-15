@@ -4,10 +4,7 @@ import com.bliblifuture.hrisbackend.command.GetDashboardSummaryCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
-import com.bliblifuture.hrisbackend.model.entity.Attendance;
-import com.bliblifuture.hrisbackend.model.entity.DailyAttendanceReport;
-import com.bliblifuture.hrisbackend.model.entity.Event;
-import com.bliblifuture.hrisbackend.model.entity.User;
+import com.bliblifuture.hrisbackend.model.entity.*;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.CalendarResponse;
 import com.bliblifuture.hrisbackend.model.response.DashboardResponse;
@@ -81,7 +78,8 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                             .absent(0)
                             .build())
                     )
-                    .doOnSuccess(this::checkNewEntity)
+                    .map(this::createNewAttendanceReport)
+                    .flatMap(res -> dailyAttendanceReportRepository.save(res))
                     .flatMap(res -> {
                         report.setWorking(res.getWorking());
                         report.setAbsent(res.getAbsent());
@@ -126,17 +124,17 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                 .map(event -> setCalendarResponse(startOfDate, response, event));
     }
 
-    private void checkNewEntity(DailyAttendanceReport report) {
-        if (report.getId() == null){
+    private DailyAttendanceReport createNewAttendanceReport(DailyAttendanceReport report) {
+        if (report.getId() == null || report.getId().isEmpty()){
             Date date = dateUtil.getNewDate();
             report.setCreatedBy("SYSTEM");
             report.setCreatedDate(date);
             report.setUpdatedBy("SYSTEM");
             report.setUpdatedDate(date);
             report.setId("DAR" + report.getDate().getTime());
-
-            dailyAttendanceReportRepository.save(report).subscribe();
         }
+
+        return report;
     }
 
     private DashboardResponse setAttendanceResponse(List<Attendance> res, DashboardResponse response, Date currentStartDate) {
@@ -147,7 +145,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
             if (res.get(0).getStartTime().before(currentStartDate)){
                 Attendance latestAttendance = res.get(0);
                 latest.setDate(
-                        AttendanceTimeResponse.builder()
+                        TimeResponse.builder()
                                 .start(latestAttendance.getStartTime())
                                 .end(latestAttendance.getEndTime())
                                 .build()
@@ -162,7 +160,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                 if (res.size() > 1){
                     Attendance latestAttendance = res.get(1);
                     latest.setDate(
-                            AttendanceTimeResponse.builder()
+                            TimeResponse.builder()
                                     .start(latestAttendance.getStartTime())
                                     .end(latestAttendance.getEndTime())
                                     .build()
@@ -176,7 +174,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
 
                 Attendance currentAttendance = res.get(0);
                 current.setDate(
-                        AttendanceTimeResponse.builder()
+                        TimeResponse.builder()
                                 .start(currentAttendance.getStartTime())
                                 .end(currentAttendance.getEndTime())
                                 .build()
