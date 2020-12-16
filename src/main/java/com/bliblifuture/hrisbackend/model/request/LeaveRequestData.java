@@ -18,6 +18,5 @@ public class LeaveRequestData extends BaseRequest{
 
     private String notes;
 
-    @NotBlank
     private String type;
 }

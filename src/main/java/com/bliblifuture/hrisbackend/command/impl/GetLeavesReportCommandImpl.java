@@ -3,6 +3,7 @@ package com.bliblifuture.hrisbackend.command.impl;
 import com.bliblifuture.hrisbackend.command.GetLeavesReportCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.EmployeeLeaveSummary;
 import com.bliblifuture.hrisbackend.model.entity.Leave;
@@ -60,10 +61,12 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
         LeaveReportResponse response = LeaveReportResponse.builder().build();
 
         return employeeLeaveSummaryRepository.findByYearAndEmployeeId(theYear, employeeId)
-                .switchIfEmpty(Mono.just(createLeaveSummary(employeeId, theYear)))
-                .doOnSuccess(this::checkNewEntity)
+                .switchIfEmpty(createLeaveSummary(employeeId, theYear)
+                        .flatMap(employeeLeaveSummary -> employeeLeaveSummaryRepository.save(employeeLeaveSummary))
+                )
                 .map(employeeLeaveSummary -> setLeavesData(employeeLeaveSummary, response))
                 .flatMap(leaveReportResponse -> requestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfTheYear, RequestStatus.REQUESTED, employeeId)
+                        .filter(request -> request.getType().equals(RequestType.SPECIAL_LEAVE))
                         .switchIfEmpty(Flux.empty())
                         .collectList()
                         .map(requests -> countPendingRequestLeave(requests, leaveReportResponse))
@@ -145,26 +148,20 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
         return response;
     }
 
-    private void checkNewEntity(EmployeeLeaveSummary report) {
-        if (report.getId() == null){
-            report.setId("ELS-" + report.getEmployeeId() + "-" + report.getYear());
-            employeeLeaveSummaryRepository.save(report).subscribe();
-        }
-    }
-
-    private EmployeeLeaveSummary createLeaveSummary(String employeeId, String year) {
+    private Mono<EmployeeLeaveSummary> createLeaveSummary(String employeeId, String year) {
         EmployeeLeaveSummary report = EmployeeLeaveSummary.builder()
                 .year(year)
                 .employeeId(employeeId)
                 .build();
 
+        report.setId("ELS-" + report.getEmployeeId() + "-" + report.getYear());
         report.setCreatedBy("SYSTEM");
         report.setUpdatedBy("SYSTEM");
         Date date = dateUtil.getNewDate();
         report.setCreatedDate(date);
         report.setUpdatedDate(date);
 
-        return report;
+        return Mono.just(report);
     }
 
 }
