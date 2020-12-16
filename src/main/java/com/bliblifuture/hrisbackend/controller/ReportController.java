@@ -18,7 +18,7 @@ import reactor.core.scheduler.Schedulers;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/report/leaves")
+@RequestMapping("/api/reports/leaves")
 public class ReportController {
 
     @Autowired

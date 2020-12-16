@@ -26,6 +26,10 @@ public interface RequestRepository extends ReactiveMongoRepository<Request, Stri
 
     Flux<Request> findByStatusOrderByCreatedDateDesc(RequestStatus status);
 
+    Flux<Request> findByStatusAndEmployeeId(RequestStatus status, String employeeId);
+
+    Flux<Request> findByEmployeeId(String employeeId);
+
     Flux<Request> findByStatusAndManagerOrderByCreatedDateDesc(RequestStatus status, String manager);
 
     Flux<Request> findByDatesContainsAndStatus(Date date, RequestStatus status);

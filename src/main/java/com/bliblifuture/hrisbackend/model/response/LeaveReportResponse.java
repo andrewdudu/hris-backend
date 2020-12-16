@@ -1,7 +1,7 @@
 package com.bliblifuture.hrisbackend.model.response;
 
 import com.bliblifuture.hrisbackend.model.response.util.LeaveQuotaResponse;
-import com.bliblifuture.hrisbackend.model.response.util.LeavesDataResponse;
+import com.bliblifuture.hrisbackend.model.response.util.LeavesDataSummaryResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +15,7 @@ public class LeaveReportResponse extends BaseResponse{
 
     private int attendance;
 
-    private LeavesDataResponse leave;
+    private LeavesDataSummaryResponse leave;
 
     private LeaveQuotaResponse quota;
 }
