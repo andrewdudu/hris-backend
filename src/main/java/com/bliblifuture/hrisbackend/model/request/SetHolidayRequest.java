@@ -4,7 +4,7 @@ import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
-import java.util.Date;
+import javax.validation.constraints.NotEmpty;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -20,6 +20,6 @@ public class SetHolidayRequest extends BaseRequest{
 
     private CalendarStatus status;
 
-    private Date date;
+    private String date;
 
 }

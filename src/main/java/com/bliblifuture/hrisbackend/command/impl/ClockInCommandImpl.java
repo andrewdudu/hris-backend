@@ -5,12 +5,14 @@ import com.bliblifuture.hrisbackend.constant.AttendanceConfig;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
 import com.bliblifuture.hrisbackend.constant.enumerator.AttendanceLocationType;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
+import com.bliblifuture.hrisbackend.model.entity.DailyAttendanceReport;
 import com.bliblifuture.hrisbackend.model.entity.Office;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.ClockInClockOutRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
+import com.bliblifuture.hrisbackend.repository.DailyAttendanceReportRepository;
 import com.bliblifuture.hrisbackend.repository.OfficeRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
@@ -39,18 +41,36 @@ public class ClockInCommandImpl implements ClockInCommand {
     private AttendanceRepository attendanceRepository;
 
     @Autowired
+    private DailyAttendanceReportRepository dailyAttendanceReportRepository;
+
+    @Autowired
     private OfficeRepository officeRepository;
 
     @Autowired
     private DateUtil dateUtil;
 
     @Override
-    public Mono<AttendanceResponse> execute(ClockInClockOutRequest request) {
+    @SneakyThrows
+    public Mono<AttendanceResponse> execute(ClockInClockOutRequest request) {Date date = dateUtil.getNewDate();
+        String dateString = (date.getYear() + 1900) + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+
+        String startTime = " 00:00:00";
+        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                .parse(dateString + startTime);
         return Mono.fromCallable(request::getRequester)
                 .flatMap(username -> userRepository.findByUsername(username))
-                .flatMap(user -> createAttendance(user, request))
+                .flatMap(user -> createAttendance(user, request, date, startOfDate))
                 .flatMap(attendance -> clockInProcess(attendance, request))
                 .flatMap(attendance -> attendanceRepository.save(attendance))
+                .flatMap(attendance -> dailyAttendanceReportRepository.findByDate(startOfDate)
+                        .switchIfEmpty(
+                                Mono.just(DailyAttendanceReport.builder()
+                                        .date(startOfDate)
+                                        .working(0)
+                                        .absent(0)
+                                        .build()))
+                        .doOnSuccess(this::checkNewEntity)
+                        .map(dailyAttendanceReport -> attendance))
                 .map(this::createResponse);
     }
 
@@ -126,14 +146,7 @@ public class ClockInCommandImpl implements ClockInCommand {
     }
 
     @SneakyThrows
-    private Mono<Attendance> createAttendance(User user, ClockInClockOutRequest request) {
-        Date date = dateUtil.getNewDate();
-        String dateString = (date.getYear() + 1900) + "-" + (date.getMonth() + 1) + "-" + date.getDate();
-
-        String startTime = " 00:00:00";
-        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
-                .parse(dateString + startTime);
-
+    private Mono<Attendance> createAttendance(User user, ClockInClockOutRequest request, Date date, Date startOfDate) {
         Attendance attendance = Attendance.builder()
                 .employeeId(user.getEmployeeId())
                 .date(startOfDate)
@@ -151,8 +164,21 @@ public class ClockInCommandImpl implements ClockInCommand {
 
     private void checkIfExists(Attendance attendance) {
         if (attendance != null){
-            String errorsMessage = "message=NOT_AVAILABLE";
+            String errorsMessage = "message=ALREADY_CLOCK_IN";
             throw new IllegalArgumentException(errorsMessage);
+        }
+    }
+
+    private void checkNewEntity(DailyAttendanceReport report) {
+        if (report.getId() == null){
+            Date date = dateUtil.getNewDate();
+            report.setCreatedBy("SYSTEM");
+            report.setCreatedDate(date);
+            report.setUpdatedBy("SYSTEM");
+            report.setUpdatedDate(date);
+            report.setId("DAR" + report.getDate());
+
+            dailyAttendanceReportRepository.save(report).subscribe();
         }
     }
 

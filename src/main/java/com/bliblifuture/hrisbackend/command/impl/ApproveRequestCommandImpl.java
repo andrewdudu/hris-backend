@@ -59,7 +59,7 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
         LeaveType leaveType;
         switch (request.getType()){
             case ATTENDANCE:
-                return Mono.fromCallable(() -> createAttendance(request))
+                return attendanceRepository.findById(request.getEmployeeId())
                         .flatMap(attendance -> attendanceRepository.save(attendance))
                         .thenReturn(request);
             case EXTEND_ANNUAL_LEAVE:
@@ -99,6 +99,7 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
                 .endTime(request.getClockOut())
                 .locationType(AttendanceLocationType.REQUESTED)
                 .date(request.getDates().get(0))
+                .employeeId(request.getEmployeeId())
                 .build();
         attendance.setCreatedBy(request.getApprovedBy());
         attendance.setCreatedDate(dateUtil.getNewDate());

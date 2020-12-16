@@ -41,4 +41,17 @@ public class AuthController extends WebMvcProperties {
                 .subscribeOn(Schedulers.elastic());
     }
 
+    @PostMapping("/logout")
+    public Mono<Response<String>> login(ServerWebExchange swe){
+        swe.getResponse()
+                .addCookie(ResponseCookie
+                        .from("userToken", "")
+                        .maxAge(0)
+                        .secure(false)
+                        .httpOnly(true)
+                        .path("/")
+                        .build());
+        return Mono.just(ResponseHelper.ok("LOGGED_OUT"));
+    }
+
 }

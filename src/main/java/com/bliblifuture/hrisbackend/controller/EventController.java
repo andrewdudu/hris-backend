@@ -19,7 +19,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.security.Principal;
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -56,8 +55,8 @@ public class EventController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/calendar/days/{date}/events")
-    public Mono<Response<EventDetailResponse>> setHoliday(@PathVariable("date") long date, @RequestBody SetHolidayRequest request, Principal principal){
-        request.setDate(new Date(date));
+    public Mono<Response<EventDetailResponse>> setHoliday(@PathVariable("date") String date, @RequestBody SetHolidayRequest request, Principal principal){
+        request.setDate(date);
         request.setRequester(principal.getName());
         return commandExecutor.execute(SetHolidayCommand.class, request)
                 .map(ResponseHelper::ok)

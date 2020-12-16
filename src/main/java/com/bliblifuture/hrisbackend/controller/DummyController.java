@@ -49,6 +49,9 @@ public class DummyController {
     @Autowired
     private DepartmentRepository departmentRepository;
 
+    @Autowired
+    private EmployeeElasticsearchRepository employeeElasticsearchRepository;
+
     @PostMapping("/create-user")
     public Mono<Response<User>> createUser(@RequestBody User user){
         user.setPassword(passEncoder.encode(user.getPassword()));
@@ -95,6 +98,28 @@ public class DummyController {
         event.setDate(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-2"));
         return eventRepository.save(event)
                 .map(res -> ResponseHelper.ok(res));
+    }
+
+    @PostMapping("/save-elastic")
+    public Mono<Response<String>> saveEmployeeElastic(){
+        return employeeRepository.findAll()
+                .flatMap(employee -> employeeElasticsearchRepository.findById(employee.getId())
+                        .switchIfEmpty(Mono.just(EmployeeIndex.builder().build()))
+                        .flatMap(employeeIndex -> saveNewData(employee, employeeIndex))
+                )
+                .collectList()
+                .map(res -> ResponseHelper.ok("OK"));
+    }
+
+    private Mono<EmployeeIndex> saveNewData(Employee employee, EmployeeIndex employeeIndex) {
+        if (employeeIndex.getId() == null || employeeIndex.getId().isEmpty()){
+            employeeIndex.setId(employee.getId());
+            employeeIndex.setName(employee.getName());
+            employeeIndex.setDepartmentId(employee.getDepId().replace("-",""));
+
+            return employeeElasticsearchRepository.save(employeeIndex);
+        }
+        return Mono.empty();
     }
 
     @GetMapping("/test")

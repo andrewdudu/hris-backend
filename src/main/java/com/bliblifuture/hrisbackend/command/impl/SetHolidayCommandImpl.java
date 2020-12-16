@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 @Service
 public class SetHolidayCommandImpl implements SetHolidayCommand {
 
@@ -29,9 +32,12 @@ public class SetHolidayCommandImpl implements SetHolidayCommand {
     @Autowired
     private UuidUtil uuidUtil;
 
-    @SneakyThrows
     @Override
     public Mono<EventDetailResponse> execute(SetHolidayRequest request) {
+        if (request.getStatus() == null){
+            String msg = "status=STATUS_IS_NULL";
+            throw new IllegalArgumentException(msg);
+        }
         return userRepository.findByUsername(request.getRequester())
                 .flatMap(user -> createEvent(request, user))
                 .flatMap(event -> eventRepository.save(event))
@@ -46,9 +52,11 @@ public class SetHolidayCommandImpl implements SetHolidayCommand {
                 .build();
     }
 
+    @SneakyThrows
     private Mono<Event> createEvent(SetHolidayRequest request, User user) {
+        Date date = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(request.getDate());
         Event event = Event.builder()
-                        .date(request.getDate())
+                        .date(date)
                         .description(request.getNotes())
                         .status(request.getStatus())
                         .title(request.getName())
@@ -56,7 +64,7 @@ public class SetHolidayCommandImpl implements SetHolidayCommand {
         event.setId(uuidUtil.getNewID());
         event.setCreatedBy(user.getUsername());
         event.setCreatedDate(dateUtil.getNewDate());
-        return eventRepository.findByTitleAndDate(request.getName(), request.getDate())
+        return eventRepository.findByTitleAndDate(request.getName(), date)
                 .doOnNext(this::checkIfExists)
                 .switchIfEmpty(Mono.just(event));
     }
