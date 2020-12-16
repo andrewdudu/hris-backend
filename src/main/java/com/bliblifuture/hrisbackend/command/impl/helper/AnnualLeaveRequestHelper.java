@@ -28,7 +28,7 @@ public class AnnualLeaveRequestHelper {
 
         if (remaining < data.getDates().size()){
             String errorsMessage = "dates=QUOTA_NOT_AVAILABLE";
-            throw new RuntimeException(errorsMessage);
+            throw new IllegalArgumentException(errorsMessage);
         }
     }
 
@@ -41,7 +41,7 @@ public class AnnualLeaveRequestHelper {
             }
             catch (Exception e){
                 String errorsMessage = "date=INVALID_FORMAT";
-                throw new RuntimeException(errorsMessage);
+                throw new IllegalArgumentException(errorsMessage);
             }
         }
 

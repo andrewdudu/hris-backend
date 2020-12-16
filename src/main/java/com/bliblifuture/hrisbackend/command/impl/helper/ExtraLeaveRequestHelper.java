@@ -23,7 +23,7 @@ public class ExtraLeaveRequestHelper {
     private void checkRemainingLeave(Leave leave, LeaveRequestData data) {
         if (leave.getRemaining() < data.getDates().size()){
             String errorsMessage = "dates=QUOTA_NOT_AVAILABLE";
-            throw new RuntimeException(errorsMessage);
+            throw new IllegalArgumentException(errorsMessage);
         }
     }
 
@@ -36,7 +36,7 @@ public class ExtraLeaveRequestHelper {
             }
             catch (Exception e){
                 String errorsMessage = "date=INVALID_FORMAT";
-                throw new RuntimeException(errorsMessage);
+                throw new IllegalArgumentException(errorsMessage);
             }
         }
 
