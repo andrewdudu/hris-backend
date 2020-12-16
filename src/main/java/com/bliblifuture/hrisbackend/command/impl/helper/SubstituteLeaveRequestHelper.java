@@ -22,7 +22,7 @@ public class SubstituteLeaveRequestHelper {
 
     private void checkRemainingLeave(int size, LeaveRequestData data) {
         if (size < data.getDates().size()){
-            String errorsMessage = "dates=QUOTA_NOT_AVAILABLE";
+            String errorsMessage = "type=QUOTA_NOT_AVAILABLE";
             throw new IllegalArgumentException(errorsMessage);
         }
     }
