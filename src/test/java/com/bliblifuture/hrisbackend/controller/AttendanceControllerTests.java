@@ -7,7 +7,7 @@ import com.bliblifuture.hrisbackend.constant.enumerator.AttendanceLocationType;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceListRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
-import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
+import com.bliblifuture.hrisbackend.model.response.util.AttendanceTimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
@@ -69,7 +69,7 @@ public class AttendanceControllerTests {
                 .build();
 
         AttendanceResponse attendance1 = AttendanceResponse.builder()
-                .date(TimeResponse.builder()
+                .date(AttendanceTimeResponse.builder()
                         .start(new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-10-2 08:00:00"))
                         .end(new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-10-2 17:00:00"))
                         .build()
@@ -82,7 +82,7 @@ public class AttendanceControllerTests {
                 )
                 .build();
         AttendanceResponse attendance2 = AttendanceResponse.builder()
-                .date(TimeResponse.builder()
+                .date(AttendanceTimeResponse.builder()
                         .start(new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-10-2 08:12:00"))
                         .end(new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-10-2 17:15:00"))
                         .build()

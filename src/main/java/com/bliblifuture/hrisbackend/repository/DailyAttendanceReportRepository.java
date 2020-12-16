@@ -16,6 +16,8 @@ public interface DailyAttendanceReportRepository extends ReactiveMongoRepository
     @Query("{ id: { $exists: true }}")
     Flux<DailyAttendanceReport> findAll(final Pageable pageable);
 
+    Mono<DailyAttendanceReport> findAllByDateBeforeAndDateAfter(Date startDay, Date endDay);
+
     Mono<DailyAttendanceReport> findByDate(Date date);
 
 }

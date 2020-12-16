@@ -33,9 +33,6 @@ public class EmployeeLeaveSummary extends BaseEntity{
     @Field(name = "hajj")
     private int hajj;
 
-    @Field(name = "marriage")
-    private int marriage;
-
     @Field(name = "maternity")
     private int maternity;
 

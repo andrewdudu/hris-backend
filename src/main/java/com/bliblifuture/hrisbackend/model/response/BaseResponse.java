@@ -13,7 +13,7 @@ public abstract class BaseResponse {
 
     private String createdBy;
 
-    private Date LastModifiedDate;
+    private Date updatedDate;
 
-    private String LastModifiedBy;
+    private String updatedBy;
 }

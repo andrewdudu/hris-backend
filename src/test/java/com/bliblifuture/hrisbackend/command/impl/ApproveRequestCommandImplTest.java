@@ -12,7 +12,7 @@ import com.bliblifuture.hrisbackend.model.request.BaseRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
-import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
+import com.bliblifuture.hrisbackend.model.response.util.AttendanceTimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
@@ -99,7 +99,7 @@ public class ApproveRequestCommandImplTest {
                 .employeeId(user.getEmployeeId())
                 .build();
 
-        TimeResponse date = TimeResponse.builder()
+        AttendanceTimeResponse date = AttendanceTimeResponse.builder()
                 .start(start)
                 .end(end)
                 .build();

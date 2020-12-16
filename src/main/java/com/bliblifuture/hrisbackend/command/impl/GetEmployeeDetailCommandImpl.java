@@ -6,7 +6,7 @@ import com.bliblifuture.hrisbackend.model.entity.Employee;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.EmployeeDetailResponse;
 import com.bliblifuture.hrisbackend.model.response.EmployeeResponse;
-import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
+import com.bliblifuture.hrisbackend.model.response.util.AttendanceTimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LocationResponse;
 import com.bliblifuture.hrisbackend.model.response.util.OfficeResponse;
 import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
@@ -70,7 +70,7 @@ public class GetEmployeeDetailCommandImpl implements GetEmployeeDetailCommand {
     private EmployeeDetailResponse setAttendance(EmployeeDetailResponse response, Attendance attendance) {
         response.setAttendance(
                 AttendanceResponse.builder()
-                        .date(TimeResponse.builder()
+                        .date(AttendanceTimeResponse.builder()
                                 .start(attendance.getStartTime())
                                 .end(attendance.getEndTime())
                                 .build())
