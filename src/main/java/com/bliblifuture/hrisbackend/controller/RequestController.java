@@ -64,7 +64,7 @@ public class RequestController {
                 .subscribeOn(Schedulers.elastic());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @GetMapping("/api/requests")
     public Mono<Response<List<IncomingRequestResponse>>> getIncomingRequests(@RequestParam("type") String type, Principal principal){
         GetIncomingRequest request = GetIncomingRequest.builder().type(type).build();
@@ -74,7 +74,7 @@ public class RequestController {
                 .subscribeOn(Schedulers.elastic());
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @PostMapping("/api/requests/{id}/_approve")
     public Mono<Response<IncomingRequestResponse>> approveRequest(@PathVariable("id") String id, Principal principal){
         BaseRequest request = new BaseRequest();
@@ -85,7 +85,7 @@ public class RequestController {
                 .subscribeOn(Schedulers.elastic());
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @PostMapping("/api/requests/{id}/_reject")
     public Mono<Response<IncomingRequestResponse>> rejectRequest(@PathVariable("id") String id, Principal principal){
         BaseRequest request = new BaseRequest();

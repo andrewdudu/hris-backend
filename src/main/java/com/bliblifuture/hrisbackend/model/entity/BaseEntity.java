@@ -33,8 +33,8 @@ public abstract class BaseEntity implements Serializable {
         response.setId(obj.getId());
         response.setCreatedBy(obj.getCreatedBy());
         response.setCreatedDate(obj.getCreatedDate());
-        response.setUpdatedBy(obj.getUpdatedBy());
-        response.setUpdatedDate(obj.getUpdatedDate());
+        response.setLastModifiedBy(obj.getUpdatedBy());
+        response.setLastModifiedDate(obj.getUpdatedDate());
         return response;
     }
 }

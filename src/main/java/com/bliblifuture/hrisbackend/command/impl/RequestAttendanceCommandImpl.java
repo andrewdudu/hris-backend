@@ -41,6 +41,7 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
                 .flatMap(req -> employeeRepository.findById(req.getEmployeeId())
                         .map(employee -> {
                             req.setManager(employee.getManagerUsername());
+                            req.setDepartmentId(employee.getDepId());
                             return req;
                         }))
                 .flatMap(entity -> requestRepository.save(entity))
