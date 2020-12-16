@@ -11,7 +11,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 @Data
-public class AttendanceTimeResponse {
+public class TimeResponse {
 
     private Date start;
 

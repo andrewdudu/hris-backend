@@ -10,7 +10,7 @@ import com.bliblifuture.hrisbackend.model.request.BaseRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
-import com.bliblifuture.hrisbackend.model.response.util.AttendanceTimeResponse;
+import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
@@ -85,7 +85,7 @@ public class RejectRequestCommandImplTest {
                 .employeeId(user.getEmployeeId())
                 .build();
 
-        AttendanceTimeResponse date = AttendanceTimeResponse.builder()
+        TimeResponse date = TimeResponse.builder()
                 .start(start)
                 .end(end)
                 .build();

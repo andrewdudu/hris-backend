@@ -7,7 +7,7 @@ import com.bliblifuture.hrisbackend.command.*;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.response.UserReportResponse;
-import com.bliblifuture.hrisbackend.model.response.LeavesReportResponse;
+import com.bliblifuture.hrisbackend.model.response.LeaveReportResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LeaveResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +48,7 @@ public class UserController extends WebMvcProperties {
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping("/{id}/profile")
-    public Mono<Response<LeavesReportResponse>> getLeavesReport(@PathVariable("id") String id){
+    public Mono<Response<LeaveReportResponse>> getLeavesReport(@PathVariable("id") String id){
         return commandExecutor.execute(GetLeavesReportCommand.class, id)
                 .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());

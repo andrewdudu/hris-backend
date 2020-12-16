@@ -45,6 +45,9 @@ public class Request extends BaseEntity {
     @Field(name = "manager")
     private String manager;
 
+    @Field(name = "department_id")
+    private String departmentId;
+
     @Field(name = "approved_by")
     private String approvedBy;
 
