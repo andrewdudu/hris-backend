@@ -8,6 +8,7 @@ import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.GetIncomingRequest;
 import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
+import com.bliblifuture.hrisbackend.repository.DepartmentRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import lombok.SneakyThrows;
@@ -25,6 +26,9 @@ public class GetIncomingRequestCommandImpl implements GetIncomingRequestCommand 
     private RequestRepository requestRepository;
 
     @Autowired
+    private DepartmentRepository departmentRepository;
+
+    @Autowired
     private RequestResponseHelper requestResponseHelper;
 
     @Autowired
@@ -33,20 +37,37 @@ public class GetIncomingRequestCommandImpl implements GetIncomingRequestCommand 
     @SneakyThrows
     @Override
     public Mono<List<IncomingRequestResponse>> execute(GetIncomingRequest request) {
+        if (request.getType() == null || request.getType().isEmpty()){
+            String msg = "type=INVALID_REQUEST";
+            throw new IllegalArgumentException(msg);
+        }
         return userRepository.findByUsername(request.getRequester())
-                .flatMap(user -> getResponse(user, request.getType())
-                        .flatMap(incomingRequest -> requestResponseHelper.createResponse(incomingRequest))
-                        .collectList()
-                );
+                .flatMap(user -> getRequestsData(user, request)
+                        .flatMap(requests -> Flux.fromIterable(requests)
+                                .flatMap(incomingRequest -> requestResponseHelper.createResponse(incomingRequest))
+                                .collectList()
+                        ));
     }
 
-    public Flux<Request> getResponse(User user, String type){
+    public Mono<List<Request>> getRequestsData(User user, GetIncomingRequest request){
+        String status = request.getType();
         if (user.getRoles().contains(UserRole.MANAGER)){
-            return requestRepository.findByStatusAndManagerOrderByCreatedDateDesc(RequestStatus.valueOf(type), user.getUsername())
-                    .switchIfEmpty(Flux.empty());
+            return requestRepository.findByStatusAndManagerOrderByCreatedDateDesc(RequestStatus.valueOf(status), user.getUsername())
+                    .switchIfEmpty(Flux.empty())
+                    .collectList();
         }
-        return requestRepository.findByStatusOrderByCreatedDateDesc(RequestStatus.valueOf(type))
-                .switchIfEmpty(Flux.empty());
+
+        if (request.getDepartment() == null || request.getDepartment().isEmpty()){
+            return requestRepository.findByStatusOrderByCreatedDateDesc(RequestStatus.valueOf(status))
+                    .switchIfEmpty(Flux.empty())
+                    .collectList();
+        }
+
+        return departmentRepository.findByCode(request.getDepartment())
+                .flatMap(department -> requestRepository
+                        .findByDepartmentIdAndStatusOrderByCreatedDateDesc(department.getId(), RequestStatus.valueOf(status))
+                        .collectList()
+                );
     }
 
 }

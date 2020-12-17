@@ -66,8 +66,8 @@ public class RequestController {
 
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @GetMapping("/api/requests")
-    public Mono<Response<List<IncomingRequestResponse>>> getIncomingRequests(@RequestParam("type") String type, Principal principal){
-        GetIncomingRequest request = GetIncomingRequest.builder().type(type).build();
+    public Mono<Response<List<IncomingRequestResponse>>> getIncomingRequests(@RequestParam("type") String type, @RequestParam("department") String department,Principal principal){
+        GetIncomingRequest request = GetIncomingRequest.builder().type(type).department(department).build();
         request.setRequester(principal.getName());
         return commandExecutor.execute(GetIncomingRequestCommand.class, request)
                 .map(ResponseHelper::ok)

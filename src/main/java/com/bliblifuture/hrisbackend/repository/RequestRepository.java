@@ -44,4 +44,6 @@ public interface RequestRepository extends ReactiveMongoRepository<Request, Stri
 
     Flux<Request> findByDepartmentIdAndStatus(String depId, RequestStatus status);
 
+    Flux<Request> findByDepartmentIdAndStatusOrderByCreatedDateDesc(String depId, RequestStatus status);
+
 }
