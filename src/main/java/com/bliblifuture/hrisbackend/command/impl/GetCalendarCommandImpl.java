@@ -63,7 +63,7 @@ public class GetCalendarCommandImpl implements GetCalendarCommand {
                     .date(thisDate)
                     .events(new ArrayList<>())
                     .build();
-            if (thisDate.getDay() == 0){
+            if (thisDate.getDay() == 0 || thisDate.getDay() == 6){
                 response.setStatus(CalendarStatus.HOLIDAY);
             }
             else{

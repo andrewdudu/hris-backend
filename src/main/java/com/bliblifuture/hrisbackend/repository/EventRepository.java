@@ -1,5 +1,6 @@
 package com.bliblifuture.hrisbackend.repository;
 
+import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import com.bliblifuture.hrisbackend.model.entity.Event;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Query;
@@ -25,5 +26,7 @@ public interface EventRepository extends ReactiveMongoRepository<Event, String> 
     Mono<Long> countAllByDateAfter(Date date);
 
     Mono<Event> findByDate(Date date);
+
+    Mono<Event> findByDateAndStatus(Date date, CalendarStatus status);
 
 }
