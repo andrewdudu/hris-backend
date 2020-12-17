@@ -43,10 +43,10 @@ public class UpdateAnnualLeaveCommandImpl implements UpdateAnnualLeaveCommand {
     @SneakyThrows
     private Mono<Leave> createNewAnnualLeave(User user) {
         Date date = dateUtil.getNewDate();
-        Date endOfTheYear = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
-                .parse((date.getYear()+1900) + "-12-31 23:59:59");
-        return leaveRepository.findFirstByEmployeeIdAndExpDate(user.getEmployeeId(), endOfTheYear)
-                .switchIfEmpty(Mono.just(createLeave(endOfTheYear, user.getEmployeeId(), date)));
+        Date startOfNextYear = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                .parse((date.getYear()+1901) + "-1-1 00:00:00");
+        return leaveRepository.findFirstByEmployeeIdAndExpDate(user.getEmployeeId(), startOfNextYear)
+                .switchIfEmpty(Mono.just(createLeave(startOfNextYear, user.getEmployeeId(), date)));
     }
 
     private Leave createLeave(Date endOfTheYear, String employeeId, Date currentDate) {

@@ -71,20 +71,23 @@ public class GetExtendLeaveDataCommandImpl implements GetExtendLeaveDataCommand 
         return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateDesc(employeeId, LeaveType.annual, currentDate)
                 .switchIfEmpty(Flux.empty())
                 .collectList()
-                .map(leaves -> {
-                    checkNull(leaves);
-                    response.setQuota(ExtendLeaveQuotaResponse.builder()
-                            .extensionDate(extensionDate)
-                            .remaining(leaves.get(0).getRemaining())
-                            .build());
-                    return response;
-                });
+                .map(leaves -> checkNonAvailableQuota(leaves, response, extensionDate));
     }
 
-    private void checkNull(List<Leave> leaves) {
-        if (leaves.size() == 0){
-            String msg = "message=QUOTA_NOT_AVAILABLE";
-            throw new IllegalArgumentException(msg);
+    private ExtendLeaveResponse checkNonAvailableQuota(List<Leave> leaves, ExtendLeaveResponse response, Date extensionDate) {
+        if (leaves.size() == 0 || leaves.get(0).getRemaining() == 0){
+            response.setQuota(ExtendLeaveQuotaResponse.builder()
+                    .extensionDate(extensionDate)
+                    .remaining(0)
+                    .build());
+            response.setStatus(RequestStatus.UNAVAILABLE);
         }
+        else {
+            response.setQuota(ExtendLeaveQuotaResponse.builder()
+                    .extensionDate(extensionDate)
+                    .remaining(leaves.get(0).getRemaining())
+                    .build());
+        }
+        return response;
     }
 }
