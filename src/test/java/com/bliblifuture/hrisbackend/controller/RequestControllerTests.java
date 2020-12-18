@@ -240,6 +240,7 @@ public class RequestControllerTests {
     @Test
     public void getIncomingRequestsTest() {
         String type = "REQUESTED";
+        String department = "";
 
         IncomingRequestResponse data1 = IncomingRequestResponse.builder()
                 .user(UserResponse.builder().username("name1").build())
@@ -266,7 +267,7 @@ public class RequestControllerTests {
         expected.setCode(HttpStatus.OK.value());
         expected.setStatus(HttpStatus.OK.name());
 
-        requestController.getIncomingRequests(type, principal)
+        requestController.getIncomingRequests(type, department, principal)
                 .subscribe(response -> {
                     Assert.assertEquals(expected.getCode(), response.getCode());
                     Assert.assertEquals(expected.getStatus(), response.getStatus());
