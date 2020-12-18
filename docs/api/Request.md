@@ -166,6 +166,7 @@
 - HTTP Method : `GET`
 - Query Param:
   - type: `REQUESTED|APPROVED|REJECTED`
+  - department: `dep-code`
 - Request Header :
 
   - Accept : `application/json`
