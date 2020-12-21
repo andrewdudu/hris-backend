@@ -1,6 +1,7 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAvailableRequestsCommand;
+import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
 import com.bliblifuture.hrisbackend.model.entity.Employee;
@@ -46,7 +47,7 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
         return employeeRepository.findByEmail(username)
                 .map(employee -> getResponse(employee, currentDate))
                 .flatMap(response -> userRepository.findByUsername(username)
-                        .flatMap(user -> leaveRepository.findFirstByEmployeeIdAndExpDate(user.getEmployeeId(), startOfNextYear)
+                        .flatMap(user -> leaveRepository.findFirstByTypeAndEmployeeIdAndExpDate(LeaveType.annual, user.getEmployeeId(), startOfNextYear)
                                 .switchIfEmpty(Mono.just(Leave.builder().build()))
                                 .map(leave -> checkExtendLeave(leave, response, currentDate))
                                 .map(res -> addExtraList(user, res))
@@ -58,7 +59,6 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
         if (leave.getId() == null || leave.getId().isEmpty()){
             return response;
         }
-
         if (currentDate.getMonth() == Calendar.DECEMBER) {
             response.add(RequestType.EXTEND_ANNUAL_LEAVE);
         }

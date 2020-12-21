@@ -139,13 +139,13 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
         return report;
     }
 
-    private DashboardResponse setAttendanceResponse(List<Attendance> res, DashboardResponse response, Date currentStartDate) {
+    private DashboardResponse setAttendanceResponse(List<Attendance> attendances, DashboardResponse response, Date currentStartDate) {
         AttendanceResponse current = AttendanceResponse.builder().date(TimeResponse.builder().build()).build();
         AttendanceResponse latest = AttendanceResponse.builder().date(TimeResponse.builder().build()).build();
 
-        if (res.size() > 0){
-            if (res.get(0).getStartTime().before(currentStartDate)){
-                Attendance latestAttendance = res.get(0);
+        if (attendances.size() > 0){
+            if (attendances.get(0).getStartTime().before(currentStartDate)){
+                Attendance latestAttendance = attendances.get(0);
                 latest.getDate().setStart(latestAttendance.getStartTime());
                 latest.getDate().setEnd(latestAttendance.getEndTime());
                 latest.setLocation(
@@ -155,8 +155,8 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                 );
             }
             else{
-                if (res.size() > 1){
-                    Attendance latestAttendance = res.get(1);
+                if (attendances.size() > 1){
+                    Attendance latestAttendance = attendances.get(1);
                     latest.getDate().setStart(latestAttendance.getStartTime());
                     latest.getDate().setEnd(latestAttendance.getEndTime());
                     latest.setLocation(
@@ -166,7 +166,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                     );
                 }
 
-                Attendance currentAttendance = res.get(0);
+                Attendance currentAttendance = attendances.get(0);
                 current.getDate().setStart(currentAttendance.getStartTime());
                 current.getDate().setEnd(currentAttendance.getEndTime());
                 current.setLocation(

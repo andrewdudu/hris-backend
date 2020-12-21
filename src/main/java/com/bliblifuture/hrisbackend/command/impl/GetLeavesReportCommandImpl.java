@@ -61,7 +61,7 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
         LeaveReportResponse response = LeaveReportResponse.builder().build();
 
         return employeeLeaveSummaryRepository.findByYearAndEmployeeId(theYear, employeeId)
-                .switchIfEmpty(createLeaveSummary(employeeId, theYear)
+                .switchIfEmpty(createLeaveSummary(employeeId, theYear, currentDate)
                         .flatMap(employeeLeaveSummary -> employeeLeaveSummaryRepository.save(employeeLeaveSummary))
                 )
                 .map(employeeLeaveSummary -> setLeavesData(employeeLeaveSummary, response))
@@ -148,7 +148,7 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
         return response;
     }
 
-    private Mono<EmployeeLeaveSummary> createLeaveSummary(String employeeId, String year) {
+    private Mono<EmployeeLeaveSummary> createLeaveSummary(String employeeId, String year, Date date) {
         EmployeeLeaveSummary report = EmployeeLeaveSummary.builder()
                 .year(year)
                 .employeeId(employeeId)
@@ -157,7 +157,6 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
         report.setId("ELS-" + report.getEmployeeId() + "-" + report.getYear());
         report.setCreatedBy("SYSTEM");
         report.setUpdatedBy("SYSTEM");
-        Date date = dateUtil.getNewDate();
         report.setCreatedDate(date);
         report.setUpdatedDate(date);
 
