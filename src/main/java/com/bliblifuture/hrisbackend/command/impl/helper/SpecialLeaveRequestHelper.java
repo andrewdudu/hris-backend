@@ -17,10 +17,10 @@ import java.util.List;
 public class SpecialLeaveRequestHelper {
 
     public Mono<Request> processRequest(LeaveRequestData data, User user, long currentDateTime){
-        return Mono.fromCallable(() -> createRequest(data, user.getEmployeeId(), currentDateTime));
+        return Mono.fromCallable(() -> createRequest(data, user, currentDateTime));
     }
 
-    private Request createRequest(LeaveRequestData data, String employeeId, long currentDateTime) {
+    private Request createRequest(LeaveRequestData data, User user, long currentDateTime) {
         if (data.getType().equals(SpecialLeaveType.SICK_WITH_MEDICAL_LETTER.toString())){
             if (data.getFiles() == null || data.getFiles().isEmpty()){
                 String errorsMessage = "files=INVALID_REQUEST";
@@ -41,7 +41,7 @@ public class SpecialLeaveRequestHelper {
         }
 
         Request request = Request.builder()
-                .employeeId(employeeId)
+                .employeeId(user.getEmployeeId())
                 .dates(dates)
                 .notes(data.getNotes())
                 .type(RequestType.SPECIAL_LEAVE)
@@ -50,9 +50,11 @@ public class SpecialLeaveRequestHelper {
                 .build();
 
         request.setId(request.getSpecialLeaveType().toString() + "-" + request.getEmployeeId() + "-" + currentDateTime);
+        request.setCreatedDate(new Date(currentDateTime));
+        request.setCreatedBy(user.getUsername());
 
         if (data.getFiles() != null){
-            List<String> files = FileHelper.saveFiles(data, employeeId, currentDateTime);
+            List<String> files = FileHelper.saveFiles(data, user.getEmployeeId(), currentDateTime);
             request.setFiles(files);
         }
 

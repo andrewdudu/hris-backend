@@ -23,7 +23,7 @@ public class PagingResponse<T> {
         this.paging = paging;
     }
 
-    public PagingResponse<T> getPagingResponse(PagingRequest request, int total){
+    public PagingResponse<T> setPagingDetail(PagingRequest request, int total){
         int totalPage = (int) Math.ceil(total/(float)request.getSize());
         Paging paging = Paging.builder()
                 .page(request.getPage())

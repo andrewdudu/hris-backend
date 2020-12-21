@@ -71,8 +71,8 @@ public class UserResponseHelper {
                 });
     }
 
-    private Mono<UserResponse> setTotalRemainingLeaves(UserResponse response, String username) {
-        return leaveRepository.findByEmployeeIdAndExpDateAfter(username, dateUtil.getNewDate())
+    private Mono<UserResponse> setTotalRemainingLeaves(UserResponse response, String employeeId) {
+        return leaveRepository.findByEmployeeIdAndExpDateAfter(employeeId, dateUtil.getNewDate())
                 .collectList()
                 .map(leaves -> {
                     response.setLeave(LeaveResponse.builder()

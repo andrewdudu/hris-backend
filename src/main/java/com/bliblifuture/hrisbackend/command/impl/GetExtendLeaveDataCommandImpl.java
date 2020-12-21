@@ -4,6 +4,7 @@ import com.bliblifuture.hrisbackend.command.GetExtendLeaveDataCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
+import com.bliblifuture.hrisbackend.model.entity.Leave;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
 import com.bliblifuture.hrisbackend.model.response.util.ExtendLeaveQuotaResponse;
@@ -12,10 +13,12 @@ import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class GetExtendLeaveDataCommandImpl implements GetExtendLeaveDataCommand {
@@ -40,8 +43,7 @@ public class GetExtendLeaveDataCommandImpl implements GetExtendLeaveDataCommand 
         Date extensionDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse((year+1) + "-3-1 00:00:00");
 
         return userRepository.findByUsername(username)
-                .flatMap(user -> requestRepository
-                        .findByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, extensionDate)
+                .flatMap(user -> requestRepository.findByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, extensionDate)
                         .switchIfEmpty(Mono.just(Request.builder().build()))
                         .map(leaveRequest -> setResponseStatus(leaveRequest, currentDate))
                         .flatMap(response -> setResponseQuota(response, user.getEmployeeId(), currentDate, extensionDate))
@@ -67,13 +69,25 @@ public class GetExtendLeaveDataCommandImpl implements GetExtendLeaveDataCommand 
     @SneakyThrows
     private Mono<ExtendLeaveResponse> setResponseQuota(ExtendLeaveResponse response, String employeeId, Date currentDate, Date extensionDate){
         return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateDesc(employeeId, LeaveType.annual, currentDate)
+                .switchIfEmpty(Flux.empty())
                 .collectList()
-                .map(leave -> {
-                    response.setQuota(ExtendLeaveQuotaResponse.builder()
-                            .extensionDate(extensionDate)
-                            .remaining(leave.get(0).getRemaining())
-                            .build());
-                    return response;
-                });
+                .map(leaves -> checkNonAvailableQuota(leaves, response, extensionDate));
+    }
+
+    private ExtendLeaveResponse checkNonAvailableQuota(List<Leave> leaves, ExtendLeaveResponse response, Date extensionDate) {
+        if (leaves.size() == 0 || leaves.get(0).getRemaining() == 0){
+            response.setQuota(ExtendLeaveQuotaResponse.builder()
+                    .extensionDate(extensionDate)
+                    .remaining(0)
+                    .build());
+            response.setStatus(RequestStatus.UNAVAILABLE);
+        }
+        else {
+            response.setQuota(ExtendLeaveQuotaResponse.builder()
+                    .extensionDate(extensionDate)
+                    .remaining(leaves.get(0).getRemaining())
+                    .build());
+        }
+        return response;
     }
 }

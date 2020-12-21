@@ -7,6 +7,7 @@ import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
 import com.bliblifuture.hrisbackend.model.response.AttendanceRequestResponse;
+import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
@@ -25,6 +26,9 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
     private UserRepository userRepository;
 
     @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
     private RequestRepository requestRepository;
 
     @Autowired
@@ -34,6 +38,12 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
     public Mono<AttendanceRequestResponse> execute(AttendanceRequestData request) {
         return userRepository.findByUsername(request.getRequester())
                 .map(user -> createRequestEntity(request, user))
+                .flatMap(req -> employeeRepository.findById(req.getEmployeeId())
+                        .map(employee -> {
+                            req.setManager(employee.getManagerUsername());
+                            req.setDepartmentId(employee.getDepId());
+                            return req;
+                        }))
                 .flatMap(entity -> requestRepository.save(entity))
                 .map(this::createResponse);
     }

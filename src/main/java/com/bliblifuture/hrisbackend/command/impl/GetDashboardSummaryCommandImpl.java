@@ -4,10 +4,7 @@ import com.bliblifuture.hrisbackend.command.GetDashboardSummaryCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
-import com.bliblifuture.hrisbackend.model.entity.Attendance;
-import com.bliblifuture.hrisbackend.model.entity.DailyAttendanceReport;
-import com.bliblifuture.hrisbackend.model.entity.Event;
-import com.bliblifuture.hrisbackend.model.entity.User;
+import com.bliblifuture.hrisbackend.model.entity.*;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.CalendarResponse;
 import com.bliblifuture.hrisbackend.model.response.DashboardResponse;
@@ -19,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
@@ -67,11 +65,10 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                 .calendar(calendarResponse)
                 .build();
 
+        Pageable pageable = PageRequest.of(0, 2);
         if (user.getRoles().contains(UserRole.ADMIN)){
             ReportResponse report = new ReportResponse();
             IncomingRequestResponse request = new IncomingRequestResponse();
-            response.setReport(report);
-            response.setRequest(request);
 
             return dailyAttendanceReportRepository.findByDate(startOfDate)
                     .switchIfEmpty(
@@ -81,87 +78,103 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                             .absent(0)
                             .build())
                     )
-                    .doOnSuccess(this::checkNewEntity)
+                    .map(this::createNewAttendanceReport)
+                    .flatMap(res -> dailyAttendanceReportRepository.save(res))
                     .flatMap(res -> {
-                        response.getReport().setWorking(res.getWorking());
-                        response.getReport().setAbsent(res.getAbsent());
+                        report.setWorking(res.getWorking());
+                        report.setAbsent(res.getAbsent());
                         return eventRepository.findByDate(startOfDate);
                     })
+                    .switchIfEmpty(Mono.just(Event.builder().status(CalendarStatus.WORKING).build()))
                     .map(event -> setCalendarResponse(startOfDate, response, event))
-                    .flatMap(res -> requestRepository.countByCreatedDateAfterAndStatus(startOfDate, RequestStatus.REQUESTED))
-                    .map(totalIncomingRequest -> {
-                        response.getRequest().setIncoming(totalIncomingRequest);
+                    .flatMap(res -> requestRepository.countByStatus(RequestStatus.REQUESTED))
+                    .map(incomingReqTotal -> {
+                        request.setIncoming(incomingReqTotal.intValue());
+                        response.setRequest(request);
+                        response.setReport(report);
                         return response;
-                    });
+                    })
+                    .flatMap(res -> attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable)
+                            .switchIfEmpty(Flux.empty())
+                            .collectList()
+                            .map(attendanceList -> setAttendanceResponse(attendanceList, response, startOfDate))
+                    );
         }
-        Pageable pageable = PageRequest.of(0, 2);
+        else if(user.getRoles().contains(UserRole.MANAGER)){
+            IncomingRequestResponse request = new IncomingRequestResponse();
+
+            return eventRepository.findByDate(startOfDate)
+                    .switchIfEmpty(Mono.just(Event.builder().status(CalendarStatus.WORKING).build()))
+                    .map(event -> setCalendarResponse(startOfDate, response, event))
+                    .flatMap(res -> requestRepository.countByStatusAndManager(RequestStatus.REQUESTED, user.getUsername()))
+                    .map(incomingReqTotal -> {
+                        request.setIncoming(incomingReqTotal.intValue());
+                        response.setRequest(request);
+                        return response;
+                    })
+                    .flatMap(res -> attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable)
+                                    .switchIfEmpty(Flux.empty())
+                                    .collectList()
+                                    .map(attendanceList -> setAttendanceResponse(attendanceList, response, startOfDate))
+                    );
+        }
 
         return attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable).collectList()
-                .map(attendanceList -> {
-                    return setAttendanceResponse(attendanceList, response, startOfDate);
-                })
+                .map(attendanceList -> setAttendanceResponse(attendanceList, response, startOfDate))
                 .flatMap(res -> eventRepository.findByDate(startOfDate))
-                .switchIfEmpty(Mono.just(Event.builder().build()))
+                .switchIfEmpty(Mono.just(Event.builder().status(CalendarStatus.WORKING).build()))
                 .map(event -> setCalendarResponse(startOfDate, response, event));
     }
 
-    private void checkNewEntity(DailyAttendanceReport report) {
-        if (report.getId() == null){
+    private DailyAttendanceReport createNewAttendanceReport(DailyAttendanceReport report) {
+        if (report.getId() == null || report.getId().isEmpty()){
             Date date = dateUtil.getNewDate();
             report.setCreatedBy("SYSTEM");
             report.setCreatedDate(date);
             report.setUpdatedBy("SYSTEM");
             report.setUpdatedDate(date);
-            report.setId("DAR" + report.getDate());
-
-            dailyAttendanceReportRepository.save(report).subscribe();
+            report.setId("DAR" + report.getDate().getTime());
         }
+
+        return report;
     }
 
     private DashboardResponse setAttendanceResponse(List<Attendance> res, DashboardResponse response, Date currentStartDate) {
-        AttendanceResponse current = AttendanceResponse.builder().build();
-        AttendanceResponse latest = AttendanceResponse.builder().build();
+        AttendanceResponse current = AttendanceResponse.builder().date(TimeResponse.builder().build()).build();
+        AttendanceResponse latest = AttendanceResponse.builder().date(TimeResponse.builder().build()).build();
 
-        if (res.get(0).getStartTime().before(currentStartDate)){
-            Attendance latestAttendance = res.get(0);
-            latest.setDate(
-                    AttendanceTimeResponse.builder()
-                            .start(latestAttendance.getStartTime())
-                            .end(latestAttendance.getEndTime())
-                            .build()
-            );
-            latest.setLocation(
-                    LocationResponse.builder()
-                            .type(latestAttendance.getLocationType())
-                            .build()
-            );
-        }
-        else{
-            Attendance latestAttendance = res.get(1);
-            latest.setDate(
-                    AttendanceTimeResponse.builder()
-                            .start(latestAttendance.getStartTime())
-                            .end(latestAttendance.getEndTime())
-                            .build()
-            );
-            latest.setLocation(
-                    LocationResponse.builder()
-                            .type(latestAttendance.getLocationType())
-                            .build()
-            );
+        if (res.size() > 0){
+            if (res.get(0).getStartTime().before(currentStartDate)){
+                Attendance latestAttendance = res.get(0);
+                latest.getDate().setStart(latestAttendance.getStartTime());
+                latest.getDate().setEnd(latestAttendance.getEndTime());
+                latest.setLocation(
+                        LocationResponse.builder()
+                                .type(latestAttendance.getLocationType())
+                                .build()
+                );
+            }
+            else{
+                if (res.size() > 1){
+                    Attendance latestAttendance = res.get(1);
+                    latest.getDate().setStart(latestAttendance.getStartTime());
+                    latest.getDate().setEnd(latestAttendance.getEndTime());
+                    latest.setLocation(
+                            LocationResponse.builder()
+                                    .type(latestAttendance.getLocationType())
+                                    .build()
+                    );
+                }
 
-            Attendance currentAttendance = res.get(0);
-            current.setDate(
-                    AttendanceTimeResponse.builder()
-                            .start(currentAttendance.getStartTime())
-                            .end(currentAttendance.getEndTime())
-                            .build()
-            );
-            current.setLocation(
-                    LocationResponse.builder()
-                            .type(currentAttendance.getLocationType())
-                            .build()
-            );
+                Attendance currentAttendance = res.get(0);
+                current.getDate().setStart(currentAttendance.getStartTime());
+                current.getDate().setEnd(currentAttendance.getEndTime());
+                current.setLocation(
+                        LocationResponse.builder()
+                                .type(currentAttendance.getLocationType())
+                                .build()
+                );
+            }
         }
 
         response.setAttendance(
@@ -171,12 +184,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     }
 
     private DashboardResponse setCalendarResponse(Date currentDate, DashboardResponse response, Event event) {
-        if (event.getId() == null){
-            response.getCalendar().setStatus(CalendarStatus.WORKING);
-        }
-        else{
-            response.getCalendar().setStatus(event.getStatus());
-        }
+        response.getCalendar().setStatus(event.getStatus());
         response.getCalendar().setDate(currentDate);
         return response;
     }

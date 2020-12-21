@@ -3,20 +3,23 @@ package com.bliblifuture.hrisbackend.command.impl;
 import com.bliblifuture.hrisbackend.command.RequestLeaveCommand;
 import com.bliblifuture.hrisbackend.command.impl.helper.*;
 import com.bliblifuture.hrisbackend.constant.LeaveTypeConstant;
+import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
+import com.bliblifuture.hrisbackend.model.entity.Event;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
-import com.bliblifuture.hrisbackend.repository.LeaveRepository;
-import com.bliblifuture.hrisbackend.repository.RequestRepository;
-import com.bliblifuture.hrisbackend.repository.UserRepository;
+import com.bliblifuture.hrisbackend.repository.*;
 import com.bliblifuture.hrisbackend.util.DateUtil;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,17 +35,70 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
     private RequestRepository requestRepository;
 
     @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
     private LeaveRepository leaveRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
 
     @Autowired
     private DateUtil dateUtil;
 
     @Override
     public Mono<RequestLeaveResponse> execute(LeaveRequestData request) {
-        return userRepository.findByUsername(request.getRequester())
-                .flatMap(user -> callHelper(request, user))
+        return filterDate(request)
+                .flatMap(newDates -> {
+                    request.setDates(newDates);
+                    return userRepository.findByUsername(request.getRequester());
+                })
+                .flatMap(user -> callHelper(request, user)
+                        .flatMap(entity -> employeeRepository.findById(user.getEmployeeId())
+                                .map(employee -> {
+                                    entity.setManager(employee.getManagerUsername());
+                                    entity.setDepartmentId(employee.getDepId());
+                                    return entity;
+                                }))
+                )
                 .flatMap(leaveRequest -> requestRepository.save(leaveRequest))
                 .map(RequestLeaveCommandImpl::createResponse);
+    }
+
+    @SneakyThrows
+    private Mono<List<String>> filterDate(LeaveRequestData request){
+        List<String> newDates = new ArrayList<>();
+        return Flux.fromIterable(request.getDates())
+                .map(this::getDate)
+                .flatMap(date -> eventRepository.findByDateAndStatus(date, CalendarStatus.HOLIDAY)
+                        .switchIfEmpty(Mono.just(Event.builder().build()))
+                        .map(event -> {
+                            inputNewDate(event, newDates, date);
+                            return date;
+                        }))
+                .collectList()
+                .map(dates -> newDates);
+    }
+
+    private void inputNewDate(Event event, List<String> newDates, Date date) {
+        String dateString = new SimpleDateFormat(DateUtil.DATE_FORMAT).format(date);
+        if (event.getId() != null && !event.getId().isEmpty()){
+            if (!newDates.contains(dateString)){
+                newDates.add(dateString);
+            }
+        }
+        else if (date.getDay() != 0 && date.getDay() != 6){
+            newDates.add(dateString);
+        }
+    }
+
+    private Date getDate(String date) {
+        try {
+            return new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(date);
+        } catch (ParseException e) {
+            String msg = "dates=INVALID_REQUEST";
+            throw new IllegalArgumentException(msg);
+        }
     }
 
     private Mono<Request> callHelper(LeaveRequestData request, User user) {
@@ -57,7 +113,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
                         .collectList()
                         .map(leaves -> new SubstituteLeaveRequestHelper().processRequest(request, user, leaves, currentDateTime));
             case LeaveTypeConstant.EXTRA_LEAVE:
-                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfter(user.getEmployeeId(), LeaveType.extra, dateUtil.getNewDate())
+                return leaveRepository.findFirstByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(user.getEmployeeId(), LeaveType.extra, dateUtil.getNewDate())
                         .map(leave -> new ExtraLeaveRequestHelper().processRequest(request, user, leave, currentDateTime));
             case LeaveTypeConstant.CLOSE_FAMILY_DEATH:
             case LeaveTypeConstant.SICK:

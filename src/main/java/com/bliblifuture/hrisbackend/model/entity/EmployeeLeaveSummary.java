@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 @EqualsAndHashCode(callSuper = false)
-@Document(collection = "daily_attendance_report")
+@Document(collection = "employee_leave_summary")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -32,6 +32,9 @@ public class EmployeeLeaveSummary extends BaseEntity{
 
     @Field(name = "hajj")
     private int hajj;
+
+    @Field(name = "marriage")
+    private int marriage;
 
     @Field(name = "maternity")
     private int maternity;

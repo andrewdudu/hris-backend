@@ -13,4 +13,6 @@ public class GetIncomingRequest extends BaseRequest {
 
     private String type;
 
+    private String department;
+
 }
