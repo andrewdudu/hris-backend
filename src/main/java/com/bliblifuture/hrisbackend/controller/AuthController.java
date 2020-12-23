@@ -42,7 +42,7 @@ public class AuthController extends WebMvcProperties {
     }
 
     @PostMapping("/logout")
-    public Mono<Response<String>> login(ServerWebExchange swe){
+    public Mono<Response<String>> logout(ServerWebExchange swe){
         swe.getResponse()
                 .addCookie(ResponseCookie
                         .from("userToken", "")

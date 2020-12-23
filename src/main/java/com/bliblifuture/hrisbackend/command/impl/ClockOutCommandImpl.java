@@ -34,17 +34,9 @@ public class ClockOutCommandImpl implements ClockOutCommand {
     public Mono<AttendanceResponse> execute(ClockInClockOutRequest request) {
         return Mono.fromCallable(request::getRequester)
                 .flatMap(username -> userRepository.findByUsername(username))
-                .flatMap(this::getTodayAttendance)
-                .map(attendance -> updateAttendance(attendance, request))
+                .flatMap(user -> getTodayAttendance(user, request))
                 .flatMap(attendance -> attendanceRepository.save(attendance))
                 .map(this::createResponse);
-    }
-
-    private Attendance updateAttendance(Attendance attendance, ClockInClockOutRequest request) {
-        attendance.setEndLat(request.getLocation().getLat());
-        attendance.setEndLon(request.getLocation().getLon());
-
-        return attendance;
     }
 
     private AttendanceResponse createResponse(Attendance attendance) {
@@ -58,7 +50,7 @@ public class ClockOutCommandImpl implements ClockOutCommand {
     }
 
     @SneakyThrows
-    private Mono<Attendance> getTodayAttendance(User user) {
+    private Mono<Attendance> getTodayAttendance(User user, ClockInClockOutRequest request) {
         Date currentTime = dateUtil.getNewDate();
         String dateString = (currentTime.getYear() + 1900) + "-" + (currentTime.getMonth() + 1) + "-" + currentTime.getDate();
 
@@ -70,6 +62,8 @@ public class ClockOutCommandImpl implements ClockOutCommand {
                 .doOnSuccess(attendance -> checkValidity(attendance, currentTime))
                 .map(attendance -> {
                     attendance.setEndTime(currentTime);
+                    attendance.setEndLat(request.getLocation().getLat());
+                    attendance.setEndLon(request.getLocation().getLon());
                     return attendance;
                 });
     }

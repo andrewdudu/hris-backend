@@ -40,9 +40,9 @@ public class GetEmployeeDetailCommandImpl implements GetEmployeeDetailCommand {
     private DateUtil dateUtil;
 
     @Override
-    public Mono<EmployeeDetailResponse> execute(String id) {
+    public Mono<EmployeeDetailResponse> execute(String employeeId) {
         EmployeeDetailResponse response = EmployeeDetailResponse.builder().build();
-        return employeeRepository.findById(id)
+        return employeeRepository.findById(employeeId)
                 .doOnSuccess(this::checkNull)
                 .flatMap(this::createResponse)
                 .flatMap(employeeResponse -> {

@@ -26,7 +26,7 @@ public class ReportController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public Mono<Response<List<LeaveDetailResponse>>> getEmployeeDashboard(
+    public Mono<Response<List<LeaveDetailResponse>>> getLeavesDetailReport(
             @RequestParam(value = "department", required = false) String department, @RequestParam(value = "month", required = false, defaultValue = "0") String month)
     {
         GetLeavesDetailRequest request =  GetLeavesDetailRequest.builder()

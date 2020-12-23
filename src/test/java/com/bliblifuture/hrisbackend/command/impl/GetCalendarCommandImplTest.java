@@ -62,33 +62,70 @@ public class GetCalendarCommandImplTest {
         Event event1 = Event.builder().title("Work day").status(CalendarStatus.WORKING)
                 .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-11-2"))
                 .build();
-        Event event2 = Event.builder().title("Mother's day").status(CalendarStatus.HOLIDAY)
+        Event event2 = Event.builder().title("CEO day").status(CalendarStatus.WORKING)
+                .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-11-2"))
+                .build();
+        Event event3 = Event.builder().title("Mother's day").status(CalendarStatus.HOLIDAY)
                 .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-11-3"))
                 .build();
 
-        Date start = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+        Date startOfThisMonth = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(year + "-" + month + "-1 00:00:00");
-        Date before = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+        Date StartOfNextMonth = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(year + "-" + (month+1) + "-1 00:00:00");
 
-        Mockito.when(eventRepository.findByDateBetweenOrderByDateAsc(start, before))
-                .thenReturn(Flux.just(event1, event2));
+        Mockito.when(eventRepository.findByDateBetweenOrderByDateAsc(startOfThisMonth, StartOfNextMonth))
+                .thenReturn(Flux.just(event1, event2, event3));
 
-        List<CalendarResponse> expected = new ArrayList<>();
-        expected.add(CalendarResponse.builder()
-                .events(Arrays.asList(EventDetailResponse.builder()
-                        .name("Work day")
-                        .build()))
+        CalendarResponse data1 = CalendarResponse.builder()
+                .events(Arrays.asList(
+                        EventDetailResponse.builder().name(event1.getTitle()).build(),
+                        EventDetailResponse.builder().name(event2.getTitle()).build())
+                )
                 .status(CalendarStatus.WORKING)
                 .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-11-2"))
-                .build());
-        expected.add(CalendarResponse.builder()
+                .build();
+        CalendarResponse data2 = CalendarResponse.builder()
                 .events(Arrays.asList(EventDetailResponse.builder()
                         .name("Mother's day")
                         .build()))
                 .status(CalendarStatus.HOLIDAY)
                 .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-11-3"))
-                .build());
+                .build();
+
+
+        List<CalendarResponse> expected = new ArrayList<>();
+        for (int i = 1; i <= 30; i++) {
+            Date thisDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-11-"+i);
+            if (i == data1.getDate().getDate()){
+                expected.add(data1);
+                if (thisDate.getDay()==0 || thisDate.getDay()==6){
+                    expected.get(i).setStatus(CalendarStatus.HOLIDAY);
+                }
+            }
+            else if (i == data2.getDate().getDate()){
+                expected.add(data2);
+                if (thisDate.getDay()==0 || thisDate.getDay()==6){
+                    expected.get(i).setStatus(CalendarStatus.HOLIDAY);
+                }
+            }
+            else if (thisDate.getDay()==0 || thisDate.getDay()==6){
+                CalendarResponse holiday = CalendarResponse.builder()
+                        .events(new ArrayList<>())
+                        .status(CalendarStatus.HOLIDAY)
+                        .date(thisDate)
+                        .build();
+                expected.add(holiday);
+            }
+            else {
+                CalendarResponse working = CalendarResponse.builder()
+                        .events(new ArrayList<>())
+                        .status(CalendarStatus.WORKING)
+                        .date(thisDate)
+                        .build();
+                expected.add(working);
+            }
+        }
 
         getCalendarCommand.execute(request)
                 .subscribe(response -> {
@@ -97,7 +134,7 @@ public class GetCalendarCommandImplTest {
                     }
                 });
 
-        Mockito.verify(eventRepository, Mockito.times(1)).findByDateBetweenOrderByDateAsc(start, before);
+        Mockito.verify(eventRepository, Mockito.times(1)).findByDateBetweenOrderByDateAsc(startOfThisMonth, StartOfNextMonth);
 
     }
 }

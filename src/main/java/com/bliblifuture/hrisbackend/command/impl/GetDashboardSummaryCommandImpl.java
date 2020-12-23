@@ -68,7 +68,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
         Pageable pageable = PageRequest.of(0, 2);
         if (user.getRoles().contains(UserRole.ADMIN)){
             ReportResponse report = new ReportResponse();
-            IncomingRequestResponse request = new IncomingRequestResponse();
+            IncomingRequestTotalResponse request = new IncomingRequestTotalResponse();
 
             return dailyAttendanceReportRepository.findByDate(startOfDate)
                     .switchIfEmpty(
@@ -78,7 +78,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                             .absent(0)
                             .build())
                     )
-                    .map(this::createNewAttendanceReport)
+                    .map(dailyAttendanceReport -> createNewAttendanceReport(dailyAttendanceReport, now))
                     .flatMap(res -> dailyAttendanceReportRepository.save(res))
                     .flatMap(res -> {
                         report.setWorking(res.getWorking());
@@ -101,7 +101,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                     );
         }
         else if(user.getRoles().contains(UserRole.MANAGER)){
-            IncomingRequestResponse request = new IncomingRequestResponse();
+            IncomingRequestTotalResponse request = new IncomingRequestTotalResponse();
 
             return eventRepository.findByDate(startOfDate)
                     .switchIfEmpty(Mono.just(Event.builder().status(CalendarStatus.WORKING).build()))
@@ -126,9 +126,8 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                 .map(event -> setCalendarResponse(startOfDate, response, event));
     }
 
-    private DailyAttendanceReport createNewAttendanceReport(DailyAttendanceReport report) {
+    private DailyAttendanceReport createNewAttendanceReport(DailyAttendanceReport report, Date date) {
         if (report.getId() == null || report.getId().isEmpty()){
-            Date date = dateUtil.getNewDate();
             report.setCreatedBy("SYSTEM");
             report.setCreatedDate(date);
             report.setUpdatedBy("SYSTEM");

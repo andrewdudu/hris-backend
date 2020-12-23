@@ -26,7 +26,8 @@ public class EmployeeController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/employees")
-    public Mono<Response<List<EmployeeResponse>>> getEmployees(@RequestParam(value = "department", required = false) @Nullable String department, @RequestParam(value = "name", required = false) String name,
+    public Mono<Response<List<EmployeeResponse>>> getEmployees(@RequestParam(value = "department", required = false) @Nullable String department,
+                                                               @RequestParam(value = "name", required = false) String name,
                                                                @RequestParam("page") int page, @RequestParam("size") int size){
         EmployeesRequest request = new EmployeesRequest();
         if (department != null){

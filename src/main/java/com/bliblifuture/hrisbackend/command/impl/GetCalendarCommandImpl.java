@@ -30,34 +30,34 @@ public class GetCalendarCommandImpl implements GetCalendarCommand {
         int thisYear = request.getYear();
         int thisMonth = request.getMonth();
 
-        Date start = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+        Date startOfThisMonth = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(thisYear + "-" + thisMonth + "-1 00:00:00");
-        Date before;
+        Date startOfNextMonth;
         if (thisMonth == 12){
-            before = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+            startOfNextMonth = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                     .parse((thisYear+1) + "-1-1 00:00:00");
         }
         else{
-            before = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+            startOfNextMonth = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                     .parse(thisYear + "-" + (thisMonth +1) + "-1 00:00:00");
         }
 
-        Date lastDateThisMonth = new Date(before.getTime() - TimeUnit.SECONDS.toMillis(1));
+        Date endOfThisMonth = new Date(startOfNextMonth.getTime() - TimeUnit.SECONDS.toMillis(1));
 
-        return eventRepository.findByDateBetweenOrderByDateAsc(start, before)
+        return eventRepository.findByDateBetweenOrderByDateAsc(startOfThisMonth, startOfNextMonth)
                 .switchIfEmpty(Flux.empty())
                 .collectList()
-                .map(events -> createResponse(events, lastDateThisMonth));
+                .map(events -> createResponse(events, endOfThisMonth));
     }
 
     @SneakyThrows
-    private List<CalendarResponse> createResponse(List<Event> events, Date lastDate) {
+    private List<CalendarResponse> createResponse(List<Event> events, Date endOfThisMonth) {
         List<CalendarResponse> responses = new ArrayList<>();
 
-        int month = lastDate.getMonth()+1;
-        int year = lastDate.getYear()+1900;
+        int month = endOfThisMonth.getMonth()+1;
+        int year = endOfThisMonth.getYear()+1900;
 
-        for (int i = 1; i <= lastDate.getDate(); i++) {
+        for (int i = 1; i <= endOfThisMonth.getDate(); i++) {
             Date thisDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(year + "-" + month + "-" + i);
             CalendarResponse response = CalendarResponse.builder()
                     .date(thisDate)
@@ -73,22 +73,12 @@ public class GetCalendarCommandImpl implements GetCalendarCommand {
         }
 
         if (!events.isEmpty()){
-            for (int i = 0; i < events.size(); i++) {
-                Event event = events.get(i);
-                CalendarResponse thisDateData = responses.get(event.getDate().getDate()-1);
-                if (thisDateData.getDate().equals(event.getDate())){
-                    EventDetailResponse detail = EventDetailResponse.builder().name(event.getTitle()).build();
-                    thisDateData.getEvents().add(detail);
-                    if (event.getStatus().equals(CalendarStatus.WORKING)){
-                        thisDateData.setStatus(CalendarStatus.HOLIDAY);
-                    }
-                }
-                else{
-                    responses.get(event.getDate().getDate()-1)
-                            .getEvents()
-                            .add(EventDetailResponse.builder()
-                                .name(events.get(i).getTitle())
-                                .build());
+            for (Event event : events) {
+                CalendarResponse thisDateData = responses.get(event.getDate().getDate() - 1);
+                EventDetailResponse detail = EventDetailResponse.builder().name(event.getTitle()).build();
+                thisDateData.getEvents().add(detail);
+                if (thisDateData.getStatus().equals(CalendarStatus.WORKING)) {
+                    thisDateData.setStatus(event.getStatus());
                 }
             }
         }

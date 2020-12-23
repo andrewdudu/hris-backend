@@ -33,18 +33,20 @@ public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
         PagingResponse<AnnouncementResponse> response = new PagingResponse<>();
 
         Date currentDate = dateUtil.getNewDate();
-        int year = currentDate.getYear() + 1899;
 
-        Date lastTimeOfLastYear = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
-                .parse(year + "-12-31" + " 23:59:59");
+        String dateString = (currentDate.getYear() + 1900) + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate();
 
-        return eventRepository.findAllByDateAfterOrderByDateAsc(lastTimeOfLastYear, pageable)
+        String startTime = " 00:00:00";
+        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                .parse(dateString + startTime);
+
+        return eventRepository.findAllByDateAfterOrderByDateAsc(startOfDate, pageable)
                 .switchIfEmpty(Flux.empty())
                 .map(events -> events.createResponse(events, new AnnouncementResponse()))
                 .collectList()
                 .flatMap(announcementResponseList -> {
                     response.setData(announcementResponseList);
-                    return eventRepository.countAllByDateAfter(lastTimeOfLastYear);
+                    return eventRepository.countAllByDateAfter(startOfDate);
                 })
                 .map(total -> response.setPagingDetail(request, Math.toIntExact(total)));
     }

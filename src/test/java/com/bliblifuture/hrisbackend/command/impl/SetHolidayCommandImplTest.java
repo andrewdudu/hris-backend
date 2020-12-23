@@ -109,6 +109,113 @@ public class SetHolidayCommandImplTest {
         Mockito.verify(eventRepository, Mockito.times(1)).save(event);
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(uuidUtil, Mockito.times(1)).getNewID();
+    }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void test_execute_statusError() throws ParseException {
+        User user = User.builder()
+                .username("username")
+                .employeeId("ID-123")
+                .build();
+
+        Date date = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-3");
+        String title = "Work day";
+        String desc = "Work";
+        SetHolidayRequest request = SetHolidayRequest.builder()
+                .name(title)
+                .notes(desc)
+                .date("2020-12-3")
+                .build();
+        request.setRequester(user.getUsername());
+
+        Mockito.when(userRepository.findByUsername(user.getUsername()))
+                .thenReturn(Mono.just(user));
+
+        Mockito.when(eventRepository.findByTitleAndDate(title, date))
+                .thenReturn(Mono.empty());
+
+        String id = "UUID";
+        Mockito.when(uuidUtil.getNewID()).thenReturn(id);
+
+        Date date2 = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-1");
+        Mockito.when(dateUtil.getNewDate()).thenReturn(date2);
+
+        Event event = Event.builder()
+                .title(title)
+                .date(date)
+                .status(CalendarStatus.WORKING)
+                .description(desc)
+                .build();
+        event.setId(id);
+        event.setCreatedDate(date2);
+        event.setCreatedBy(user.getUsername());
+
+        Mockito.when(eventRepository.save(event)).thenReturn(Mono.just(event));
+
+        EventDetailResponse expected = EventDetailResponse.builder()
+                .name(title)
+                .notes(desc)
+                .status(CalendarStatus.WORKING)
+                .build();
+
+        setHolidayCommand.execute(request).subscribe();
+
+        Mockito.verify(eventRepository, Mockito.times(0)).findByTitleAndDate(title, date);
+        Mockito.verify(userRepository, Mockito.times(0)).findByUsername(user.getUsername());
+        Mockito.verify(eventRepository, Mockito.times(0)).save(event);
+        Mockito.verify(dateUtil, Mockito.times(0)).getNewDate();
+        Mockito.verify(uuidUtil, Mockito.times(0)).getNewID();
+    }
+
+    @Test(expected = Exception.class)
+    public void test_execute_eventAlreadyExists() throws ParseException {
+        User user = User.builder()
+                .username("username")
+                .employeeId("ID-123")
+                .build();
+
+        Date date = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-3");
+        String title = "Work day";
+        String desc = "Work";
+        SetHolidayRequest request = SetHolidayRequest.builder()
+                .name(title)
+                .notes(desc)
+                .date("2020-12-3")
+                .status(CalendarStatus.WORKING)
+                .build();
+        request.setRequester(user.getUsername());
+
+        Mockito.when(userRepository.findByUsername(user.getUsername()))
+                .thenReturn(Mono.just(user));
+
+        String id = "UUID";
+        Date date2 = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-3");
+
+        Event event = Event.builder()
+                .title(title)
+                .date(date)
+                .status(CalendarStatus.WORKING)
+                .description(desc)
+                .build();
+        event.setId(id);
+        event.setCreatedDate(date2);
+
+        event.setCreatedBy(user.getUsername());
+        Mockito.when(eventRepository.findByTitleAndDate(title, date))
+                .thenReturn(Mono.just(event));
+
+        Mockito.when(uuidUtil.getNewID()).thenReturn(id);
+
+        Mockito.when(dateUtil.getNewDate()).thenReturn(date2);
+
+        Mockito.when(eventRepository.save(event)).thenReturn(Mono.just(event));
+
+        setHolidayCommand.execute(request).subscribe();
+
+        Mockito.verify(eventRepository, Mockito.times(1)).findByTitleAndDate(title, date);
+        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(eventRepository, Mockito.times(0)).save(event);
+        Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
+        Mockito.verify(uuidUtil, Mockito.times(1)).getNewID();
     }
 }
