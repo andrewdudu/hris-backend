@@ -4,6 +4,8 @@ import com.bliblifuture.hrisbackend.command.GetIncomingRequestCommand;
 import com.bliblifuture.hrisbackend.command.impl.helper.RequestResponseHelper;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
+import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
+import com.bliblifuture.hrisbackend.model.entity.Department;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.GetIncomingRequest;
@@ -13,7 +15,9 @@ import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
 import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
+import com.bliblifuture.hrisbackend.repository.DepartmentRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
+import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,14 +56,44 @@ public class GetIncomingRequestsCommandImplTests {
     private RequestRepository requestRepository;
 
     @MockBean
+    private DepartmentRepository departmentRepository;
+
+    @MockBean
     private RequestResponseHelper requestResponseHelper;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @Test
     public void test_execute() throws ParseException {
-        User user1 = User.builder().employeeId("id123").username("username1").build();
-        User user2 = User.builder().employeeId("id456").username("username2").build();
+        User admin = User.builder()
+                .employeeId("id123")
+                .username("username1")
+                .roles(Arrays.asList(UserRole.EMPLOYEE, UserRole.ADMIN))
+                .build();
 
         String type = "REQUESTED";
+        String depCode = "DEP-1";
+
+        GetIncomingRequest request = GetIncomingRequest.builder()
+                .type(type)
+                .department(depCode)
+                .build();
+        request.setRequester(admin.getUsername());
+
+        Mockito.when(userRepository.findByUsername(request.getRequester()))
+                .thenReturn(Mono.just(admin));
+
+        Department department = Department.builder()
+                .name("InfoTech")
+                .code(depCode)
+                .build();
+
+        Mockito.when(departmentRepository.findByCode(request.getDepartment()))
+                .thenReturn(Mono.just(department));
+
+        User user1 = User.builder().employeeId("id123").username("username1").build();
+        User user2 = User.builder().employeeId("id456").username("username2").build();
 
         Date start = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-10-20 08:15:00");
         Date end = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-10-20 17:20:00");
@@ -91,18 +125,8 @@ public class GetIncomingRequestsCommandImplTests {
                 .build();
         request2.setCreatedDate(date3);
 
-        Mockito.when(requestRepository.findByStatusOrderByCreatedDateDesc(RequestStatus.valueOf(type)))
+        Mockito.when(requestRepository.findByDepartmentIdAndStatusOrderByCreatedDateDesc(department.getId(), RequestStatus.valueOf(type)))
                 .thenReturn(Flux.just(request1, request2));
-
-        UserResponse userResponse1 = UserResponse.builder()
-                .username(user1.getUsername())
-                .employeeId(user1.getEmployeeId())
-                .build();
-
-        UserResponse userResponse2 = UserResponse.builder()
-                .username(user2.getUsername())
-                .employeeId(user2.getEmployeeId())
-                .build();
 
         TimeResponse date = TimeResponse.builder()
                 .start(start)
@@ -144,9 +168,6 @@ public class GetIncomingRequestsCommandImplTests {
 
         List<IncomingRequestResponse> expected = Arrays.asList(data1, data2);
 
-        GetIncomingRequest request = GetIncomingRequest.builder().type(type).build();
-        request.setRequester("admin");
-
         getIncomingRequestCommand.execute(request)
                 .subscribe(response -> {
                     for (int i = 0; i < expected.size(); i++) {
@@ -156,7 +177,9 @@ public class GetIncomingRequestsCommandImplTests {
 
         Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(request1);
         Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(request2);
-        Mockito.verify(requestRepository, Mockito.times(1)).findByStatusOrderByCreatedDateDesc(RequestStatus.valueOf(type));
+        Mockito.verify(departmentRepository, Mockito.times(1)).findByCode(request.getDepartment());
+        Mockito.verify(requestRepository, Mockito.times(1))
+                .findByDepartmentIdAndStatusOrderByCreatedDateDesc(department.getId(), RequestStatus.valueOf(type));
     }
 
 }

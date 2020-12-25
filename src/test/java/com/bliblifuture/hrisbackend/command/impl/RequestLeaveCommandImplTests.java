@@ -2,16 +2,13 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.RequestLeaveCommand;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
-import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.*;
+import com.bliblifuture.hrisbackend.model.entity.Employee;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
-import com.bliblifuture.hrisbackend.repository.LeaveRepository;
-import com.bliblifuture.hrisbackend.repository.RequestRepository;
-import com.bliblifuture.hrisbackend.repository.UserRepository;
+import com.bliblifuture.hrisbackend.repository.*;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -54,7 +51,13 @@ public class RequestLeaveCommandImplTests {
     private RequestRepository requestRepository;
 
     @MockBean
+    private EmployeeRepository employeeRepository;
+
+    @MockBean
     private LeaveRepository leaveRepository;
+
+    @MockBean
+    private EventRepository eventRepository;
 
     @MockBean
     private DateUtil dateUtil;
@@ -87,27 +90,47 @@ public class RequestLeaveCommandImplTests {
                 .build();
         request.setRequester(user.getUsername());
 
-        String pathFile1 = FileConstant.REQUEST_FILE_BASE_URL + request.getType() + "-" + user.getEmployeeId()
+        String pathFile1 = FileConstant.REQUEST_IMAGE_BASE_URL + request.getType() + "-" + user.getEmployeeId()
                 + "-1-" + currentDate.getTime() + ".webp";
-        String pathFile2 = FileConstant.REQUEST_FILE_BASE_URL + request.getType() + "-" + user.getEmployeeId()
-                + "-2-" + currentDate.getTime() + ".webp";;
+        String pathFile2 = FileConstant.REQUEST_IMAGE_BASE_URL + request.getType() + "-" + user.getEmployeeId()
+                + "-2-" + currentDate.getTime() + ".webp";
 
-        Request entity = Request.builder()
+        Mockito.when(userRepository.findByUsername(user.getUsername()))
+                .thenReturn(Mono.just(user));
+
+        Employee employee = Employee.builder()
+                .name("Employee 1")
+                .gender(Gender.MALE)
+                .depId("DEP-1")
+                .managerUsername("manager")
+                .build();
+
+        Mockito.when(employeeRepository.findById(user.getEmployeeId()))
+                .thenReturn(Mono.just(employee));
+
+        Mockito.when(dateUtil.getNewDate())
+                .thenReturn(currentDate);
+
+        Mockito.when(eventRepository.findByDateAndStatus(date1, CalendarStatus.HOLIDAY))
+                .thenReturn(Mono.empty());
+
+        Mockito.when(eventRepository.findByDateAndStatus(date2, CalendarStatus.HOLIDAY))
+                .thenReturn(Mono.empty());
+
+        Request req = Request.builder()
                 .files(Arrays.asList(pathFile1, pathFile2))
                 .dates(Arrays.asList(date1, date2))
                 .type(RequestType.SPECIAL_LEAVE)
                 .specialLeaveType(SpecialLeaveType.SICK_WITH_MEDICAL_LETTER)
                 .status(RequestStatus.REQUESTED)
                 .employeeId(user.getEmployeeId())
+                .departmentId(employee.getDepId())
+                .manager(employee.getManagerUsername())
                 .build();
-        entity.setId(id);
+        req.setId(id);
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
-                .thenReturn(Mono.just(user));
-        Mockito.when(dateUtil.getNewDate())
-                .thenReturn(currentDate);
-        Mockito.when(requestRepository.save(Mockito.any()))
-                .thenReturn(Mono.just(entity));
+        Mockito.when(requestRepository.save(req))
+                .thenReturn(Mono.just(req));
 
         RequestLeaveResponse expected = RequestLeaveResponse.builder()
                 .dates(Arrays.asList(dateString1, dateString2))
@@ -127,7 +150,10 @@ public class RequestLeaveCommandImplTests {
 
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(requestRepository, Mockito.times(1)).save(entity);
+        Mockito.verify(requestRepository, Mockito.times(1)).save(req);
+        Mockito.verify(eventRepository, Mockito.times(1)).findByDateAndStatus(date1, CalendarStatus.HOLIDAY);
+        Mockito.verify(eventRepository, Mockito.times(1)).findByDateAndStatus(date2, CalendarStatus.HOLIDAY);
+        Mockito.verify(employeeRepository, Mockito.times(1)).findById(user.getEmployeeId());
     }
 
 }

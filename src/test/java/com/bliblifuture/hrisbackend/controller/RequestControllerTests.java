@@ -256,8 +256,11 @@ public class RequestControllerTests {
 
         List<IncomingRequestResponse> responseData = Arrays.asList(data1, data2);
 
-        GetIncomingRequest request = GetIncomingRequest.builder().type(type).build();
-        request.setRequester(user.getUsername());
+        GetIncomingRequest request = GetIncomingRequest.builder()
+                .type(type)
+                .department(department)
+                .build();
+        request.setRequester(principal.getName());
 
         Mockito.when(commandExecutor.execute(GetIncomingRequestCommand.class, request))
                 .thenReturn(Mono.just(responseData));

@@ -6,6 +6,7 @@ import com.bliblifuture.hrisbackend.constant.enumerator.AttendanceLocationType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
+import com.bliblifuture.hrisbackend.model.entity.DailyAttendanceReport;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.BaseRequest;
@@ -14,9 +15,7 @@ import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
 import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
-import com.bliblifuture.hrisbackend.repository.AttendanceRepository;
-import com.bliblifuture.hrisbackend.repository.LeaveRepository;
-import com.bliblifuture.hrisbackend.repository.RequestRepository;
+import com.bliblifuture.hrisbackend.repository.*;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import com.bliblifuture.hrisbackend.util.UuidUtil;
 import org.junit.Assert;
@@ -63,6 +62,12 @@ public class ApproveRequestCommandImplTest {
     private RequestResponseHelper requestResponseHelper;
 
     @MockBean
+    private EmployeeLeaveSummaryRepository employeeLeaveSummaryRepository;
+
+    @MockBean
+    private DailyAttendanceReportRepository dailyAttendanceReportRepository;
+
+    @MockBean
     private DateUtil dateUtil;
 
     @MockBean
@@ -78,6 +83,8 @@ public class ApproveRequestCommandImplTest {
 
         Date date1 = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-10-20");
         Date date2 = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-10-21 07:50:00");
+
+        Date currentDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-10-20 10:00:00");
 
         String notes = "notes";
         Request request = Request.builder()
@@ -111,31 +118,56 @@ public class ApproveRequestCommandImplTest {
                 .attendance(attendanceResponse)
                 .build();
 
-        Date currentDate = new Date();
+        String dateString = (currentDate.getYear() + 1900) + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate();
+        String startTime = " 00:00:00";
+        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                .parse(dateString + startTime);
 
-        Request newRequest = new Request();
-        BeanUtils.copyProperties(request, newRequest);
-        newRequest.setStatus(RequestStatus.APPROVED);
-        newRequest.setUpdatedDate(currentDate);
-        newRequest.setUpdatedBy(admin.getUsername());
-        newRequest.setApprovedBy(admin.getUsername());
+        Mockito.when(dailyAttendanceReportRepository.findByDate(startOfDate))
+                .thenReturn(Mono.empty());
 
-        Mockito.when(requestRepository.save(newRequest)).thenReturn(Mono.just(newRequest));
+        DailyAttendanceReport report = DailyAttendanceReport.builder()
+                .date(startOfDate)
+                .working(1)
+                .absent(0)
+                .build();
+        report.setCreatedBy("SYSTEM");
+        report.setCreatedDate(currentDate);
+        report.setUpdatedBy("SYSTEM");
+        report.setUpdatedDate(currentDate);
+        report.setId("DAR" + report.getDate().getTime());
+
+        Mockito.when(dailyAttendanceReportRepository.save(report))
+                .thenReturn(Mono.just(report));
+
+        Request approvedRequest = new Request();
+        BeanUtils.copyProperties(request, approvedRequest);
+        approvedRequest.setStatus(RequestStatus.APPROVED);
+        approvedRequest.setUpdatedDate(currentDate);
+        approvedRequest.setUpdatedBy(admin.getUsername());
+        approvedRequest.setApprovedBy(admin.getUsername());
+
+        Mockito.when(requestRepository.save(approvedRequest))
+                .thenReturn(Mono.just(approvedRequest));
+
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
 
         String uuid = "ATT123";
         Mockito.when(uuidUtil.getNewID()).thenReturn(uuid);
 
         Attendance attendance = Attendance.builder()
-                .startTime(newRequest.getClockIn())
-                .endTime(newRequest.getClockOut())
+                .startTime(approvedRequest.getClockIn())
+                .endTime(approvedRequest.getClockOut())
                 .locationType(AttendanceLocationType.REQUESTED)
-                .date(newRequest.getDates().get(0))
+                .date(approvedRequest.getDates().get(0))
+                .employeeId(user.getEmployeeId())
                 .build();
-        attendance.setCreatedBy(newRequest.getApprovedBy());
+        attendance.setCreatedBy(approvedRequest.getApprovedBy());
         attendance.setCreatedDate(currentDate);
         attendance.setId(uuid);
-        Mockito.when(attendanceRepository.save(attendance)).thenReturn(Mono.just(attendance));
+
+        Mockito.when(attendanceRepository.save(attendance))
+                .thenReturn(Mono.just(attendance));
 
         IncomingRequestResponse expected = IncomingRequestResponse.builder()
                 .user(userResponse)
@@ -145,7 +177,8 @@ public class ApproveRequestCommandImplTest {
                 .detail(detail)
                 .approvedby(admin.getUsername())
                 .build();
-        Mockito.when(requestResponseHelper.createResponse(newRequest)).thenReturn(Mono.just(expected));
+        Mockito.when(requestResponseHelper.createResponse(approvedRequest))
+                .thenReturn(Mono.just(expected));
 
         BaseRequest reqData = new BaseRequest();
         reqData.setId(request.getId());
@@ -157,11 +190,14 @@ public class ApproveRequestCommandImplTest {
                 });
 
         Mockito.verify(requestRepository, Mockito.times(1)).findById(request.getId());
-        Mockito.verify(requestRepository, Mockito.times(1)).save(newRequest);
-        Mockito.verify(dateUtil, Mockito.times(2)).getNewDate();
+        Mockito.verify(requestRepository, Mockito.times(1)).save(approvedRequest);
+        Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(uuidUtil, Mockito.times(1)).getNewID();
         Mockito.verify(attendanceRepository, Mockito.times(1)).save(attendance);
-        Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(newRequest);
+        Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(approvedRequest);
+        Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).findByDate(startOfDate);
+        Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).save(report);
+
     }
 
 }

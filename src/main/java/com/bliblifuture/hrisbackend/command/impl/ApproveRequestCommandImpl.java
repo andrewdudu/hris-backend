@@ -52,26 +52,32 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
     @SneakyThrows
     @Override
     public Mono<IncomingRequestResponse> execute(BaseRequest data) {
+        Date currentDate = dateUtil.getNewDate();
         return requestRepository.findById(data.getId())
                 .doOnSuccess(this::checkValidity)
-                .map(request -> approvedRequest(data, request))
-                .flatMap(this::saveApprovedData)
+                .map(request -> approvedRequest(data, request, currentDate))
+                .flatMap(request -> saveApprovedData(request, currentDate))
                 .flatMap(request -> requestRepository.save(request))
                 .flatMap(request -> requestResponseHelper.createResponse(request));
     }
 
-    private Mono<Request> saveApprovedData(Request request){
+    @SneakyThrows
+    private Mono<Request> saveApprovedData(Request request, Date currentDate){
         LeaveType leaveType;
 
-        Date currentDate = dateUtil.getNewDate();
+        String dateString = (currentDate.getYear() + 1900) + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate();
+        String startTime = " 00:00:00";
+        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                .parse(dateString + startTime);
+
         switch (request.getType()){
             case ATTENDANCE:
-                return Mono.just(createAttendance(request))
+                return Mono.just(createAttendance(request, currentDate))
                         .flatMap(attendance -> attendanceRepository.save(attendance))
-                        .flatMap(attendance -> updateAttendanceReport(attendance.getDate()))
+                        .flatMap(attendance -> updateAttendanceReport(startOfDate, currentDate))
                         .map(report -> request);
             case EXTEND_ANNUAL_LEAVE:
-                return approveExtendAnnualLeave(request);
+                return approveExtendAnnualLeave(request, currentDate);
             case SUBSTITUTE_LEAVE:
                 leaveType = LeaveType.substitute;
                 return applyLeave(request, leaveType, currentDate);
@@ -98,36 +104,26 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
                 .flatMap(leave -> updateLeaveSummaryAndAttendanceReport(request, currentDate));
     }
 
+    @SneakyThrows
     private Mono<Request> updateLeaveSummaryAndAttendanceReport(Request request, Date currentDate) {
         String year = String.valueOf(currentDate.getYear() + 1900);
-        String dateString = (currentDate.getYear() + 1900) + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate();
-
-        String startTime = " 00:00:00";
-        Date startOfDate;
-        try {
-            startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
-                    .parse(dateString + startTime);
-        }
-        catch (Exception e){
-            throw new RuntimeException("PARSING_FAILED");
-        }
 
         return employeeLeaveSummaryRepository.findByYearAndEmployeeId(year, request.getEmployeeId())
-                .switchIfEmpty(Mono.just(createLeaveSummary(request.getEmployeeId(), year)))
+                .switchIfEmpty(Mono.just(createLeaveSummary(request.getEmployeeId(), year, currentDate)))
                 .map(employeeLeaveSummary -> saveLeaveSummary(employeeLeaveSummary, request))
                 .flatMap(employeeLeaveSummary -> employeeLeaveSummaryRepository.save(employeeLeaveSummary))
-                .flatMap(employeeLeaveSummary -> applyDailyAttendanceReport(request.getDates()))
+                .flatMap(employeeLeaveSummary -> applyDailyAttendanceReport(request.getDates(), currentDate))
                 .map(reports -> request);
     }
 
-    private Mono<List<DailyAttendanceReport>> applyDailyAttendanceReport(List<Date> dates) {
+    private Mono<List<DailyAttendanceReport>> applyDailyAttendanceReport(List<Date> dates, Date currentDate) {
         return Flux.fromIterable(dates)
-                .flatMap(this::updateAttendanceReport)
+                .flatMap(date -> updateAttendanceReport(date, currentDate))
                 .flatMap(report -> dailyAttendanceReportRepository.save(report))
                 .collectList();
     }
 
-    private Mono<DailyAttendanceReport> updateAttendanceReport(Date startOfDate) {
+    private Mono<DailyAttendanceReport> updateAttendanceReport(Date startOfDate, Date currentDate) {
         return dailyAttendanceReportRepository.findByDate(startOfDate)
                 .switchIfEmpty(Mono.just(
                         DailyAttendanceReport.builder()
@@ -136,20 +132,19 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
                                 .absent(0)
                                 .build()
                 ))
-                .map(this::createOrUpdateAttendanceReport)
+                .map(report -> createOrUpdateAttendanceReport(report, currentDate))
                 .flatMap(report -> dailyAttendanceReportRepository.save(report));
     }
 
-    private DailyAttendanceReport createOrUpdateAttendanceReport(DailyAttendanceReport report) {
+    private DailyAttendanceReport createOrUpdateAttendanceReport(DailyAttendanceReport report, Date currentDate) {
         if (report.getId() == null || report.getId().isEmpty()){
-            Date date = dateUtil.getNewDate();
             report.setCreatedBy("SYSTEM");
-            report.setCreatedDate(date);
+            report.setCreatedDate(currentDate);
             report.setUpdatedBy("SYSTEM");
-            report.setUpdatedDate(date);
+            report.setUpdatedDate(currentDate);
             report.setId("DAR" + report.getDate().getTime());
         }
-        report.setAbsent(report.getAbsent() + 1);
+        report.setWorking(report.getWorking() + 1);
         return report;
     }
 
@@ -208,7 +203,7 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
         return leaveSummary;
     }
 
-    private EmployeeLeaveSummary createLeaveSummary(String employeeId, String year) {
+    private EmployeeLeaveSummary createLeaveSummary(String employeeId, String year, Date currentDate) {
         EmployeeLeaveSummary report = EmployeeLeaveSummary.builder()
                 .year(year)
                 .employeeId(employeeId)
@@ -216,9 +211,8 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
 
         report.setCreatedBy("SYSTEM");
         report.setUpdatedBy("SYSTEM");
-        Date date = dateUtil.getNewDate();
-        report.setCreatedDate(date);
-        report.setUpdatedDate(date);
+        report.setCreatedDate(currentDate);
+        report.setUpdatedDate(currentDate);
 
         return report;
     }
@@ -236,7 +230,7 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
         return leave;
     }
 
-    private Attendance createAttendance(Request request) {
+    private Attendance createAttendance(Request request, Date currentDate) {
         Attendance attendance = Attendance.builder()
                 .startTime(request.getClockIn())
                 .endTime(request.getClockOut())
@@ -245,14 +239,13 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
                 .employeeId(request.getEmployeeId())
                 .build();
         attendance.setCreatedBy(request.getApprovedBy());
-        attendance.setCreatedDate(dateUtil.getNewDate());
+        attendance.setCreatedDate(currentDate);
         attendance.setId(uuidUtil.getNewID());
         return attendance;
     }
 
     @SneakyThrows
-    private Mono<Request> approveExtendAnnualLeave(Request request) {
-        Date currentDate = dateUtil.getNewDate();
+    private Mono<Request> approveExtendAnnualLeave(Request request, Date currentDate) {
         Date newExpDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse((currentDate.getYear()+1901) + "-3-1 00:00:00");
         return leaveRepository.findFirstByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(request.getEmployeeId(), LeaveType.annual, currentDate)
                 .doOnSuccess(this::checkQuota)
@@ -277,11 +270,11 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
         }
     }
 
-    private Request approvedRequest(BaseRequest data, Request request) {
+    private Request approvedRequest(BaseRequest data, Request request, Date currentDate) {
         request.setStatus(RequestStatus.APPROVED);
         request.setApprovedBy(data.getRequester());
         request.setUpdatedBy(data.getRequester());
-        request.setUpdatedDate(dateUtil.getNewDate());
+        request.setUpdatedDate(currentDate);
 
         return request;
     }
