@@ -1,14 +1,19 @@
 package com.bliblifuture.hrisbackend.controller;
 
 import com.blibli.oss.command.CommandExecutor;
+import com.blibli.oss.common.paging.Paging;
 import com.blibli.oss.common.response.Response;
+import com.bliblifuture.hrisbackend.command.GetAnnouncementCommand;
 import com.bliblifuture.hrisbackend.command.GetCalendarCommand;
 import com.bliblifuture.hrisbackend.command.SetHolidayCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.GetCalendarRequest;
+import com.bliblifuture.hrisbackend.model.request.PagingRequest;
 import com.bliblifuture.hrisbackend.model.request.SetHolidayRequest;
+import com.bliblifuture.hrisbackend.model.response.AnnouncementResponse;
 import com.bliblifuture.hrisbackend.model.response.CalendarResponse;
+import com.bliblifuture.hrisbackend.model.response.PagingResponse;
 import com.bliblifuture.hrisbackend.model.response.util.EventDetailResponse;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
@@ -57,6 +62,58 @@ public class EventControllerTests {
                 return user.getUsername();
             }
         };
+    }
+
+    @Test
+    public void getAnnouncementsTest() throws ParseException {
+        int page = 0;
+        int size = 10;
+        PagingRequest request = new PagingRequest(page, size);
+
+        AnnouncementResponse announcementResponse1 = AnnouncementResponse.builder()
+                .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-12"))
+                .description("Flash Sale")
+                .status(CalendarStatus.HOLIDAY)
+                .title("Holiday")
+                .build();
+        AnnouncementResponse announcementResponse2 = AnnouncementResponse.builder()
+                .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-14"))
+                .description("CEO's Bday")
+                .status(CalendarStatus.WORKING)
+                .title("CEO's Birthday")
+                .build();
+
+        List<AnnouncementResponse> data = Arrays.asList(announcementResponse1, announcementResponse2);
+
+        Paging paging = Paging.builder()
+                .itemPerPage(size)
+                .page(page)
+                .totalItem(data.size())
+                .totalPage(1)
+                .build();
+
+        PagingResponse<AnnouncementResponse> pagingResponse = new PagingResponse<>();
+        pagingResponse.setPaging(paging);
+        pagingResponse.setData(data);
+
+        Mockito.when(commandExecutor.execute(GetAnnouncementCommand.class, request))
+                .thenReturn(Mono.just(pagingResponse));
+
+        Response<List<AnnouncementResponse>> expected = new Response<>();
+        expected.setData(data);
+        expected.setCode(HttpStatus.OK.value());
+        expected.setStatus(HttpStatus.OK.name());
+
+        eventController.getAnnouncements(page, size)
+                .subscribe(response -> {
+                    Assert.assertEquals(expected.getCode(), response.getCode());
+                    Assert.assertEquals(expected.getStatus(), response.getStatus());
+                    for (int i = 0; i < expected.getData().size(); i++) {
+                        Assert.assertEquals(expected.getData().get(i), response.getData().get(i));
+                    }
+                });
+
+        Mockito.verify(commandExecutor, Mockito.times(1)).execute(GetAnnouncementCommand.class, request);
     }
 
     @Test

@@ -1,11 +1,15 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.RequestAttendanceCommand;
+import com.bliblifuture.hrisbackend.constant.enumerator.Gender;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
+import com.bliblifuture.hrisbackend.model.entity.Employee;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
 import com.bliblifuture.hrisbackend.model.response.AttendanceRequestResponse;
+import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
@@ -43,6 +47,9 @@ public class RequestAttendanceCommandImplTests {
     private UserRepository userRepository;
 
     @MockBean
+    private EmployeeRepository employeeRepository;
+
+    @MockBean
     private RequestRepository requestRepository;
 
     @MockBean
@@ -50,7 +57,7 @@ public class RequestAttendanceCommandImplTests {
 
     @Test
     public void test_execute() throws ParseException {
-        User user = User.builder().employeeId("id123").username("username").build();
+        User user = User.builder().employeeId("EMP-123").username("username").build();
 
         String startTime = "08:00";
         String endTime = "17:00";
@@ -68,24 +75,40 @@ public class RequestAttendanceCommandImplTests {
                 .build();
         request.setRequester(user.getUsername());
 
+        Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
+        Mockito.when(userRepository.findByUsername(user.getUsername()))
+                .thenReturn(Mono.just(user));
+
+        Employee employee = Employee.builder()
+                .managerUsername("manager")
+                .name("Employee 1")
+                .gender(Gender.MALE)
+                .depId("DEP-1")
+                .build();
+        employee.setId(user.getEmployeeId());
+
+        Mockito.when(employeeRepository.findById(user.getEmployeeId()))
+                .thenReturn(Mono.just(employee));
+
         Date clockIn = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse(dateString + " " + startTime + ":00");
         Date clockOut = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse(dateString + " " + endTime + ":00");
         Date date = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(dateString);
-        Request entity = Request.builder()
+        Request req = Request.builder()
                 .clockIn(clockIn)
                 .clockOut(clockOut)
                 .dates(Collections.singletonList(date))
                 .notes(notes)
                 .status(RequestStatus.REQUESTED)
+                .type(RequestType.ATTENDANCE)
                 .employeeId(user.getEmployeeId())
+                .manager(employee.getManagerUsername())
+                .departmentId(employee.getDepId())
                 .build();
-        entity.setId(id);
+        req.setId(id);
+        req.setCreatedBy(user.getCreatedBy());
 
-        Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
-                .thenReturn(Mono.just(user));
-        Mockito.when(requestRepository.save(entity))
-                .thenReturn(Mono.just(entity));
+        Mockito.when(requestRepository.save(req))
+                .thenReturn(Mono.just(req));
 
         AttendanceRequestResponse expected = AttendanceRequestResponse.builder()
                 .ClockIn(startTime)
@@ -106,7 +129,8 @@ public class RequestAttendanceCommandImplTests {
 
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(requestRepository, Mockito.times(1)).save(entity);
+        Mockito.verify(requestRepository, Mockito.times(1)).save(req);
+        Mockito.verify(employeeRepository, Mockito.times(1)).findById(user.getEmployeeId());
     }
 
 }

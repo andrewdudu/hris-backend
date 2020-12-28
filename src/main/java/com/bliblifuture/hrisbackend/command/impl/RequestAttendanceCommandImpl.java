@@ -11,6 +11,7 @@ import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -64,20 +65,16 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
         return response;
     }
 
+    @SneakyThrows
     private Request createRequestEntity(AttendanceRequestData data, User user){
         Date clockIn, clockOut, date;
-        try {
-            clockIn = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
-                    .parse(data.getDate() + " " + data.getClockIn() + ":00");
-            clockOut = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
-                    .parse(data.getDate() + " " + data.getClockOut() + ":00");
-            date = new SimpleDateFormat(DateUtil.DATE_FORMAT)
-                    .parse(data.getDate());
-        }
-        catch (Exception e){
-            String msg = "message=INTERNAL_ERROR";
-            throw new RuntimeException(msg);
-        }
+        clockIn = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                .parse(data.getDate() + " " + data.getClockIn() + ":00");
+        clockOut = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                .parse(data.getDate() + " " + data.getClockOut() + ":00");
+        date = new SimpleDateFormat(DateUtil.DATE_FORMAT)
+                .parse(data.getDate());
+
         Request request = Request.builder()
                 .clockIn(clockIn)
                 .clockOut(clockOut)

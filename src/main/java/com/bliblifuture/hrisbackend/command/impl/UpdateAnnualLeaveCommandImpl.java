@@ -45,7 +45,7 @@ public class UpdateAnnualLeaveCommandImpl implements UpdateAnnualLeaveCommand {
         Date date = dateUtil.getNewDate();
         Date startOfNextYear = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse((date.getYear()+1901) + "-1-1 00:00:00");
-        return leaveRepository.findFirstByEmployeeIdAndExpDate(user.getEmployeeId(), startOfNextYear)
+        return leaveRepository.findFirstByTypeAndEmployeeIdAndExpDate(LeaveType.annual, user.getEmployeeId(), startOfNextYear)
                 .switchIfEmpty(Mono.just(createLeave(startOfNextYear, user.getEmployeeId(), date)));
     }
 

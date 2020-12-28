@@ -75,10 +75,7 @@ public class GetEmployeesCommandImpl implements GetEmployeesCommand {
                         .collectList();
             }
             return employeeElasticsearchRepository.search("*" + request.getName().toLowerCase() + "*")
-                    .map(employeeIndex -> {
-                        System.out.println("masu");
-                        return employeeIndex;
-                    })
+                    .map(employeeIndex -> employeeIndex)
                     .flatMap(employeeIndex -> employeeRepository.findById(employeeIndex.getId()))
                     .flatMap(this::createResponse)
                     .collectList();

@@ -15,4 +15,8 @@ public class GetIncomingRequest extends BaseRequest {
 
     private String department;
 
+    private int page;
+
+    private int size;
+
 }

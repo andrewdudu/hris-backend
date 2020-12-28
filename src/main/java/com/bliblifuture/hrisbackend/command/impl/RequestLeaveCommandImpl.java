@@ -61,8 +61,10 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
                                     return entity;
                                 }))
                 )
-                .flatMap(leaveRequest -> requestRepository.save(leaveRequest))
-                .map(RequestLeaveCommandImpl::createResponse);
+                .flatMap(leaveRequest -> {
+                    return requestRepository.save(leaveRequest);
+                })
+                .map(this::createResponse);
     }
 
     @SneakyThrows
@@ -102,18 +104,19 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
     }
 
     private Mono<Request> callHelper(LeaveRequestData request, User user) {
-        long currentDateTime = dateUtil.getNewDate().getTime();
+        Date currentDate = dateUtil.getNewDate();
+        long currentDateTime = currentDate.getTime();
         switch (request.getType()){
             case LeaveTypeConstant.ANNUAL_LEAVE:
-                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(user.getEmployeeId(), LeaveType.annual, dateUtil.getNewDate())
+                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(user.getEmployeeId(), LeaveType.annual, currentDate)
                         .collectList()
                         .map(leaves -> new AnnualLeaveRequestHelper().processRequest(request, user, leaves, currentDateTime));
             case LeaveTypeConstant.SUBSTITUTE_LEAVE:
-                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(user.getEmployeeId(), LeaveType.substitute, dateUtil.getNewDate(), 0)
+                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(user.getEmployeeId(), LeaveType.substitute, currentDate, 0)
                         .collectList()
                         .map(leaves -> new SubstituteLeaveRequestHelper().processRequest(request, user, leaves, currentDateTime));
             case LeaveTypeConstant.EXTRA_LEAVE:
-                return leaveRepository.findFirstByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(user.getEmployeeId(), LeaveType.extra, dateUtil.getNewDate())
+                return leaveRepository.findFirstByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(user.getEmployeeId(), LeaveType.extra, currentDate)
                         .map(leave -> new ExtraLeaveRequestHelper().processRequest(request, user, leave, currentDateTime));
             case LeaveTypeConstant.CLOSE_FAMILY_DEATH:
             case LeaveTypeConstant.SICK:
@@ -158,7 +161,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
         }
     }
 
-    private static RequestLeaveResponse createResponse(Request request) {
+    private RequestLeaveResponse createResponse(Request request) {
         List<String> dates = new ArrayList<>();
         for (Date dateString : request.getDates()) {
             String date = new SimpleDateFormat(DateUtil.DATE_FORMAT).format(dateString);

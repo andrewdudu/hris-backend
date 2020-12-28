@@ -1,11 +1,14 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAvailableRequestsCommand;
+import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
 import com.bliblifuture.hrisbackend.model.entity.Employee;
+import com.bliblifuture.hrisbackend.model.entity.Leave;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
+import com.bliblifuture.hrisbackend.repository.LeaveRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
@@ -47,6 +50,9 @@ public class GetAvailableRequestsCommandImplTests {
     private UserRepository userRepository;
 
     @MockBean
+    private LeaveRepository leaveRepository;
+
+    @MockBean
     private DateUtil dateUtil;
 
     @Test
@@ -83,6 +89,21 @@ public class GetAvailableRequestsCommandImplTests {
         Mockito.when(dateUtil.getNewDate())
                 .thenReturn(currentDate);
 
+        Date startOfNextYear = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                .parse("2021-1-1 00:00:00");
+
+        Leave annual = Leave.builder()
+                .employeeId(user.getEmployeeId())
+                .type(LeaveType.annual)
+                .expDate(startOfNextYear)
+                .remaining(10)
+                .used(2)
+                .build();
+        annual.setId("Annual-123");
+
+        Mockito.when(leaveRepository.findFirstByTypeAndEmployeeIdAndExpDate(LeaveType.annual, user.getEmployeeId(), startOfNextYear))
+                .thenReturn(Mono.just(annual));
+
         getAvailableRequestsCommand.execute(user.getUsername())
                 .subscribe(response -> {
                     for (int i = 0; i < expected.size(); i++) {
@@ -93,6 +114,7 @@ public class GetAvailableRequestsCommandImplTests {
         Mockito.verify(employeeRepository, Mockito.times(1)).findByEmail(user.getUsername());
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
+        Mockito.verify(leaveRepository, Mockito.times(1)).findFirstByTypeAndEmployeeIdAndExpDate(LeaveType.annual, user.getEmployeeId(), startOfNextYear);
     }
 
 }

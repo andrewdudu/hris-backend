@@ -1,19 +1,21 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
+import com.blibli.oss.common.paging.Paging;
 import com.bliblifuture.hrisbackend.command.GetIncomingRequestCommand;
 import com.bliblifuture.hrisbackend.command.impl.helper.RequestResponseHelper;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
+import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
+import com.bliblifuture.hrisbackend.model.entity.Department;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.GetIncomingRequest;
-import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
-import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
-import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
-import com.bliblifuture.hrisbackend.model.response.UserResponse;
-import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
+import com.bliblifuture.hrisbackend.model.response.*;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
+import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
+import com.bliblifuture.hrisbackend.repository.DepartmentRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
+import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -52,14 +56,46 @@ public class GetIncomingRequestsCommandImplTests {
     private RequestRepository requestRepository;
 
     @MockBean
+    private DepartmentRepository departmentRepository;
+
+    @MockBean
     private RequestResponseHelper requestResponseHelper;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @Test
     public void test_execute() throws ParseException {
-        User user1 = User.builder().employeeId("id123").username("username1").build();
-        User user2 = User.builder().employeeId("id456").username("username2").build();
+        User admin = User.builder()
+                .employeeId("id123")
+                .username("username1")
+                .roles(Arrays.asList(UserRole.EMPLOYEE, UserRole.ADMIN))
+                .build();
 
         String type = "REQUESTED";
+        String depCode = "DEP-1";
+
+        GetIncomingRequest request = GetIncomingRequest.builder()
+                .type(type)
+                .department(depCode)
+                .page(0)
+                .size(10)
+                .build();
+        request.setRequester(admin.getUsername());
+
+        Mockito.when(userRepository.findByUsername(request.getRequester()))
+                .thenReturn(Mono.just(admin));
+
+        Department department = Department.builder()
+                .name("InfoTech")
+                .code(depCode)
+                .build();
+
+        Mockito.when(departmentRepository.findByCode(request.getDepartment()))
+                .thenReturn(Mono.just(department));
+
+        User user1 = User.builder().employeeId("id123").username("username1").build();
+        User user2 = User.builder().employeeId("id456").username("username2").build();
 
         Date start = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-10-20 08:15:00");
         Date end = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-10-20 17:20:00");
@@ -91,18 +127,9 @@ public class GetIncomingRequestsCommandImplTests {
                 .build();
         request2.setCreatedDate(date3);
 
-        Mockito.when(requestRepository.findByStatusOrderByCreatedDateDesc(RequestStatus.valueOf(type)))
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+        Mockito.when(requestRepository.findByDepartmentIdAndStatusOrderByCreatedDateDesc(department.getId(), RequestStatus.valueOf(type), pageable))
                 .thenReturn(Flux.just(request1, request2));
-
-        UserResponse userResponse1 = UserResponse.builder()
-                .username(user1.getUsername())
-                .employeeId(user1.getEmployeeId())
-                .build();
-
-        UserResponse userResponse2 = UserResponse.builder()
-                .username(user2.getUsername())
-                .employeeId(user2.getEmployeeId())
-                .build();
 
         TimeResponse date = TimeResponse.builder()
                 .start(start)
@@ -139,24 +166,39 @@ public class GetIncomingRequestsCommandImplTests {
                 .date(date3)
                 .build();
 
+        List<IncomingRequestResponse> data = Arrays.asList(data1, data2);
+
         Mockito.when(requestResponseHelper.createResponse(request1)).thenReturn(Mono.just(data1));
         Mockito.when(requestResponseHelper.createResponse(request2)).thenReturn(Mono.just(data2));
 
-        List<IncomingRequestResponse> expected = Arrays.asList(data1, data2);
+        Mockito.when(requestRepository.countByDepartmentIdAndStatus(department.getId(), RequestStatus.valueOf(type)))
+                .thenReturn(Mono.just(2L));
 
-        GetIncomingRequest request = GetIncomingRequest.builder().type(type).build();
-        request.setRequester("admin");
+        Paging paging = Paging.builder()
+                .totalPage(1)
+                .totalItem(2)
+                .page(0)
+                .itemPerPage(10)
+                .build();
+
+        PagingResponse<IncomingRequestResponse> expected = new PagingResponse<>();
+        expected.setData(data);
+        expected.setPaging(paging);
 
         getIncomingRequestCommand.execute(request)
                 .subscribe(response -> {
-                    for (int i = 0; i < expected.size(); i++) {
-                        Assert.assertEquals(expected.get(i), response.get(i));
+                    Assert.assertEquals(response.getPaging(), expected.getPaging());
+                    for (int i = 0; i < expected.getData().size(); i++) {
+                        Assert.assertEquals(expected.getData().get(i), response.getData().get(i));
                     }
                 });
 
         Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(request1);
         Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(request2);
-        Mockito.verify(requestRepository, Mockito.times(1)).findByStatusOrderByCreatedDateDesc(RequestStatus.valueOf(type));
+        Mockito.verify(departmentRepository, Mockito.times(1)).findByCode(request.getDepartment());
+        Mockito.verify(requestRepository, Mockito.times(1))
+                .findByDepartmentIdAndStatusOrderByCreatedDateDesc(department.getId(), RequestStatus.valueOf(type), pageable);
+        Mockito.verify(requestRepository, Mockito.times(1)).countByDepartmentIdAndStatus(department.getId(), RequestStatus.valueOf(type));
     }
 
 }

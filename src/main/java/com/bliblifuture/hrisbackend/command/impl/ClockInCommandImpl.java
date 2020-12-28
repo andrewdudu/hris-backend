@@ -16,6 +16,7 @@ import com.bliblifuture.hrisbackend.repository.DailyAttendanceReportRepository;
 import com.bliblifuture.hrisbackend.repository.OfficeRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
+import com.bliblifuture.hrisbackend.util.UuidUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,6 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class ClockInCommandImpl implements ClockInCommand {
@@ -48,6 +48,9 @@ public class ClockInCommandImpl implements ClockInCommand {
 
     @Autowired
     private DateUtil dateUtil;
+
+    @Autowired
+    private UuidUtil uuidUtil;
 
     @Override
     @SneakyThrows
@@ -72,10 +75,7 @@ public class ClockInCommandImpl implements ClockInCommand {
                                         .build()))
                         .map(report -> createOrUpdateAttendanceReport(report, currentDate))
                         .flatMap(report -> dailyAttendanceReportRepository.save(report))
-                        .map(dailyAttendanceReport -> {
-                            System.out.println(dailyAttendanceReport);
-                            return attendance;
-                        }))
+                        .map(dailyAttendanceReport -> attendance))
                 .map(this::createResponse);
     }
 
@@ -160,7 +160,7 @@ public class ClockInCommandImpl implements ClockInCommand {
                 .startLat(request.getLocation().getLat())
                 .startLon(request.getLocation().getLon())
                 .build();
-        attendance.setId(UUID.randomUUID().toString());
+        attendance.setId(uuidUtil.getNewID());
 
         return attendanceRepository.findFirstByEmployeeIdAndDate(user.getEmployeeId(), startOfDate)
                 .doOnSuccess(this::checkIfExists)
@@ -175,14 +175,13 @@ public class ClockInCommandImpl implements ClockInCommand {
     }
 
     private DailyAttendanceReport createOrUpdateAttendanceReport(DailyAttendanceReport report, Date date) {
-        System.out.println(report.getId());
         if (report.getId() == null || report.getId().isEmpty()){
             report.setCreatedBy("SYSTEM");
             report.setCreatedDate(date);
-            report.setUpdatedBy("SYSTEM");
-            report.setUpdatedDate(date);
             report.setId("DA" + report.getDate().getTime());
         }
+        report.setUpdatedBy("SYSTEM");
+        report.setUpdatedDate(date);
         report.setWorking(report.getWorking() + 1);
 
         return report;

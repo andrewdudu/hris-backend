@@ -167,6 +167,8 @@
 - Query Param:
   - type: `REQUESTED|APPROVED|REJECTED`
   - department: `dep-code`
+  - page: `int`
+  - size: `int`
 - Request Header :
 
   - Accept : `application/json`

@@ -1,6 +1,7 @@
 package com.bliblifuture.hrisbackend.controller;
 
 import com.blibli.oss.command.CommandExecutor;
+import com.blibli.oss.common.paging.Paging;
 import com.blibli.oss.common.response.Response;
 import com.bliblifuture.hrisbackend.command.*;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
@@ -256,18 +257,35 @@ public class RequestControllerTests {
 
         List<IncomingRequestResponse> responseData = Arrays.asList(data1, data2);
 
-        GetIncomingRequest request = GetIncomingRequest.builder().type(type).build();
-        request.setRequester(user.getUsername());
+        GetIncomingRequest request = GetIncomingRequest.builder()
+                .type(type)
+                .department(department)
+                .page(0)
+                .size(10)
+                .build();
+        request.setRequester(principal.getName());
+
+        Paging paging = Paging.builder()
+                .totalPage(1)
+                .totalItem(2)
+                .page(0)
+                .itemPerPage(10)
+                .build();
+
+        PagingResponse<IncomingRequestResponse> pagingResponse = new PagingResponse<>();
+        pagingResponse.setData(responseData);
+        pagingResponse.setPaging(paging);
 
         Mockito.when(commandExecutor.execute(GetIncomingRequestCommand.class, request))
-                .thenReturn(Mono.just(responseData));
+                .thenReturn(Mono.just(pagingResponse));
 
         Response<List<IncomingRequestResponse>> expected = new Response<>();
         expected.setData(Arrays.asList(data1, data2));
+        expected.setPaging(paging);
         expected.setCode(HttpStatus.OK.value());
         expected.setStatus(HttpStatus.OK.name());
 
-        requestController.getIncomingRequests(type, department, principal)
+        requestController.getIncomingRequests(type, department, 0, 10, principal)
                 .subscribe(response -> {
                     Assert.assertEquals(expected.getCode(), response.getCode());
                     Assert.assertEquals(expected.getStatus(), response.getStatus());

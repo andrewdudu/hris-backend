@@ -61,12 +61,12 @@ public class GetLeavesDetailResponseCommandImpl implements GetLeavesDetailRespon
     }
 
     private Flux<Request> getRequests(GetLeavesDetailRequest request, Department department) {
+        Date currentDate = dateUtil.getNewDate();
+        int year = currentDate.getYear() + 1900;
+
         if (department.getId()!= null && !department.getId().isEmpty()){
             String depId = department.getId();
             if (request.getMonth() > 0){
-                Date currentDate = dateUtil.getNewDate();
-                int year = currentDate.getYear() + 1900;
-
                 Date startOfThisMonth = startOfThisMonth(year, request.getMonth());
                 Date endOfThisMonth = getEndOfThisMonth(year, request.getMonth());
 
@@ -77,10 +77,6 @@ public class GetLeavesDetailResponseCommandImpl implements GetLeavesDetailRespon
             return requestRepository.findByDepartmentIdAndStatus(depId, RequestStatus.APPROVED);
         }
         else if (request.getMonth() > 0){
-            System.out.println("test");
-            Date currentDate = dateUtil.getNewDate();
-            int year = currentDate.getYear() + 1900;
-
             Date startOfThisMonth = startOfThisMonth(year, request.getMonth());
             Date endOfThisMonth = getEndOfThisMonth(year, request.getMonth());
 

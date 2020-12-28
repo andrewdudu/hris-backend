@@ -21,11 +21,11 @@ public class GetDepartmentsCommandImpl implements GetDepartmentsCommand {
     @Override
     public Mono<List<DepartmentResponse>> execute(String request) {
         return departmentRepository.findAll()
-                .map(this::createresponse)
+                .map(this::createResponse)
                 .collectList();
     }
 
-    private DepartmentResponse createresponse(Department department) {
+    private DepartmentResponse createResponse(Department department) {
         return DepartmentResponse.builder()
                 .name(department.getName())
                 .code(department.getCode())
