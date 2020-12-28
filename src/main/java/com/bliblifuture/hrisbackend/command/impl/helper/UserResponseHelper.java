@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -72,21 +73,21 @@ public class UserResponseHelper {
     }
 
     private Mono<UserResponse> setTotalRemainingLeaves(UserResponse response, String employeeId) {
-        return leaveRepository.findByEmployeeIdAndExpDateAfter(employeeId, dateUtil.getNewDate())
+        Date currentDate = dateUtil.getNewDate();
+        return leaveRepository.findByEmployeeIdAndExpDateAfter(employeeId, currentDate)
                 .collectList()
                 .map(leaves -> {
                     response.setLeave(LeaveResponse.builder()
                             .remaining(countLeaves(leaves))
                             .build());
-
                     return response;
                 });
     }
 
     private int countLeaves(List<Leave> leaves) {
         int total = 0;
-        for (Leave l : leaves) {
-            total += l.getRemaining();
+        for (Leave leave : leaves) {
+            total += leave.getRemaining();
         }
         return total;
     }

@@ -30,6 +30,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.security.Principal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -360,5 +361,56 @@ public class RequestControllerTests {
         Mockito.verify(commandExecutor, Mockito.times(1)).execute(RejectRequestCommand.class, request);
     }
 
+    @Test
+    public void getImageTest() throws IOException {
+        String filename = "filename";
+        String request = FileConstant.REQUEST_FILE_PATH + filename;
+
+        byte[] fileByte = Files.readAllBytes(
+                new File(FileConstant.BASE_STORAGE_PATH + "\\dummy\\image1.webp").toPath());
+
+        Mockito.when(commandExecutor.execute(GetFileCommand.class, request))
+                .thenReturn(Mono.just(fileByte));
+
+        Response<byte[]> expected = new Response<>();
+        expected.setData(fileByte);
+        expected.setCode(HttpStatus.OK.value());
+        expected.setStatus(HttpStatus.OK.name());
+
+        requestController.getImage(filename)
+                .subscribe(response -> {
+                    for (int i = 0; i < fileByte.length; i++) {
+                        Assert.assertEquals(fileByte[i], response[i]);
+                    }
+                });
+
+        Mockito.verify(commandExecutor, Mockito.times(1)).execute(GetFileCommand.class, request);
+    }
+
+    @Test
+    public void getPDFTest() throws IOException {
+        String filename = "filename";
+        String request = FileConstant.REQUEST_FILE_PATH + filename;
+
+        byte[] fileByte = Files.readAllBytes(
+                new File(FileConstant.BASE_STORAGE_PATH + "\\dummy\\file.pdf").toPath());
+
+        Mockito.when(commandExecutor.execute(GetFileCommand.class, request))
+                .thenReturn(Mono.just(fileByte));
+
+        Response<byte[]> expected = new Response<>();
+        expected.setData(fileByte);
+        expected.setCode(HttpStatus.OK.value());
+        expected.setStatus(HttpStatus.OK.name());
+
+        requestController.getPDF(filename)
+                .subscribe(response -> {
+                    for (int i = 0; i < fileByte.length; i++) {
+                        Assert.assertEquals(fileByte[i], response[i]);
+                    }
+                });
+
+        Mockito.verify(commandExecutor, Mockito.times(1)).execute(GetFileCommand.class, request);
+    }
 
 }
