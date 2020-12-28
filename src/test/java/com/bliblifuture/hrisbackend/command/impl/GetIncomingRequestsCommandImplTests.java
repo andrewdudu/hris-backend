@@ -1,5 +1,6 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
+import com.blibli.oss.common.paging.Paging;
 import com.bliblifuture.hrisbackend.command.GetIncomingRequestCommand;
 import com.bliblifuture.hrisbackend.command.impl.helper.RequestResponseHelper;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
@@ -9,12 +10,9 @@ import com.bliblifuture.hrisbackend.model.entity.Department;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.GetIncomingRequest;
-import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
-import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
-import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
-import com.bliblifuture.hrisbackend.model.response.UserResponse;
-import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
+import com.bliblifuture.hrisbackend.model.response.*;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
+import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
 import com.bliblifuture.hrisbackend.repository.DepartmentRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
@@ -27,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -78,6 +78,8 @@ public class GetIncomingRequestsCommandImplTests {
         GetIncomingRequest request = GetIncomingRequest.builder()
                 .type(type)
                 .department(depCode)
+                .page(0)
+                .size(10)
                 .build();
         request.setRequester(admin.getUsername());
 
@@ -125,7 +127,8 @@ public class GetIncomingRequestsCommandImplTests {
                 .build();
         request2.setCreatedDate(date3);
 
-        Mockito.when(requestRepository.findByDepartmentIdAndStatusOrderByCreatedDateDesc(department.getId(), RequestStatus.valueOf(type)))
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+        Mockito.when(requestRepository.findByDepartmentIdAndStatusOrderByCreatedDateDesc(department.getId(), RequestStatus.valueOf(type), pageable))
                 .thenReturn(Flux.just(request1, request2));
 
         TimeResponse date = TimeResponse.builder()
@@ -163,15 +166,30 @@ public class GetIncomingRequestsCommandImplTests {
                 .date(date3)
                 .build();
 
+        List<IncomingRequestResponse> data = Arrays.asList(data1, data2);
+
         Mockito.when(requestResponseHelper.createResponse(request1)).thenReturn(Mono.just(data1));
         Mockito.when(requestResponseHelper.createResponse(request2)).thenReturn(Mono.just(data2));
 
-        List<IncomingRequestResponse> expected = Arrays.asList(data1, data2);
+        Mockito.when(requestRepository.countByDepartmentIdAndStatus(department.getId(), RequestStatus.valueOf(type)))
+                .thenReturn(Mono.just(2L));
+
+        Paging paging = Paging.builder()
+                .totalPage(1)
+                .totalItem(2)
+                .page(0)
+                .itemPerPage(10)
+                .build();
+
+        PagingResponse<IncomingRequestResponse> expected = new PagingResponse<>();
+        expected.setData(data);
+        expected.setPaging(paging);
 
         getIncomingRequestCommand.execute(request)
                 .subscribe(response -> {
-                    for (int i = 0; i < expected.size(); i++) {
-                        Assert.assertEquals(expected.get(i), response.get(i));
+                    Assert.assertEquals(response.getPaging(), expected.getPaging());
+                    for (int i = 0; i < expected.getData().size(); i++) {
+                        Assert.assertEquals(expected.getData().get(i), response.getData().get(i));
                     }
                 });
 
@@ -179,7 +197,8 @@ public class GetIncomingRequestsCommandImplTests {
         Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(request2);
         Mockito.verify(departmentRepository, Mockito.times(1)).findByCode(request.getDepartment());
         Mockito.verify(requestRepository, Mockito.times(1))
-                .findByDepartmentIdAndStatusOrderByCreatedDateDesc(department.getId(), RequestStatus.valueOf(type));
+                .findByDepartmentIdAndStatusOrderByCreatedDateDesc(department.getId(), RequestStatus.valueOf(type), pageable);
+        Mockito.verify(requestRepository, Mockito.times(1)).countByDepartmentIdAndStatus(department.getId(), RequestStatus.valueOf(type));
     }
 
 }

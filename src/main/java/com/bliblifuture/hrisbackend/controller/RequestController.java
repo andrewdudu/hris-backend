@@ -9,10 +9,7 @@ import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
 import com.bliblifuture.hrisbackend.model.request.BaseRequest;
 import com.bliblifuture.hrisbackend.model.request.GetIncomingRequest;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
-import com.bliblifuture.hrisbackend.model.response.AttendanceRequestResponse;
-import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
-import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
-import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
+import com.bliblifuture.hrisbackend.model.response.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -66,11 +63,21 @@ public class RequestController {
 
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @GetMapping("/api/requests")
-    public Mono<Response<List<IncomingRequestResponse>>> getIncomingRequests(@RequestParam("type") String type, @RequestParam(value = "department", required = false) String department, Principal principal){
-        GetIncomingRequest request = GetIncomingRequest.builder().type(type).department(department).build();
+    public Mono<Response<List<IncomingRequestResponse>>> getIncomingRequests(@RequestParam("type") String type,
+                                                                             @RequestParam(value = "department", required = false) String department,
+                                                                             @RequestParam("type") int page,
+                                                                             @RequestParam("type") int size, Principal principal){
+        GetIncomingRequest request = GetIncomingRequest.builder()
+                .type(type).department(department)
+                .page(page).size(size)
+                .build();
         request.setRequester(principal.getName());
         return commandExecutor.execute(GetIncomingRequestCommand.class, request)
-                .map(ResponseHelper::ok)
+                .map(pagingResponse -> {
+                    Response<List<IncomingRequestResponse>> response = ResponseHelper.ok(pagingResponse.getData());
+                    response.setPaging(pagingResponse.getPaging());
+                    return response;
+                })
                 .subscribeOn(Schedulers.elastic());
     }
 
