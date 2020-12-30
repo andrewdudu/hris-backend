@@ -352,3 +352,40 @@
   "status": "Forbidden"
 }
 ```
+
+## Manual Add Substitute Leave (Admin)
+
+- Endpoint : `/substitute-leave`
+- HTTP Method : `POST`
+- Request Header :
+
+  - Accept : `application/json`
+
+- Request Body :
+```json
+{ 
+  "id": "id",
+  "total": 3
+}
+```
+- Response Body (Success) :
+
+```json
+{
+  "code": 200,
+  "status": "Success",
+  "data": {
+    "id": "1823a87f-12387321adf-123123adf",
+    "total": 3
+  }
+}
+```
+
+- Response Body (Fail) :
+
+```json
+{
+  "code": 403,
+  "status": "Forbidden"
+}
+```
