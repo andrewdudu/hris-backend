@@ -63,7 +63,7 @@ public class AddAnnouncementCommandImpl implements AddAnnouncementCommand {
                 .date(startOfDate)
                 .description(request.getNotes())
                 .title(request.getTitle())
-                .status(CalendarStatus.WORKING)
+                .status(CalendarStatus.ANNOUNCEMENT)
                 .build();
         event.setId(uuidUtil.getNewID());
         event.setCreatedBy(user.getUsername());

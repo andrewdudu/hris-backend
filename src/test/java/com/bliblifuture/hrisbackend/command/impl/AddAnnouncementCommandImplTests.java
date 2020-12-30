@@ -81,7 +81,7 @@ public class AddAnnouncementCommandImplTests {
         Event event = Event.builder()
                 .title(title)
                 .date(startOfDate)
-                .status(CalendarStatus.WORKING)
+                .status(CalendarStatus.ANNOUNCEMENT)
                 .description(notes)
                 .build();
         event.setId(id);
@@ -135,7 +135,7 @@ public class AddAnnouncementCommandImplTests {
         Event event = Event.builder()
                 .title(title)
                 .date(startOfDate)
-                .status(CalendarStatus.WORKING)
+                .status(CalendarStatus.ANNOUNCEMENT)
                 .description(notes)
                 .build();
         event.setId(id);
