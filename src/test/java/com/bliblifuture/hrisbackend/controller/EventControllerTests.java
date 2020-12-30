@@ -3,11 +3,13 @@ package com.bliblifuture.hrisbackend.controller;
 import com.blibli.oss.command.CommandExecutor;
 import com.blibli.oss.common.paging.Paging;
 import com.blibli.oss.common.response.Response;
+import com.bliblifuture.hrisbackend.command.AddAnnouncementCommand;
 import com.bliblifuture.hrisbackend.command.GetAnnouncementCommand;
 import com.bliblifuture.hrisbackend.command.GetCalendarCommand;
 import com.bliblifuture.hrisbackend.command.SetHolidayCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import com.bliblifuture.hrisbackend.model.entity.User;
+import com.bliblifuture.hrisbackend.model.request.AnnouncementRequest;
 import com.bliblifuture.hrisbackend.model.request.GetCalendarRequest;
 import com.bliblifuture.hrisbackend.model.request.PagingRequest;
 import com.bliblifuture.hrisbackend.model.request.SetHolidayRequest;
@@ -72,13 +74,13 @@ public class EventControllerTests {
 
         AnnouncementResponse announcementResponse1 = AnnouncementResponse.builder()
                 .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-12"))
-                .description("Flash Sale")
+                .notes("Flash Sale")
                 .status(CalendarStatus.HOLIDAY)
                 .title("Holiday")
                 .build();
         AnnouncementResponse announcementResponse2 = AnnouncementResponse.builder()
                 .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-14"))
-                .description("CEO's Bday")
+                .notes("CEO's Bday")
                 .status(CalendarStatus.WORKING)
                 .title("CEO's Birthday")
                 .build();
@@ -201,6 +203,41 @@ public class EventControllerTests {
                 });
 
         Mockito.verify(commandExecutor, Mockito.times(1)).execute(SetHolidayCommand.class, requestCommand);
+    }
+
+    @Test
+    public void addAnnouncementTest() throws ParseException {
+        String dateString = "2020-12-30";
+        Date date = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(dateString);
+
+        AnnouncementResponse responseData = AnnouncementResponse.builder()
+                .title("Announcement 1")
+                .notes("announcement")
+                .date(date)
+                .build();
+
+        AnnouncementRequest request = AnnouncementRequest.builder()
+                .title("Announcement 1")
+                .notes("announcement")
+                .build();
+        request.setRequester(principal.getName());
+
+        Mockito.when(commandExecutor.execute(AddAnnouncementCommand.class, request))
+                .thenReturn(Mono.just(responseData));
+
+        Response<AnnouncementResponse> expected = new Response<>();
+        expected.setData(responseData);
+        expected.setCode(HttpStatus.OK.value());
+        expected.setStatus(HttpStatus.OK.name());
+
+        eventController.addAnnouncement(request, principal)
+                .subscribe(response -> {
+                    Assert.assertEquals(expected.getCode(), response.getCode());
+                    Assert.assertEquals(expected.getStatus(), response.getStatus());
+                    Assert.assertEquals(expected, response);
+                });
+
+        Mockito.verify(commandExecutor, Mockito.times(1)).execute(AddAnnouncementCommand.class, request);
     }
 
 }

@@ -34,19 +34,19 @@ public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
 
         Date currentDate = dateUtil.getNewDate();
 
-        String dateString = (currentDate.getYear() + 1900) + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate();
+        String dateString = (currentDate.getYear() + 1900) + "-" + (currentDate.getMonth() + 1) + "-" + (currentDate.getDate()-1);
 
         String startTime = " 00:00:00";
-        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+        Date startOfYesterday = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(dateString + startTime);
 
-        return eventRepository.findAllByDateAfterOrderByDateAsc(startOfDate, pageable)
+        return eventRepository.findAllByDateAfterOrderByDateAsc(startOfYesterday, pageable)
                 .switchIfEmpty(Flux.empty())
                 .map(events -> events.createResponse(events, new AnnouncementResponse()))
                 .collectList()
                 .flatMap(announcementResponseList -> {
                     response.setData(announcementResponseList);
-                    return eventRepository.countAllByDateAfter(startOfDate);
+                    return eventRepository.countAllByDateAfter(startOfYesterday);
                 })
                 .map(total -> response.setPagingDetail(request, Math.toIntExact(total)));
     }

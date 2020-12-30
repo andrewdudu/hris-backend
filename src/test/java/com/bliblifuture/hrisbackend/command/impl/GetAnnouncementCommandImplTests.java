@@ -80,13 +80,13 @@ public class GetAnnouncementCommandImplTests {
 
         AnnouncementResponse announcementResponse1 = AnnouncementResponse.builder()
                 .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-12"))
-                .description("Flash Sale")
+                .notes("Flash Sale")
                 .status(CalendarStatus.HOLIDAY)
                 .title("Holiday")
                 .build();
         AnnouncementResponse announcementResponse2 = AnnouncementResponse.builder()
                 .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-14"))
-                .description("CEO's Bday")
+                .notes("CEO's Bday")
                 .status(CalendarStatus.WORKING)
                 .title("CEO's Birthday")
                 .build();
