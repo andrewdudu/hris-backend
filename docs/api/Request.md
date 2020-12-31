@@ -389,3 +389,33 @@
   "status": "Unauthorized"
 }
 ```
+
+## Request Hourly Leave
+
+- Endpoint : `/request/hourly`
+- HTTP Method : `POST`
+- Request Header :
+
+  - Accept : `application/json`
+
+- Request Body :
+```json
+{ 
+  "startTime": "11:00",
+  "endTime": "13:00",
+  "notes": "notes"
+}
+```
+- Response Body (Success) :
+
+```json
+{
+  "code": 200,
+  "status": "Success",
+  "data": { 
+    "startTime": "11:00",
+    "endTime": "13:00",
+    "notes": "notes"
+  }
+}
+```
