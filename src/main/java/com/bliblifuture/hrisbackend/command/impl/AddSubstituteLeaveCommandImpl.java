@@ -52,11 +52,10 @@ public class AddSubstituteLeaveCommandImpl implements AddSubstituteLeaveCommand 
                 .id(employeeId)
                 .build();
         return leaveRepository
-                .findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(
+                .countByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(
                         employeeId, LeaveType.substitute, currentDate, 0)
-                .collectList()
-                .map(subsLeaves -> {
-                    response.setTotal(subsLeaves.size());
+                .map(remaining -> {
+                    response.setTotal(Math.toIntExact(remaining));
                     return response;
                 });
     }

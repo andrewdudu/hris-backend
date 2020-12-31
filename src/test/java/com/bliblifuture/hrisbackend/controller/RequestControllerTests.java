@@ -8,10 +8,7 @@ import com.bliblifuture.hrisbackend.constant.FileConstant;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.User;
-import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
-import com.bliblifuture.hrisbackend.model.request.BaseRequest;
-import com.bliblifuture.hrisbackend.model.request.GetIncomingRequest;
-import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
+import com.bliblifuture.hrisbackend.model.request.*;
 import com.bliblifuture.hrisbackend.model.response.*;
 import com.bliblifuture.hrisbackend.model.response.util.ExtendLeaveQuotaResponse;
 import com.bliblifuture.hrisbackend.util.DateUtil;
@@ -411,6 +408,45 @@ public class RequestControllerTests {
                 });
 
         Mockito.verify(commandExecutor, Mockito.times(1)).execute(GetFileCommand.class, request);
+    }
+
+    @Test
+    public void addSubstituteLeaveTest() {
+        String empId = "id123";
+        SubstituteLeaveRequest request = SubstituteLeaveRequest.builder()
+                .id(empId)
+                .total(2)
+                .build();
+
+        SubstituteLeaveRequest commandRequest = SubstituteLeaveRequest.builder()
+                .id(empId)
+                .total(2)
+                .build();
+        commandRequest.setRequester(principal.getName());
+
+        SubstituteLeaveResponse data = SubstituteLeaveResponse
+                .builder()
+                .id(empId)
+                .total(3)
+                .build();
+
+        Mockito.when(commandExecutor.execute(AddSubstituteLeaveCommand.class, request))
+                .thenReturn(Mono.just(data));
+
+        Response<SubstituteLeaveResponse> expected = new Response<>();
+        expected.setData(data);
+        expected.setCode(HttpStatus.OK.value());
+        expected.setStatus(HttpStatus.OK.name());
+
+        requestController.addSubstituteLeave(request, principal)
+                .subscribe(response -> {
+                    Assert.assertEquals(expected.getCode(), response.getCode());
+                    Assert.assertEquals(expected.getStatus(), response.getStatus());
+                    Assert.assertEquals(expected.getData(), response.getData());
+                });
+
+        Mockito.verify(commandExecutor, Mockito.times(1))
+                .execute(AddSubstituteLeaveCommand.class, request);
     }
 
 }
