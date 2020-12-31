@@ -385,7 +385,7 @@
 
 ```json
 {
-  "code": 403,
-  "status": "Forbidden"
+  "code": 401,
+  "status": "Unauthorized"
 }
 ```

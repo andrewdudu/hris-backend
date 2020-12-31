@@ -78,12 +78,11 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
                         .map(report -> request);
             case EXTEND_ANNUAL_LEAVE:
                 return approveExtendAnnualLeave(request, currentDate);
-            case SUBSTITUTE_LEAVE:
-                leaveType = LeaveType.substitute;
-                return applyLeave(request, leaveType, currentDate);
             case EXTRA_LEAVE:
                 leaveType = LeaveType.extra;
                 return applyLeave(request, leaveType, currentDate);
+            case SUBSTITUTE_LEAVE:
+                return applySubstituteLeave(request, currentDate);
             case ANNUAL_LEAVE:
                 leaveType = LeaveType.annual;
                 return applyLeave(request, leaveType, currentDate);
@@ -97,11 +96,33 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
 
     private Mono<Request> applyLeave(Request request, LeaveType leaveType, Date currentDate) {
         int dayUsed = request.getDates().size();
-        return leaveRepository.findFirstByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(request.getEmployeeId(), leaveType, currentDate)
+        return leaveRepository.findFirstByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(
+                    request.getEmployeeId(), leaveType, currentDate
+                )
                 .doOnNext(this::checkNull)
                 .map(leave -> updateLeave(leave, dayUsed))
                 .flatMap(leave -> leaveRepository.save(leave))
                 .flatMap(leave -> updateLeaveSummaryAndAttendanceReport(request, currentDate));
+    }
+
+    private Mono<Request> applySubstituteLeave(Request request, Date currentDate) {
+        int dayUsed = request.getDates().size();
+        return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(
+                    request.getEmployeeId(), LeaveType.substitute, currentDate, 0
+                )
+                .collectList()
+                .doOnSuccess(leaves -> checkSubstituteLeave(leaves, request.getDates()))
+                .map(leaves -> Flux.fromIterable(leaves)
+                        .map(leave -> updateLeave(leave, dayUsed))
+                        .flatMap(leave -> leaveRepository.save(leave)))
+                .flatMap(leave -> updateLeaveSummaryAndAttendanceReport(request, currentDate));
+    }
+
+    private void checkSubstituteLeave(List<Leave> leaves, List<Date> dates) {
+        if (leaves.size() < dates.size()){
+            String errorsMessage = "message=QUOTA_NOT_AVAILABLE";
+            throw new IllegalArgumentException(errorsMessage);
+        }
     }
 
     @SneakyThrows
@@ -258,7 +279,7 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
 
     private void checkQuota(Leave leave) {
         if (leave.getRemaining() < 1){
-            String errorsMessage = "message=NO_REMAINING_QUOTA";
+            String errorsMessage = "message=QUOTA_NOT_AVAILABLE";
             throw new IllegalArgumentException(errorsMessage);
         }
     }
