@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -16,6 +17,10 @@ public class RequestLeaveResponse extends BaseResponse{
     private List<String> dates;
 
     private List<String> files;
+
+    private Date startTime;
+
+    private Date endTime;
 
     private String notes;
 

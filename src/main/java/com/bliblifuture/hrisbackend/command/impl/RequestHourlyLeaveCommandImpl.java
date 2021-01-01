@@ -39,16 +39,14 @@ public class RequestHourlyLeaveCommandImpl implements RequestHourlyLeaveCommand 
         return employeeRepository.findByEmail(request.getRequester())
                 .map(employee -> createRequest(employee, request))
                 .flatMap(requestEntity -> requestRepository.save(requestEntity))
-                .map(this::createResponse);
+                .map(requestEntity -> createResponse(request));
     }
 
-    private HourlyLeaveResponse createResponse(Request requestEntity) {
-        String startTime = requestEntity.getStartTime().getHours() + ":" + requestEntity.getStartTime().getMinutes();
-        String endTime = requestEntity.getEndTime().getHours() + ":" + requestEntity.getEndTime().getMinutes();
+    private HourlyLeaveResponse createResponse(HourlyLeaveRequest request) {
         return HourlyLeaveResponse.builder()
-                .startTime(startTime)
-                .endTime(endTime)
-                .notes(requestEntity.getNotes())
+                .startTime(request.getStartTime())
+                .endTime(request.getEndTime())
+                .notes(request.getNotes())
                 .build();
     }
 
@@ -64,11 +62,12 @@ public class RequestHourlyLeaveCommandImpl implements RequestHourlyLeaveCommand 
                 .departmentId(employee.getDepId())
                 .type(RequestType.HOURLY_LEAVE)
                 .build();
-        requestEntity.setId(uuidUtil.getNewID());
+        requestEntity.setId("HRL-" + employee.getId() + "-" + currentTime.getTime());
         requestEntity.setCreatedBy(employee.getEmail());
         requestEntity.setCreatedDate(currentTime);
 
-        String thisDate = (currentTime.getYear()+1900) + "-" + (currentTime.getMonth() + 1) + "-" + currentTime.getDay();
+        String thisDate = (currentTime.getYear()+1900) + "-" + (currentTime.getMonth() + 1) + "-" + currentTime.getDate();
+        System.out.println(thisDate);
         Date startTime = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(thisDate + " " + request.getStartTime() + ":00");
         Date endTime = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)

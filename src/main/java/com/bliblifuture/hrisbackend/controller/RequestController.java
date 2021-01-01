@@ -62,8 +62,8 @@ public class RequestController {
     @GetMapping("/api/requests")
     public Mono<Response<List<IncomingRequestResponse>>> getIncomingRequests(@RequestParam("type") String type,
                                                                              @RequestParam(value = "department", required = false) String department,
-                                                                             @RequestParam("type") int page,
-                                                                             @RequestParam("type") int size, Principal principal){
+                                                                             @RequestParam("page") int page,
+                                                                             @RequestParam("size") int size, Principal principal){
         GetIncomingRequest request = GetIncomingRequest.builder()
                 .type(type).department(department)
                 .page(page).size(size)
@@ -121,7 +121,7 @@ public class RequestController {
                 .subscribeOn(Schedulers.elastic());
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('EMPLOYEE')")
     @PostMapping("/api/request/hourly")
     public Mono<Response<HourlyLeaveResponse>> requestHourlyLeave(@RequestBody HourlyLeaveRequest request, Principal principal){
         request.setRequester(principal.getName());
