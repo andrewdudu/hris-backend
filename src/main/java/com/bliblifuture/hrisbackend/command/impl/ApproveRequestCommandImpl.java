@@ -56,13 +56,13 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
         return requestRepository.findById(data.getId())
                 .doOnSuccess(this::checkValidity)
                 .map(request -> approvedRequest(data, request, currentDate))
-                .flatMap(request -> saveApprovedData(request, currentDate))
+                .flatMap(request -> applyRequest(request, currentDate))
                 .flatMap(request -> requestRepository.save(request))
                 .flatMap(request -> requestResponseHelper.createResponse(request));
     }
 
     @SneakyThrows
-    private Mono<Request> saveApprovedData(Request request, Date currentDate){
+    private Mono<Request> applyRequest(Request request, Date currentDate){
         LeaveType leaveType;
 
         String dateString = (currentDate.getYear() + 1900) + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate();
@@ -81,13 +81,15 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
             case EXTRA_LEAVE:
                 leaveType = LeaveType.extra;
                 return applyLeave(request, leaveType, currentDate);
-            case SUBSTITUTE_LEAVE:
-                return applySubstituteLeave(request, currentDate);
             case ANNUAL_LEAVE:
                 leaveType = LeaveType.annual;
                 return applyLeave(request, leaveType, currentDate);
+            case SUBSTITUTE_LEAVE:
+                return applySubstituteLeave(request, currentDate);
             case SPECIAL_LEAVE:
                 return updateLeaveSummaryAndAttendanceReport(request, currentDate);
+            case HOURLY_LEAVE:
+                return Mono.just(request);
             default:
                 String errorsMessage = "message=INTERNAL_ERROR";
                 throw new RuntimeException(errorsMessage);
