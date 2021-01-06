@@ -257,6 +257,51 @@
 }
 ```
 
+## Bulk Approve
+
+- Endpoint : `/requests/_approve`
+- HTTP Method : `POST`
+- Request Header :
+
+  - Accept : `application/json`
+  
+- Request Body : 
+
+```json
+{
+  "ids": [
+    "1823a87f-12387321adf-123123adf",
+    "1823a87f-12387321adf-123123adff",
+    "1823a87f-12387321adf-123123adfa"
+  ]
+}
+```
+
+- Response Body (Success) :
+
+```json
+{
+  "code": 200,
+  "status": "Success",
+  "data": {
+    "ids": [
+       "1823a87f-12387321adf-123123adf",
+       "1823a87f-12387321adf-123123adff",
+       "1823a87f-12387321adf-123123adfa"
+     ]
+  }
+}
+```
+
+- Response Body (Fail) :
+
+```json
+{
+  "code": 403,
+  "status": "Forbidden"
+}
+```
+
 ## Approve
 
 - Endpoint : `/requests/{id}/_approve`
