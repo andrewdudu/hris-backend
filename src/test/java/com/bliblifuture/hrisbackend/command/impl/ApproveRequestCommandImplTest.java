@@ -11,7 +11,7 @@ import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.BaseRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
-import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
 import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
@@ -169,7 +169,7 @@ public class ApproveRequestCommandImplTest {
         Mockito.when(attendanceRepository.save(attendance))
                 .thenReturn(Mono.just(attendance));
 
-        IncomingRequestResponse expected = IncomingRequestResponse.builder()
+        RequestResponse expected = RequestResponse.builder()
                 .user(userResponse)
                 .status(RequestStatus.APPROVED)
                 .type(RequestType.ATTENDANCE)

@@ -142,7 +142,7 @@ public class GetIncomingRequestsCommandImplTests {
         RequestDetailResponse detail1 = RequestDetailResponse.builder()
                 .attendance(attendance)
                 .build();
-        IncomingRequestResponse data1 = IncomingRequestResponse.builder()
+        RequestResponse data1 = RequestResponse.builder()
                 .user(UserResponse.builder().username(user1.getUsername()).employeeId(user1.getEmployeeId()).build())
                 .status(RequestStatus.REQUESTED)
                 .type(RequestType.ATTENDANCE)
@@ -158,7 +158,7 @@ public class GetIncomingRequestsCommandImplTests {
         RequestDetailResponse detail2 = RequestDetailResponse.builder()
                 .leave(leave)
                 .build();
-        IncomingRequestResponse data2 = IncomingRequestResponse.builder()
+        RequestResponse data2 = RequestResponse.builder()
                 .user(UserResponse.builder().username(user2.getUsername()).employeeId(user2.getEmployeeId()).build())
                 .status(RequestStatus.REQUESTED)
                 .type(RequestType.LEAVE)
@@ -166,7 +166,7 @@ public class GetIncomingRequestsCommandImplTests {
                 .date(date3)
                 .build();
 
-        List<IncomingRequestResponse> data = Arrays.asList(data1, data2);
+        List<RequestResponse> data = Arrays.asList(data1, data2);
 
         Mockito.when(requestResponseHelper.createResponse(request1)).thenReturn(Mono.just(data1));
         Mockito.when(requestResponseHelper.createResponse(request2)).thenReturn(Mono.just(data2));
@@ -181,7 +181,7 @@ public class GetIncomingRequestsCommandImplTests {
                 .itemPerPage(10)
                 .build();
 
-        PagingResponse<IncomingRequestResponse> expected = new PagingResponse<>();
+        PagingResponse<RequestResponse> expected = new PagingResponse<>();
         expected.setData(data);
         expected.setPaging(paging);
 

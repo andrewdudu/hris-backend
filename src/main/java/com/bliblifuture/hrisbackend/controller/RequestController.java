@@ -60,10 +60,10 @@ public class RequestController {
 
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @GetMapping("/api/requests")
-    public Mono<Response<List<IncomingRequestResponse>>> getIncomingRequests(@RequestParam("type") String type,
-                                                                             @RequestParam(value = "department", required = false) String department,
-                                                                             @RequestParam("page") int page,
-                                                                             @RequestParam("size") int size, Principal principal){
+    public Mono<Response<List<RequestResponse>>> getIncomingRequests(@RequestParam("type") String type,
+                                                                     @RequestParam(value = "department", required = false) String department,
+                                                                     @RequestParam("page") int page,
+                                                                     @RequestParam("size") int size, Principal principal){
         GetIncomingRequest request = GetIncomingRequest.builder()
                 .type(type).department(department)
                 .page(page).size(size)
@@ -71,7 +71,7 @@ public class RequestController {
         request.setRequester(principal.getName());
         return commandExecutor.execute(GetIncomingRequestCommand.class, request)
                 .map(pagingResponse -> {
-                    Response<List<IncomingRequestResponse>> response = ResponseHelper.ok(pagingResponse.getData());
+                    Response<List<RequestResponse>> response = ResponseHelper.ok(pagingResponse.getData());
                     response.setPaging(pagingResponse.getPaging());
                     return response;
                 })
@@ -80,7 +80,7 @@ public class RequestController {
 
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @PostMapping("/api/requests/{id}/_approve")
-    public Mono<Response<IncomingRequestResponse>> approveRequest(@PathVariable("id") String id, Principal principal){
+    public Mono<Response<RequestResponse>> approveRequest(@PathVariable("id") String id, Principal principal){
         BaseRequest request = new BaseRequest();
         request.setId(id);
         request.setRequester(principal.getName());
@@ -90,8 +90,17 @@ public class RequestController {
     }
 
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    @PostMapping("/api/requests/_approve")
+    public Mono<Response<BulkApproveResponse>> bulkApproveRequest(@RequestBody BulkApproveRequest request, Principal principal){
+        request.setRequester(principal.getName());
+        return commandExecutor.execute(BulkApproveRequestCommand.class, request)
+                .map(ResponseHelper::ok)
+                .subscribeOn(Schedulers.elastic());
+    }
+
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @PostMapping("/api/requests/{id}/_reject")
-    public Mono<Response<IncomingRequestResponse>> rejectRequest(@PathVariable("id") String id, Principal principal){
+    public Mono<Response<RequestResponse>> rejectRequest(@PathVariable("id") String id, Principal principal){
         BaseRequest request = new BaseRequest();
         request.setId(id);
         request.setRequester(principal.getName());

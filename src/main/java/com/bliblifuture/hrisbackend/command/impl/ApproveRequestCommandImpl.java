@@ -8,7 +8,7 @@ import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.*;
 import com.bliblifuture.hrisbackend.model.request.BaseRequest;
-import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestResponse;
 import com.bliblifuture.hrisbackend.repository.*;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import com.bliblifuture.hrisbackend.util.UuidUtil;
@@ -51,7 +51,7 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
 
     @SneakyThrows
     @Override
-    public Mono<IncomingRequestResponse> execute(BaseRequest data) {
+    public Mono<RequestResponse> execute(BaseRequest data) {
         Date currentDate = dateUtil.getNewDate();
         return requestRepository.findById(data.getId())
                 .doOnSuccess(this::checkValidity)

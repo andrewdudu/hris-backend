@@ -6,7 +6,7 @@ import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
-import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestResponse;
 import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LeaveResponse;
@@ -112,7 +112,7 @@ public class RequestResponseHelperTests {
                 .leave(leave)
                 .build();
 
-        IncomingRequestResponse expected = IncomingRequestResponse.builder()
+        RequestResponse expected = RequestResponse.builder()
                 .date(request.getCreatedDate())
                 .status(request.getStatus())
                 .approvedby(request.getApprovedBy())

@@ -5,7 +5,7 @@ import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
 import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
-import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestResponse;
 import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
 import com.bliblifuture.hrisbackend.repository.UserRepository;
@@ -28,8 +28,8 @@ public class RequestResponseHelper {
     @Autowired
     private UserResponseHelper userResponseHelper;
 
-    public Mono<IncomingRequestResponse> createResponse(Request request) {
-        IncomingRequestResponse response = IncomingRequestResponse.builder()
+    public Mono<RequestResponse> createResponse(Request request) {
+        RequestResponse response = RequestResponse.builder()
                 .date(request.getCreatedDate())
                 .status(request.getStatus())
                 .approvedby(request.getApprovedBy())
@@ -44,7 +44,7 @@ public class RequestResponseHelper {
                 });
     }
 
-    private IncomingRequestResponse setDetailResponse(IncomingRequestResponse response, Request request) {
+    private RequestResponse setDetailResponse(RequestResponse response, Request request) {
         if (request.getType() != null){
             switch (request.getType()) {
                 case ATTENDANCE:
@@ -71,7 +71,7 @@ public class RequestResponseHelper {
         throw new RuntimeException(errorsMessage);
     }
 
-    private IncomingRequestResponse setHourlyLeaveResponse(IncomingRequestResponse response, Request request) {
+    private RequestResponse setHourlyLeaveResponse(RequestResponse response, Request request) {
         RequestLeaveResponse leave = RequestLeaveResponse.builder()
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
@@ -87,7 +87,7 @@ public class RequestResponseHelper {
         return response;
     }
 
-    private IncomingRequestResponse setAttendanceRequestResponse(IncomingRequestResponse response, Request request) {
+    private RequestResponse setAttendanceRequestResponse(RequestResponse response, Request request) {
         TimeResponse date = TimeResponse.builder()
                 .start(request.getClockIn())
                 .end(request.getClockOut())
@@ -107,7 +107,7 @@ public class RequestResponseHelper {
         return response;
     }
 
-    private IncomingRequestResponse setExtendLeaveRequestResponse(IncomingRequestResponse response, Request request) {
+    private RequestResponse setExtendLeaveRequestResponse(RequestResponse response, Request request) {
         ExtendLeaveResponse extend = ExtendLeaveResponse.builder()
                 .notes(request.getNotes())
                 .build();
@@ -121,7 +121,7 @@ public class RequestResponseHelper {
         return response;
     }
 
-    private IncomingRequestResponse setLeaveRequestResponse(IncomingRequestResponse response, Request request) {
+    private RequestResponse setLeaveRequestResponse(RequestResponse response, Request request) {
         RequestLeaveResponse leave = RequestLeaveResponse.builder()
                 .dates(convertDatesToString(request.getDates()))
                 .files(request.getFiles())
