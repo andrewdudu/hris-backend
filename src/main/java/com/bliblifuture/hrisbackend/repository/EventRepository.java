@@ -27,6 +27,8 @@ public interface EventRepository extends ReactiveMongoRepository<Event, String> 
 
     Mono<Event> findByDate(Date date);
 
+    Mono<Event> findFirstByDateAndStatus(Date date, CalendarStatus status);
+
     Mono<Event> findByDateAndStatus(Date date, CalendarStatus status);
 
 }

@@ -42,7 +42,9 @@ public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
 
         return eventRepository.findAllByDateAfterOrderByDateAsc(startOfYesterday, pageable)
                 .switchIfEmpty(Flux.empty())
-                .map(events -> events.createResponse(events, new AnnouncementResponse()))
+                .map(events -> events.createResponse(
+                        events, AnnouncementResponse.builder().build()
+                ))
                 .collectList()
                 .flatMap(announcementResponseList -> {
                     response.setData(announcementResponseList);
