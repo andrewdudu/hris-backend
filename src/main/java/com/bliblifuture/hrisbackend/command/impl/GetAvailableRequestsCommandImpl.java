@@ -73,6 +73,7 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
             response.add(RequestType.INCOMING_REQUESTS);
             response.add(RequestType.SET_HOLIDAY);
             response.add(RequestType.EMPLOYEE);
+            response.add(RequestType.ADD_ANNOUNCEMENT);
         }
         return response;
     }
