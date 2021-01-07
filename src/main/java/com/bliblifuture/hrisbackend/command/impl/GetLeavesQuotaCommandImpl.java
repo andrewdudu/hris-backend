@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class GetLeavesQuotaCommandImpl implements GetLeavesQuotaCommand {
@@ -34,8 +35,9 @@ public class GetLeavesQuotaCommandImpl implements GetLeavesQuotaCommand {
 
         Date startOfThisYear = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(year + "-1-1" + " 00:00:00");
+        Date endOfLastYear = new Date(startOfThisYear.getTime() - TimeUnit.SECONDS.toMillis(1));
 
-        return leaveRepository.findByEmployeeIdAndExpDateAfter(employeeId, startOfThisYear)
+        return leaveRepository.findByEmployeeIdAndExpDateAfter(employeeId, endOfLastYear)
                 .collectList()
                 .map(this::createResponse);
     }

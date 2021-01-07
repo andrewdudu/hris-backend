@@ -39,6 +39,12 @@ public class Request extends BaseEntity {
     @Field(name = "clock_out")
     private Date clockOut;
 
+    @Field(name = "start_time")
+    private Date startTime;
+
+    @Field(name = "end_time")
+    private Date endTime;
+
     @Field(name = "files")
     private List<String> files;
 

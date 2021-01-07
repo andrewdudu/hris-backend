@@ -5,10 +5,7 @@ import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.*;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
-import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
-import com.bliblifuture.hrisbackend.model.request.BaseRequest;
-import com.bliblifuture.hrisbackend.model.request.GetIncomingRequest;
-import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
+import com.bliblifuture.hrisbackend.model.request.*;
 import com.bliblifuture.hrisbackend.model.response.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -65,8 +62,8 @@ public class RequestController {
     @GetMapping("/api/requests")
     public Mono<Response<List<IncomingRequestResponse>>> getIncomingRequests(@RequestParam("type") String type,
                                                                              @RequestParam(value = "department", required = false) String department,
-                                                                             @RequestParam("type") int page,
-                                                                             @RequestParam("type") int size, Principal principal){
+                                                                             @RequestParam("page") int page,
+                                                                             @RequestParam("size") int size, Principal principal){
         GetIncomingRequest request = GetIncomingRequest.builder()
                 .type(type).department(department)
                 .page(page).size(size)
@@ -103,15 +100,33 @@ public class RequestController {
                 .subscribeOn(Schedulers.elastic());
     }
 
-    @GetMapping(value = "api/request/file/image/{filename}", produces = "image/webp")
+    @GetMapping(value = "/api/request/file/image/{filename}", produces = "image/webp")
     public Mono<byte[]> getImage(@PathVariable String filename){
         return commandExecutor.execute(GetFileCommand.class, FileConstant.REQUEST_FILE_PATH + filename)
                 .subscribeOn(Schedulers.elastic());
     }
 
-    @GetMapping(value = "api/request/file/pdf/{filename}", produces = MediaType.APPLICATION_PDF_VALUE)
+    @GetMapping(value = "/api/request/file/pdf/{filename}", produces = MediaType.APPLICATION_PDF_VALUE)
     public Mono<byte[]> getPDF(@PathVariable String filename){
         return commandExecutor.execute(GetFileCommand.class, FileConstant.REQUEST_FILE_PATH + filename)
+                .subscribeOn(Schedulers.elastic());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/api/substitute-leave")
+    public Mono<Response<SubstituteLeaveResponse>> addSubstituteLeave(@RequestBody SubstituteLeaveRequest request, Principal principal){
+        request.setRequester(principal.getName());
+        return commandExecutor.execute(AddSubstituteLeaveCommand.class, request)
+                .map(ResponseHelper::ok)
+                .subscribeOn(Schedulers.elastic());
+    }
+
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    @PostMapping("/api/request/hourly")
+    public Mono<Response<HourlyLeaveResponse>> requestHourlyLeave(@RequestBody HourlyLeaveRequest request, Principal principal){
+        request.setRequester(principal.getName());
+        return commandExecutor.execute(RequestHourlyLeaveCommand.class, request)
+                .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());
     }
 

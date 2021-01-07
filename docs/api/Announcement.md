@@ -36,3 +36,31 @@
   ] 
 }
 ```
+
+## Add Announcement
+
+- Endpoint : `/api/announcement`
+- HTTP Method : `POST`
+- `Auth required`
+- Request Header :
+  - Accept : `application/json`
+  - Set-Cookie: `userToken=token`
+- Request Body : 
+```json
+{
+  "title": "title",
+  "notes": "notes"
+}
+```
+- Response Body (Success) :
+
+```json
+{
+  "code": 200,
+  "status": "Success",
+  "data": {
+    "title": "title",
+    "notes": "notes"
+  } 
+}
+```

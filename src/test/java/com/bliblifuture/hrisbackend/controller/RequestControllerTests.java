@@ -8,10 +8,7 @@ import com.bliblifuture.hrisbackend.constant.FileConstant;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.User;
-import com.bliblifuture.hrisbackend.model.request.AttendanceRequestData;
-import com.bliblifuture.hrisbackend.model.request.BaseRequest;
-import com.bliblifuture.hrisbackend.model.request.GetIncomingRequest;
-import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
+import com.bliblifuture.hrisbackend.model.request.*;
 import com.bliblifuture.hrisbackend.model.response.*;
 import com.bliblifuture.hrisbackend.model.response.util.ExtendLeaveQuotaResponse;
 import com.bliblifuture.hrisbackend.util.DateUtil;
@@ -30,6 +27,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.security.Principal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -360,5 +358,95 @@ public class RequestControllerTests {
         Mockito.verify(commandExecutor, Mockito.times(1)).execute(RejectRequestCommand.class, request);
     }
 
+    @Test
+    public void getImageTest() throws IOException {
+        String filename = "filename";
+        String request = FileConstant.REQUEST_FILE_PATH + filename;
+
+        byte[] fileByte = Files.readAllBytes(
+                new File(FileConstant.BASE_STORAGE_PATH + "\\dummy\\image1.webp").toPath());
+
+        Mockito.when(commandExecutor.execute(GetFileCommand.class, request))
+                .thenReturn(Mono.just(fileByte));
+
+        Response<byte[]> expected = new Response<>();
+        expected.setData(fileByte);
+        expected.setCode(HttpStatus.OK.value());
+        expected.setStatus(HttpStatus.OK.name());
+
+        requestController.getImage(filename)
+                .subscribe(response -> {
+                    for (int i = 0; i < fileByte.length; i++) {
+                        Assert.assertEquals(fileByte[i], response[i]);
+                    }
+                });
+
+        Mockito.verify(commandExecutor, Mockito.times(1)).execute(GetFileCommand.class, request);
+    }
+
+    @Test
+    public void getPDFTest() throws IOException {
+        String filename = "filename";
+        String request = FileConstant.REQUEST_FILE_PATH + filename;
+
+        byte[] fileByte = Files.readAllBytes(
+                new File(FileConstant.BASE_STORAGE_PATH + "\\dummy\\file.pdf").toPath());
+
+        Mockito.when(commandExecutor.execute(GetFileCommand.class, request))
+                .thenReturn(Mono.just(fileByte));
+
+        Response<byte[]> expected = new Response<>();
+        expected.setData(fileByte);
+        expected.setCode(HttpStatus.OK.value());
+        expected.setStatus(HttpStatus.OK.name());
+
+        requestController.getPDF(filename)
+                .subscribe(response -> {
+                    for (int i = 0; i < fileByte.length; i++) {
+                        Assert.assertEquals(fileByte[i], response[i]);
+                    }
+                });
+
+        Mockito.verify(commandExecutor, Mockito.times(1)).execute(GetFileCommand.class, request);
+    }
+
+    @Test
+    public void addSubstituteLeaveTest() {
+        String empId = "id123";
+        SubstituteLeaveRequest request = SubstituteLeaveRequest.builder()
+                .id(empId)
+                .total(2)
+                .build();
+
+        SubstituteLeaveRequest commandRequest = SubstituteLeaveRequest.builder()
+                .id(empId)
+                .total(2)
+                .build();
+        commandRequest.setRequester(principal.getName());
+
+        SubstituteLeaveResponse data = SubstituteLeaveResponse
+                .builder()
+                .id(empId)
+                .total(3)
+                .build();
+
+        Mockito.when(commandExecutor.execute(AddSubstituteLeaveCommand.class, request))
+                .thenReturn(Mono.just(data));
+
+        Response<SubstituteLeaveResponse> expected = new Response<>();
+        expected.setData(data);
+        expected.setCode(HttpStatus.OK.value());
+        expected.setStatus(HttpStatus.OK.name());
+
+        requestController.addSubstituteLeave(request, principal)
+                .subscribe(response -> {
+                    Assert.assertEquals(expected.getCode(), response.getCode());
+                    Assert.assertEquals(expected.getStatus(), response.getStatus());
+                    Assert.assertEquals(expected.getData(), response.getData());
+                });
+
+        Mockito.verify(commandExecutor, Mockito.times(1))
+                .execute(AddSubstituteLeaveCommand.class, request);
+    }
 
 }

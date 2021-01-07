@@ -3,9 +3,11 @@ package com.bliblifuture.hrisbackend.controller;
 import com.blibli.oss.command.CommandExecutor;
 import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
+import com.bliblifuture.hrisbackend.command.AddAnnouncementCommand;
 import com.bliblifuture.hrisbackend.command.GetAnnouncementCommand;
 import com.bliblifuture.hrisbackend.command.GetCalendarCommand;
 import com.bliblifuture.hrisbackend.command.SetHolidayCommand;
+import com.bliblifuture.hrisbackend.model.request.AnnouncementRequest;
 import com.bliblifuture.hrisbackend.model.request.GetCalendarRequest;
 import com.bliblifuture.hrisbackend.model.request.PagingRequest;
 import com.bliblifuture.hrisbackend.model.request.SetHolidayRequest;
@@ -59,6 +61,15 @@ public class EventController {
         request.setDate(date);
         request.setRequester(principal.getName());
         return commandExecutor.execute(SetHolidayCommand.class, request)
+                .map(ResponseHelper::ok)
+                .subscribeOn(Schedulers.elastic());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/announcement")
+    public Mono<Response<AnnouncementResponse>> addAnnouncement(@RequestBody AnnouncementRequest request, Principal principal){
+        request.setRequester(principal.getName());
+        return commandExecutor.execute(AddAnnouncementCommand.class, request)
                 .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());
     }

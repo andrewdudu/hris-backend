@@ -257,6 +257,51 @@
 }
 ```
 
+## Bulk Approve
+
+- Endpoint : `/requests/_approve`
+- HTTP Method : `POST`
+- Request Header :
+
+  - Accept : `application/json`
+  
+- Request Body : 
+
+```json
+{
+  "ids": [
+    "1823a87f-12387321adf-123123adf",
+    "1823a87f-12387321adf-123123adff",
+    "1823a87f-12387321adf-123123adfa"
+  ]
+}
+```
+
+- Response Body (Success) :
+
+```json
+{
+  "code": 200,
+  "status": "Success",
+  "data": {
+    "ids": [
+       "1823a87f-12387321adf-123123adf",
+       "1823a87f-12387321adf-123123adff",
+       "1823a87f-12387321adf-123123adfa"
+     ]
+  }
+}
+```
+
+- Response Body (Fail) :
+
+```json
+{
+  "code": 403,
+  "status": "Forbidden"
+}
+```
+
 ## Approve
 
 - Endpoint : `/requests/{id}/_approve`
@@ -350,5 +395,72 @@
 {
   "code": 403,
   "status": "Forbidden"
+}
+```
+
+## Manual Add Substitute Leave (Admin)
+
+- Endpoint : `/substitute-leave`
+- HTTP Method : `POST`
+- Request Header :
+
+  - Accept : `application/json`
+
+- Request Body :
+```json
+{ 
+  "id": "id",
+  "total": 3
+}
+```
+- Response Body (Success) :
+
+```json
+{
+  "code": 200,
+  "status": "Success",
+  "data": {
+    "id": "1823a87f-12387321adf-123123adf",
+    "total": 3
+  }
+}
+```
+
+- Response Body (Fail) :
+
+```json
+{
+  "code": 401,
+  "status": "Unauthorized"
+}
+```
+
+## Request Hourly Leave
+
+- Endpoint : `/request/hourly`
+- HTTP Method : `POST`
+- Request Header :
+
+  - Accept : `application/json`
+
+- Request Body :
+```json
+{ 
+  "startTime": "11:00",
+  "endTime": "13:00",
+  "notes": "notes"
+}
+```
+- Response Body (Success) :
+
+```json
+{
+  "code": 200,
+  "status": "Success",
+  "data": { 
+    "startTime": "11:00",
+    "endTime": "13:00",
+    "notes": "notes"
+  }
 }
 ```

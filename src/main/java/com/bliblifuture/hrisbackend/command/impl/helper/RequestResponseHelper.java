@@ -59,6 +59,9 @@ public class RequestResponseHelper {
                 case SUBSTITUTE_LEAVE:
                     response.setType(RequestType.LEAVE);
                     return setLeaveRequestResponse(response, request);
+                case HOURLY_LEAVE:
+                    response.setType(RequestType.LEAVE);
+                    return setHourlyLeaveResponse(response, request);
                 default:
                     String errorsMessage = "type=INVALID_REQUEST";
                     throw new RuntimeException(errorsMessage);
@@ -66,6 +69,22 @@ public class RequestResponseHelper {
         }
         String errorsMessage = "type=INVALID_REQUEST";
         throw new RuntimeException(errorsMessage);
+    }
+
+    private IncomingRequestResponse setHourlyLeaveResponse(IncomingRequestResponse response, Request request) {
+        RequestLeaveResponse leave = RequestLeaveResponse.builder()
+                .startTime(request.getStartTime())
+                .endTime(request.getEndTime())
+                .type(request.getType().toString())
+                .notes(request.getNotes())
+                .build();
+
+        RequestDetailResponse detail = RequestDetailResponse.builder()
+                .leave(leave)
+                .build();
+        response.setDetail(detail);
+
+        return response;
     }
 
     private IncomingRequestResponse setAttendanceRequestResponse(IncomingRequestResponse response, Request request) {

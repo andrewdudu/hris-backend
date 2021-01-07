@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryCommand {
@@ -55,21 +56,23 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
         int thisMonth = currentDate.getMonth()+1;
         int thisYear = currentDate.getYear()+1900;
 
-        Date startOfCurrentMonth = new SimpleDateFormat(DateUtil.DATE_FORMAT)
+        Date startOfThisMonth = new SimpleDateFormat(DateUtil.DATE_FORMAT)
                 .parse(thisYear + "-" + thisMonth + "-" + 1);
+        Date endOfLastMonth = new Date(startOfThisMonth.getTime() - TimeUnit.SECONDS.toMillis(1));
 
-        Date startOfCurrentYear = new SimpleDateFormat(DateUtil.DATE_FORMAT)
+        Date startOfThisYear = new SimpleDateFormat(DateUtil.DATE_FORMAT)
                 .parse(thisYear + "-1-1");
+        Date endOfLastYear = new Date(startOfThisYear.getTime() - TimeUnit.SECONDS.toMillis(1));
 
         return userRepository.findByUsername(username)
-                .flatMap(user -> attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentMonth)
+                .flatMap(user -> attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), endOfLastMonth)
                         .flatMap(monthAttendance -> {
                             month.setAttendance(Math.toIntExact(monthAttendance));
-                            return attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentYear);
+                            return attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), endOfLastYear);
                         })
                         .flatMap(yearAttendance -> {
                             year.setAttendance(Math.toIntExact(yearAttendance));
-                            return requestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId())
+                            return requestRepository.findByDatesAfterAndStatusAndEmployeeId(endOfLastMonth, RequestStatus.APPROVED, user.getEmployeeId())
                                     .switchIfEmpty(Flux.empty())
                                     .collectList();
                         })

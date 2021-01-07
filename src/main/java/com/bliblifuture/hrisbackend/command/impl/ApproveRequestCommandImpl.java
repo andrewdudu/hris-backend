@@ -56,13 +56,13 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
         return requestRepository.findById(data.getId())
                 .doOnSuccess(this::checkValidity)
                 .map(request -> approvedRequest(data, request, currentDate))
-                .flatMap(request -> saveApprovedData(request, currentDate))
+                .flatMap(request -> applyRequest(request, currentDate))
                 .flatMap(request -> requestRepository.save(request))
                 .flatMap(request -> requestResponseHelper.createResponse(request));
     }
 
     @SneakyThrows
-    private Mono<Request> saveApprovedData(Request request, Date currentDate){
+    private Mono<Request> applyRequest(Request request, Date currentDate){
         LeaveType leaveType;
 
         String dateString = (currentDate.getYear() + 1900) + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate();
@@ -78,17 +78,18 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
                         .map(report -> request);
             case EXTEND_ANNUAL_LEAVE:
                 return approveExtendAnnualLeave(request, currentDate);
-            case SUBSTITUTE_LEAVE:
-                leaveType = LeaveType.substitute;
-                return applyLeave(request, leaveType, currentDate);
             case EXTRA_LEAVE:
                 leaveType = LeaveType.extra;
                 return applyLeave(request, leaveType, currentDate);
             case ANNUAL_LEAVE:
                 leaveType = LeaveType.annual;
                 return applyLeave(request, leaveType, currentDate);
+            case SUBSTITUTE_LEAVE:
+                return applySubstituteLeave(request, currentDate);
             case SPECIAL_LEAVE:
                 return updateLeaveSummaryAndAttendanceReport(request, currentDate);
+            case HOURLY_LEAVE:
+                return Mono.just(request);
             default:
                 String errorsMessage = "message=INTERNAL_ERROR";
                 throw new RuntimeException(errorsMessage);
@@ -97,11 +98,33 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
 
     private Mono<Request> applyLeave(Request request, LeaveType leaveType, Date currentDate) {
         int dayUsed = request.getDates().size();
-        return leaveRepository.findFirstByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(request.getEmployeeId(), leaveType, currentDate)
+        return leaveRepository.findFirstByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(
+                    request.getEmployeeId(), leaveType, currentDate
+                )
                 .doOnNext(this::checkNull)
                 .map(leave -> updateLeave(leave, dayUsed))
                 .flatMap(leave -> leaveRepository.save(leave))
                 .flatMap(leave -> updateLeaveSummaryAndAttendanceReport(request, currentDate));
+    }
+
+    private Mono<Request> applySubstituteLeave(Request request, Date currentDate) {
+        int dayUsed = request.getDates().size();
+        return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(
+                    request.getEmployeeId(), LeaveType.substitute, currentDate, 0
+                )
+                .collectList()
+                .doOnSuccess(leaves -> checkSubstituteLeave(leaves, request.getDates()))
+                .map(leaves -> Flux.fromIterable(leaves)
+                        .map(leave -> updateLeave(leave, dayUsed))
+                        .flatMap(leave -> leaveRepository.save(leave)))
+                .flatMap(leave -> updateLeaveSummaryAndAttendanceReport(request, currentDate));
+    }
+
+    private void checkSubstituteLeave(List<Leave> leaves, List<Date> dates) {
+        if (leaves.size() < dates.size()){
+            String errorsMessage = "message=QUOTA_NOT_AVAILABLE";
+            throw new IllegalArgumentException(errorsMessage);
+        }
     }
 
     @SneakyThrows
@@ -258,7 +281,7 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
 
     private void checkQuota(Leave leave) {
         if (leave.getRemaining() < 1){
-            String errorsMessage = "message=NO_REMAINING_QUOTA";
+            String errorsMessage = "message=QUOTA_NOT_AVAILABLE";
             throw new IllegalArgumentException(errorsMessage);
         }
     }

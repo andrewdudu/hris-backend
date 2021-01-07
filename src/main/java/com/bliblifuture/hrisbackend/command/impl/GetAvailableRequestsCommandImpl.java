@@ -83,6 +83,7 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
         response.add(RequestType.ANNUAL_LEAVE);
         response.add(RequestType.SPECIAL_LEAVE);
         response.add(RequestType.SUBSTITUTE_LEAVE);
+        response.add(RequestType.HOURLY_LEAVE);
 
         int date = employee.getJoinDate().getDate();
         int month = employee.getJoinDate().getMonth()+1;

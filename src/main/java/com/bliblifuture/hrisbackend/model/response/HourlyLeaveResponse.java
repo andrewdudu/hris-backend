@@ -5,24 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
-import java.util.List;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestLeaveResponse extends BaseResponse{
+public class HourlyLeaveResponse {
 
-    private List<String> dates;
+    private String startTime;
 
-    private List<String> files;
-
-    private Date startTime;
-
-    private Date endTime;
+    private String endTime;
 
     private String notes;
 
-    private String type;
 }
