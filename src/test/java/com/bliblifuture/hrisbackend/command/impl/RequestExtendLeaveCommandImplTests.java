@@ -62,7 +62,7 @@ public class RequestExtendLeaveCommandImplTests {
         request.setRequester(user.getUsername());
 
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         Request entity = Request.builder()
@@ -76,7 +76,7 @@ public class RequestExtendLeaveCommandImplTests {
         Mockito.when(requestRepository.save(entity))
                 .thenReturn(Mono.just(entity));
 
-        Mockito.when(requestRepository.findByEmployeeIdAndTypeAndStatus(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, RequestStatus.REQUESTED))
+        Mockito.when(requestRepository.findFirstByEmployeeIdAndTypeAndStatus(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, RequestStatus.REQUESTED))
                 .thenReturn(Mono.empty());
 
         ExtendLeaveResponse expected = ExtendLeaveResponse.builder()
@@ -90,11 +90,11 @@ public class RequestExtendLeaveCommandImplTests {
                     Assert.assertEquals(expected.getNotes(), response.getNotes());
                 });
 
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(requestRepository, Mockito.times(1)).save(entity);
         Mockito.verify(requestRepository, Mockito.times(1))
-                .findByEmployeeIdAndTypeAndStatus(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, RequestStatus.REQUESTED);
+                .findFirstByEmployeeIdAndTypeAndStatus(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, RequestStatus.REQUESTED);
     }
 
     @Test
@@ -122,11 +122,11 @@ public class RequestExtendLeaveCommandImplTests {
                     Assert.assertEquals(expected.getNotes(), response.getNotes());
                 });
 
-        Mockito.verify(userRepository, Mockito.times(0)).findByUsername(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(0)).findFirstByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(requestRepository, Mockito.times(0)).save(Mockito.any());
         Mockito.verify(requestRepository, Mockito.times(0))
-                .findByEmployeeIdAndTypeAndStatus(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, RequestStatus.REQUESTED);
+                .findFirstByEmployeeIdAndTypeAndStatus(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, RequestStatus.REQUESTED);
     }
 
     @Test(expected = Exception.class)
@@ -143,7 +143,7 @@ public class RequestExtendLeaveCommandImplTests {
         request.setRequester(user.getUsername());
 
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         Request entity = Request.builder()
@@ -154,7 +154,7 @@ public class RequestExtendLeaveCommandImplTests {
                 .build();
         entity.setId(id);
 
-        Mockito.when(requestRepository.findByEmployeeIdAndTypeAndStatus(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, RequestStatus.REQUESTED))
+        Mockito.when(requestRepository.findFirstByEmployeeIdAndTypeAndStatus(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, RequestStatus.REQUESTED))
                 .thenReturn(Mono.just(entity));
 
         ExtendLeaveResponse expected = ExtendLeaveResponse.builder()
@@ -164,11 +164,11 @@ public class RequestExtendLeaveCommandImplTests {
 
         requestExtendLeaveCommand.execute(request).subscribe();
 
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(requestRepository, Mockito.times(0)).save(entity);
         Mockito.verify(requestRepository, Mockito.times(1))
-                .findByEmployeeIdAndTypeAndStatus(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, RequestStatus.REQUESTED);
+                .findFirstByEmployeeIdAndTypeAndStatus(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, RequestStatus.REQUESTED);
     }
 
 }

@@ -82,9 +82,9 @@ public class GetAvailableRequestsCommandImplTests {
         expected.add(RequestType.SET_HOLIDAY);
         expected.add(RequestType.EMPLOYEE);
 
-        Mockito.when(employeeRepository.findByEmail(user.getUsername()))
+        Mockito.when(employeeRepository.findFirstByEmail(user.getUsername()))
                 .thenReturn(Mono.just(employee));
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
         Mockito.when(dateUtil.getNewDate())
                 .thenReturn(currentDate);
@@ -111,8 +111,8 @@ public class GetAvailableRequestsCommandImplTests {
                     }
                 });
 
-        Mockito.verify(employeeRepository, Mockito.times(1)).findByEmail(user.getUsername());
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(employeeRepository, Mockito.times(1)).findFirstByEmail(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(leaveRepository, Mockito.times(1)).findFirstByTypeAndEmployeeIdAndExpDate(LeaveType.annual, user.getEmployeeId(), startOfNextYear);
     }

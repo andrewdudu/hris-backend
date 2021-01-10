@@ -59,7 +59,7 @@ public class GetAvailableSpecialRequestsCommandImplTests {
         expected.add(SpecialLeaveType.CHILD_CIRCUMSION);
         expected.add(SpecialLeaveType.UNPAID_LEAVE);
 
-        Mockito.when(employeeRepository.findByEmail(user.getUsername()))
+        Mockito.when(employeeRepository.findFirstByEmail(user.getUsername()))
                 .thenReturn(Mono.just(employee));
 
         getAvailableSpecialRequestsCommand.execute(user.getUsername())
@@ -69,7 +69,7 @@ public class GetAvailableSpecialRequestsCommandImplTests {
                     }
                 });
 
-        Mockito.verify(employeeRepository, Mockito.times(1)).findByEmail(user.getUsername());
+        Mockito.verify(employeeRepository, Mockito.times(1)).findFirstByEmail(user.getUsername());
     }
 
 }

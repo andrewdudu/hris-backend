@@ -38,7 +38,7 @@ public class SetHolidayCommandImpl implements SetHolidayCommand {
             String msg = "status=STATUS_IS_NULL";
             throw new IllegalArgumentException(msg);
         }
-        return userRepository.findByUsername(request.getRequester())
+        return userRepository.findFirstByUsername(request.getRequester())
                 .flatMap(user -> createEvent(request, user))
                 .flatMap(event -> eventRepository.save(event))
                 .map(this::createResponse);
@@ -64,7 +64,7 @@ public class SetHolidayCommandImpl implements SetHolidayCommand {
         event.setId(uuidUtil.getNewID());
         event.setCreatedBy(user.getUsername());
         event.setCreatedDate(dateUtil.getNewDate());
-        return eventRepository.findByTitleAndDate(request.getName(), date)
+        return eventRepository.findFirstByTitleAndDate(request.getName(), date)
                 .doOnNext(this::checkIfExists)
                 .switchIfEmpty(Mono.just(event));
     }

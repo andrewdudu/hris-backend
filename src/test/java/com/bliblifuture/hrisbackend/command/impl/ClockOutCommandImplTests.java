@@ -64,7 +64,7 @@ public class ClockOutCommandImplTests {
         Mockito.when(dateUtil.getNewDate())
                 .thenReturn(currentDate);
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         Date startOfDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-20");
@@ -112,7 +112,7 @@ public class ClockOutCommandImplTests {
                 });
 
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(attendanceRepository, Mockito.times(1)).findFirstByEmployeeIdAndDate(user.getEmployeeId(), startOfDate);
         Mockito.verify(attendanceRepository, Mockito.times(1)).save(attendanceUpdate);
     }

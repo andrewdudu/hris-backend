@@ -19,7 +19,7 @@ public class GetCurrentUserCommandImpl implements GetCurrentUserCommand {
 
     @Override
     public Mono<UserResponse> execute(String username) {
-        return userRepository.findByUsername(username)
+        return userRepository.findFirstByUsername(username)
                 .flatMap(user -> userResponseHelper.getUserResponse(user));
     }
 

@@ -56,7 +56,7 @@ public class GetAttendancesCommandImplTests {
                 .employeeId("ID-123")
                 .build();
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         Date startDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-10-1");
@@ -131,7 +131,7 @@ public class GetAttendancesCommandImplTests {
                     }
                 });
 
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(attendanceRepository, Mockito.times(1)).findByEmployeeIdAndStartTimeBetweenOrderByStartTimeDesc(user.getEmployeeId(), startDate, endDate);
 
     }

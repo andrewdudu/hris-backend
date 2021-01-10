@@ -20,7 +20,7 @@ public class GetAvailableSpecialRequestsCommandImpl implements GetAvailableSpeci
 
     @Override
     public Mono<List<SpecialLeaveType>> execute(String username) {
-        return employeeRepository.findByEmail(username)
+        return employeeRepository.findFirstByEmail(username)
                 .map(this::getResponse);
     }
 

@@ -75,7 +75,7 @@ public class RequestResponseHelperTests {
                 .roles(Arrays.asList(UserRole.EMPLOYEE))
                 .build();
 
-        Mockito.when(userRepository.findByEmployeeId(request.getEmployeeId()))
+        Mockito.when(userRepository.findFirstByEmployeeId(request.getEmployeeId()))
                 .thenReturn(Mono.just(user));
 
         UserResponse userResponse = UserResponse.builder()
@@ -127,7 +127,7 @@ public class RequestResponseHelperTests {
                     Assert.assertEquals(expected, response);
                 });
 
-        Mockito.verify(userRepository, Mockito.times(1)).findByEmployeeId(request.getEmployeeId());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByEmployeeId(request.getEmployeeId());
         Mockito.verify(userResponseHelper, Mockito.times(1)).getUserResponse(user);
 
     }

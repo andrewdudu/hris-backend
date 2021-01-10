@@ -69,10 +69,10 @@ public class SetHolidayCommandImplTest {
                 .build();
         request.setRequester(user.getUsername());
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
-        Mockito.when(eventRepository.findByTitleAndDate(title, date))
+        Mockito.when(eventRepository.findFirstByTitleAndDate(title, date))
                 .thenReturn(Mono.empty());
 
         String id = "UUID";
@@ -104,8 +104,8 @@ public class SetHolidayCommandImplTest {
                     Assert.assertEquals(expected, response);
                 });
 
-        Mockito.verify(eventRepository, Mockito.times(1)).findByTitleAndDate(title, date);
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByTitleAndDate(title, date);
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(eventRepository, Mockito.times(1)).save(event);
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(uuidUtil, Mockito.times(1)).getNewID();
@@ -128,10 +128,10 @@ public class SetHolidayCommandImplTest {
                 .build();
         request.setRequester(user.getUsername());
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
-        Mockito.when(eventRepository.findByTitleAndDate(title, date))
+        Mockito.when(eventRepository.findFirstByTitleAndDate(title, date))
                 .thenReturn(Mono.empty());
 
         String id = "UUID";
@@ -160,8 +160,8 @@ public class SetHolidayCommandImplTest {
 
         setHolidayCommand.execute(request).subscribe();
 
-        Mockito.verify(eventRepository, Mockito.times(0)).findByTitleAndDate(title, date);
-        Mockito.verify(userRepository, Mockito.times(0)).findByUsername(user.getUsername());
+        Mockito.verify(eventRepository, Mockito.times(0)).findFirstByTitleAndDate(title, date);
+        Mockito.verify(userRepository, Mockito.times(0)).findFirstByUsername(user.getUsername());
         Mockito.verify(eventRepository, Mockito.times(0)).save(event);
         Mockito.verify(dateUtil, Mockito.times(0)).getNewDate();
         Mockito.verify(uuidUtil, Mockito.times(0)).getNewID();
@@ -185,7 +185,7 @@ public class SetHolidayCommandImplTest {
                 .build();
         request.setRequester(user.getUsername());
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         String id = "UUID";
@@ -201,7 +201,7 @@ public class SetHolidayCommandImplTest {
         event.setCreatedDate(date2);
 
         event.setCreatedBy(user.getUsername());
-        Mockito.when(eventRepository.findByTitleAndDate(title, date))
+        Mockito.when(eventRepository.findFirstByTitleAndDate(title, date))
                 .thenReturn(Mono.just(event));
 
         Mockito.when(uuidUtil.getNewID()).thenReturn(id);
@@ -212,8 +212,8 @@ public class SetHolidayCommandImplTest {
 
         setHolidayCommand.execute(request).subscribe();
 
-        Mockito.verify(eventRepository, Mockito.times(1)).findByTitleAndDate(title, date);
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByTitleAndDate(title, date);
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(eventRepository, Mockito.times(0)).save(event);
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(uuidUtil, Mockito.times(1)).getNewID();

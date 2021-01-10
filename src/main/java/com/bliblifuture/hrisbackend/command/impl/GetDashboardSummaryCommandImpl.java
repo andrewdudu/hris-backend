@@ -46,7 +46,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
 
     @Override
     public Mono<DashboardResponse> execute(String username) {
-        return userRepository.findByUsername(username)
+        return userRepository.findFirstByUsername(username)
                 .flatMap(this::getResponse);
     }
 
@@ -70,7 +70,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
             ReportResponse report = new ReportResponse();
             IncomingRequestTotalResponse request = new IncomingRequestTotalResponse();
 
-            return dailyAttendanceReportRepository.findByDate(startOfDate)
+            return dailyAttendanceReportRepository.findFirstByDate(startOfDate)
                     .switchIfEmpty(
                             Mono.just(DailyAttendanceReport.builder()
                             .date(startOfDate)

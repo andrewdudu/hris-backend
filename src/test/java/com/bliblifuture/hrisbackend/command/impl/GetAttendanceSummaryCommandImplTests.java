@@ -69,7 +69,7 @@ public class GetAttendanceSummaryCommandImplTests {
                 .employeeId("ID-123")
                 .build();
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         Date currentDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-11-15");
@@ -119,7 +119,7 @@ public class GetAttendanceSummaryCommandImplTests {
                 .childBirth(2)
                 .build();
 
-        Mockito.when(employeeLeaveSummaryRepository.findByYearAndEmployeeId(thisYear, user.getEmployeeId()))
+        Mockito.when(employeeLeaveSummaryRepository.findFirstByYearAndEmployeeId(thisYear, user.getEmployeeId()))
                 .thenReturn(Mono.just(summary));
 
         int expectedThisMonthLeaves = 3;
@@ -147,7 +147,7 @@ public class GetAttendanceSummaryCommandImplTests {
         Mockito.verify(attendanceRepository, Mockito.times(1)).countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentMonth);
         Mockito.verify(attendanceRepository, Mockito.times(1)).countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentYear);
         Mockito.verify(requestRepository, Mockito.times(1)).findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId());
-        Mockito.verify(employeeLeaveSummaryRepository, Mockito.times(1)).findByYearAndEmployeeId(thisYear, user.getEmployeeId());
+        Mockito.verify(employeeLeaveSummaryRepository, Mockito.times(1)).findFirstByYearAndEmployeeId(thisYear, user.getEmployeeId());
     }
 
 }

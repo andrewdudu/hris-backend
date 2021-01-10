@@ -77,7 +77,7 @@ public class GetEmployeesCommandImplTests {
                 .build();
         department.setId(depId);
 
-        Mockito.when(departmentRepository.findByCode(request.getDepartment()))
+        Mockito.when(departmentRepository.findFirstByCode(request.getDepartment()))
                 .thenReturn(Mono.just(department));
 
         Employee employee1 = Employee.builder()
@@ -182,7 +182,7 @@ public class GetEmployeesCommandImplTests {
                     }
                 });
 
-        Mockito.verify(departmentRepository, Mockito.times(1)).findByCode(request.getDepartment());
+        Mockito.verify(departmentRepository, Mockito.times(1)).findFirstByCode(request.getDepartment());
         Mockito.verify(employeeElasticsearchRepository, Mockito.times(1)).search("*a*", "DEP1");
         Mockito.verify(employeeRepository, Mockito.times(1)).findById(employeeIndex1.getId());
         Mockito.verify(employeeRepository, Mockito.times(1)).findById(employeeIndex2.getId());

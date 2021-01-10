@@ -69,7 +69,7 @@ public class AddSubstituteLeaveCommandImplTests {
         Date currentDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-30 10:00:00");
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         Date expDate = new Date(currentDate.getTime() + TimeUnit.DAYS.toMillis(90));
@@ -107,7 +107,7 @@ public class AddSubstituteLeaveCommandImplTests {
                     Assert.assertEquals(expected, response);
                 });
 
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(leaveRepository, Mockito.times(request.getTotal())).save(leave);
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(uuidUtil, Mockito.times(2)).getNewID();

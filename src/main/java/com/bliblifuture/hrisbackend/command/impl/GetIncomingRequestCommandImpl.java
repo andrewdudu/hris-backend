@@ -46,7 +46,7 @@ public class GetIncomingRequestCommandImpl implements GetIncomingRequestCommand 
             throw new IllegalArgumentException(msg);
         }
 
-        return userRepository.findByUsername(request.getRequester())
+        return userRepository.findFirstByUsername(request.getRequester())
                 .flatMap(user -> getRequestsData(user, request));
     }
 
@@ -81,7 +81,7 @@ public class GetIncomingRequestCommandImpl implements GetIncomingRequestCommand 
                     .map(total -> response.setPagingDetail(pagingRequest, Math.toIntExact(total)));
         }
 
-        return departmentRepository.findByCode(request.getDepartment())
+        return departmentRepository.findFirstByCode(request.getDepartment())
                 .flatMap(department -> requestRepository
                         .findByDepartmentIdAndStatusOrderByCreatedDateDesc(department.getId(), RequestStatus.valueOf(status), pageable)
                         .collectList()

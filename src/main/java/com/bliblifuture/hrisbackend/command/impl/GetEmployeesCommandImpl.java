@@ -81,13 +81,13 @@ public class GetEmployeesCommandImpl implements GetEmployeesCommand {
                     .collectList();
         }
         if (request.getName() == null || request.getName().isEmpty()){
-            return departmentRepository.findByCode(request.getDepartment())
+            return departmentRepository.findFirstByCode(request.getDepartment())
                     .doOnSuccess(this::checkNull)
                     .flatMap(department -> employeeRepository.findByDepId(department.getId())
                             .flatMap(this::createResponse)
                             .collectList());
         }
-        return departmentRepository.findByCode(request.getDepartment())
+        return departmentRepository.findFirstByCode(request.getDepartment())
                 .doOnSuccess(this::checkNull)
                 .flatMap(department -> employeeElasticsearchRepository.search("*" + request.getName().toLowerCase() + "*", department.getId().replace("-", ""))
                         .flatMap(employeeIndex -> employeeRepository.findById(employeeIndex.getId()))

@@ -85,7 +85,7 @@ public class ClockInCommandImplTests {
         Mockito.when(dateUtil.getNewDate())
                 .thenReturn(currentDate);
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         Date startOfDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-20");
@@ -129,7 +129,7 @@ public class ClockInCommandImplTests {
         report.setUpdatedDate(currentDate);
         report.setId("DA" + report.getDate().getTime());
 
-        Mockito.when(dailyAttendanceReportRepository.findByDate(startOfDate))
+        Mockito.when(dailyAttendanceReportRepository.findFirstByDate(startOfDate))
                 .thenReturn(Mono.empty());
 
         Mockito.when(dailyAttendanceReportRepository.save(report))
@@ -151,13 +151,13 @@ public class ClockInCommandImplTests {
                 });
 
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(attendanceRepository, Mockito.times(1)).findFirstByEmployeeIdAndDate(user.getEmployeeId(), startOfDate);
         Mockito.verify(uuidUtil, Mockito.times(1)).getNewID();
         Mockito.verify(officeRepository, Mockito.times(1)).findAll();
         Mockito.verify(attendanceRepository, Mockito.times(1)).save(attendance);
         Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1))
-                .findByDate(startOfDate);
+                .findFirstByDate(startOfDate);
         Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).save(report);
     }
 

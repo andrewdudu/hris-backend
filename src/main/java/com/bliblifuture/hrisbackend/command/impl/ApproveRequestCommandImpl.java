@@ -131,7 +131,7 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
     private Mono<Request> updateLeaveSummaryAndAttendanceReport(Request request, Date currentDate) {
         String year = String.valueOf(currentDate.getYear() + 1900);
 
-        return employeeLeaveSummaryRepository.findByYearAndEmployeeId(year, request.getEmployeeId())
+        return employeeLeaveSummaryRepository.findFirstByYearAndEmployeeId(year, request.getEmployeeId())
                 .switchIfEmpty(Mono.just(createLeaveSummary(request.getEmployeeId(), year, currentDate)))
                 .map(employeeLeaveSummary -> saveLeaveSummary(employeeLeaveSummary, request))
                 .flatMap(employeeLeaveSummary -> employeeLeaveSummaryRepository.save(employeeLeaveSummary))
@@ -147,7 +147,7 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
     }
 
     private Mono<DailyAttendanceReport> updateAttendanceReport(Date startOfDate, Date currentDate) {
-        return dailyAttendanceReportRepository.findByDate(startOfDate)
+        return dailyAttendanceReportRepository.findFirstByDate(startOfDate)
                 .switchIfEmpty(Mono.just(
                         DailyAttendanceReport.builder()
                                 .date(startOfDate)

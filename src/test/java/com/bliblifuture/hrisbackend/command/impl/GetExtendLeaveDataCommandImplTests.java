@@ -62,7 +62,7 @@ public class GetExtendLeaveDataCommandImplTests {
         Date extensionDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2021-3-1 00:00:00");
 
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         Leave annualLeave = Leave.builder()
@@ -75,7 +75,7 @@ public class GetExtendLeaveDataCommandImplTests {
         Mockito.when(leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateDesc(user.getEmployeeId(), LeaveType.annual, currentDate))
                 .thenReturn(Flux.just(annualLeave));
 
-        Mockito.when(requestRepository.findByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, extensionDate))
+        Mockito.when(requestRepository.findFirstByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, extensionDate))
                 .thenReturn(Mono.empty());
 
         ExtendLeaveQuotaResponse quota = ExtendLeaveQuotaResponse.builder()
@@ -94,9 +94,9 @@ public class GetExtendLeaveDataCommandImplTests {
                     Assert.assertEquals(expected.getQuota(), response.getQuota());
                 });
 
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(requestRepository, Mockito.times(1)).findByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, extensionDate);
+        Mockito.verify(requestRepository, Mockito.times(1)).findFirstByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, extensionDate);
         Mockito.verify(leaveRepository, Mockito.times(1)).findByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateDesc(user.getEmployeeId(), LeaveType.annual, currentDate);
     }
 

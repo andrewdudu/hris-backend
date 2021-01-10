@@ -16,6 +16,6 @@ public interface DepartmentRepository extends ReactiveMongoRepository<Department
 
     Mono<Department> findByName(String name);
 
-    Mono<Department> findByCode(String code);
+    Mono<Department> findFirstByCode(String code);
 
 }

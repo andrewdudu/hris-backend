@@ -54,7 +54,7 @@ public class GetCurrentUserCommandImplTests {
                 .password("pass")
                 .build();
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         UserResponse expected = UserResponse.builder()
@@ -77,7 +77,7 @@ public class GetCurrentUserCommandImplTests {
                     Assert.assertEquals(expected, response);
                 });
 
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(userResponseHelper, Mockito.times(1)).getUserResponse(user);
 
     }

@@ -30,7 +30,7 @@ public class LoginCommandImpl implements LoginCommand {
     @Override
     public Mono<LoginResponse> execute(LoginRequest request) {
         return Mono.fromCallable(request::getUsername)
-                .flatMap(username -> userRepository.findByUsername(username)
+                .flatMap(username -> userRepository.findFirstByUsername(username)
                         .doOnSuccess(this::checkNull)
                         .flatMap(user -> authenticateAndGetResponse(user, request))
                 );

@@ -50,7 +50,7 @@ public class GetLeavesDetailResponseCommandImpl implements GetLeavesDetailRespon
         if (request.getDepartment() != null){
             depCode = request.getDepartment();
         }
-        return departmentRepository.findByCode(depCode)
+        return departmentRepository.findFirstByCode(depCode)
                 .switchIfEmpty(Mono.just(Department.builder().build()))
                 .flatMap(department -> getRequests(request, department)
                         .switchIfEmpty(Flux.empty())

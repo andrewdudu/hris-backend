@@ -14,7 +14,7 @@ public interface EmployeeRepository extends ReactiveMongoRepository<Employee, St
     @Query("{ id: { $exists: true }}")
     Flux<Employee> findAll(final Pageable pageable);
 
-    Mono<Employee> findByEmail(String username);
+    Mono<Employee> findFirstByEmail(String username);
 
     Flux<Employee> findByDepId(String depId);
 

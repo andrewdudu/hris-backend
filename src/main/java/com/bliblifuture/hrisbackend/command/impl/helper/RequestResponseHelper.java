@@ -36,7 +36,7 @@ public class RequestResponseHelper {
                 .build();
         response.setId(request.getId());
 
-        return userRepository.findByEmployeeId(request.getEmployeeId())
+        return userRepository.findFirstByEmployeeId(request.getEmployeeId())
                 .flatMap(user -> userResponseHelper.getUserResponse(user))
                 .map(userResponse -> {
                     response.setUser(userResponse);

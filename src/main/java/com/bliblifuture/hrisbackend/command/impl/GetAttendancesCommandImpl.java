@@ -27,7 +27,7 @@ public class GetAttendancesCommandImpl implements GetAttendancesCommand {
 
     @Override
     public Mono<List<AttendanceResponse>> execute(AttendanceListRequest request) {
-        return userRepository.findByUsername(request.getUsername())
+        return userRepository.findFirstByUsername(request.getUsername())
                 .flatMap(user -> attendanceRepository
                         .findByEmployeeIdAndStartTimeBetweenOrderByStartTimeDesc(user.getEmployeeId(), request.getStartDate(), request.getEndDate())
                         .switchIfEmpty(Flux.empty())

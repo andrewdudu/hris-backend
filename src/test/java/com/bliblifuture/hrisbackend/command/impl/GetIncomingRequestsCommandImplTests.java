@@ -83,7 +83,7 @@ public class GetIncomingRequestsCommandImplTests {
                 .build();
         request.setRequester(admin.getUsername());
 
-        Mockito.when(userRepository.findByUsername(request.getRequester()))
+        Mockito.when(userRepository.findFirstByUsername(request.getRequester()))
                 .thenReturn(Mono.just(admin));
 
         Department department = Department.builder()
@@ -91,7 +91,7 @@ public class GetIncomingRequestsCommandImplTests {
                 .code(depCode)
                 .build();
 
-        Mockito.when(departmentRepository.findByCode(request.getDepartment()))
+        Mockito.when(departmentRepository.findFirstByCode(request.getDepartment()))
                 .thenReturn(Mono.just(department));
 
         User user1 = User.builder().employeeId("id123").username("username1").build();
@@ -195,7 +195,7 @@ public class GetIncomingRequestsCommandImplTests {
 
         Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(request1);
         Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(request2);
-        Mockito.verify(departmentRepository, Mockito.times(1)).findByCode(request.getDepartment());
+        Mockito.verify(departmentRepository, Mockito.times(1)).findFirstByCode(request.getDepartment());
         Mockito.verify(requestRepository, Mockito.times(1))
                 .findByDepartmentIdAndStatusOrderByCreatedDateDesc(department.getId(), RequestStatus.valueOf(type), pageable);
         Mockito.verify(requestRepository, Mockito.times(1)).countByDepartmentIdAndStatus(department.getId(), RequestStatus.valueOf(type));

@@ -66,14 +66,14 @@ public class AddAnnouncementCommandImplTests {
                 .build();
         request.setRequester(user.getUsername());
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         Date currentDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-30 10:00:00");
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
 
         Date startOfDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-30");
-        Mockito.when(eventRepository.findByTitleAndDate(title, startOfDate))
+        Mockito.when(eventRepository.findFirstByTitleAndDate(title, startOfDate))
                 .thenReturn(Mono.empty());
 
         String id = "UUID";
@@ -100,8 +100,8 @@ public class AddAnnouncementCommandImplTests {
                     Assert.assertEquals(expected, response);
                 });
 
-        Mockito.verify(eventRepository, Mockito.times(1)).findByTitleAndDate(title, startOfDate);
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByTitleAndDate(title, startOfDate);
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(eventRepository, Mockito.times(1)).save(event);
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(uuidUtil, Mockito.times(1)).getNewID();
@@ -122,7 +122,7 @@ public class AddAnnouncementCommandImplTests {
                 .build();
         request.setRequester(user.getUsername());
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         String id = "UUID";
@@ -143,15 +143,15 @@ public class AddAnnouncementCommandImplTests {
         event.setCreatedBy(user.getUsername());
 
         event.setCreatedBy(user.getUsername());
-        Mockito.when(eventRepository.findByTitleAndDate(title, startOfDate))
+        Mockito.when(eventRepository.findFirstByTitleAndDate(title, startOfDate))
                 .thenReturn(Mono.just(event));
 
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
 
         addAnnouncementCommand.execute(request).subscribe();
 
-        Mockito.verify(eventRepository, Mockito.times(1)).findByTitleAndDate(title, startOfDate);
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByTitleAndDate(title, startOfDate);
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(eventRepository, Mockito.times(0)).save(event);
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(uuidUtil, Mockito.times(1)).getNewID();

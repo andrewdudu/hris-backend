@@ -74,7 +74,7 @@ public class GetDashboardSummaryCommandImplTests {
                 .employeeId("ID-123")
                 .build();
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         Date currentDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-12 09:00:00");
@@ -82,7 +82,7 @@ public class GetDashboardSummaryCommandImplTests {
                 .thenReturn(currentDate);
 
         Date startOfDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-12");
-        Mockito.when(dailyAttendanceReportRepository.findByDate(startOfDate))
+        Mockito.when(dailyAttendanceReportRepository.findFirstByDate(startOfDate))
                 .thenReturn(Mono.empty());
 
         DailyAttendanceReport report = DailyAttendanceReport.builder()
@@ -99,7 +99,7 @@ public class GetDashboardSummaryCommandImplTests {
         Mockito.when(dailyAttendanceReportRepository.save(report))
                 .thenReturn(Mono.just(report));
 
-        Mockito.when(eventRepository.findByDate(startOfDate))
+        Mockito.when(eventRepository.findFirstByDate(startOfDate))
                 .thenReturn(Mono.empty());
 
         long requestCount = 10L;
@@ -172,11 +172,11 @@ public class GetDashboardSummaryCommandImplTests {
                     Assert.assertEquals(expected, response);
                 });
 
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).findByDate(startOfDate);
+        Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).findFirstByDate(startOfDate);
         Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).save(report);
-        Mockito.verify(eventRepository, Mockito.times(1)).findByDate(startOfDate);
+        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByDate(startOfDate);
         Mockito.verify(requestRepository, Mockito.times(1)).countByStatus(RequestStatus.REQUESTED);
         Mockito.verify(attendanceRepository, Mockito.times(1)).findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable);
     }

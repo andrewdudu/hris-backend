@@ -62,11 +62,11 @@ public class ClockInCommandImpl implements ClockInCommand {
         Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(dateString + startTime);
         return Mono.fromCallable(request::getRequester)
-                .flatMap(username -> userRepository.findByUsername(username))
+                .flatMap(username -> userRepository.findFirstByUsername(username))
                 .flatMap(user -> createAttendance(user, request, currentDate, startOfDate))
                 .flatMap(attendance -> clockInProcess(attendance, request))
                 .flatMap(attendance -> attendanceRepository.save(attendance))
-                .flatMap(attendance -> dailyAttendanceReportRepository.findByDate(startOfDate)
+                .flatMap(attendance -> dailyAttendanceReportRepository.findFirstByDate(startOfDate)
                         .switchIfEmpty(
                                 Mono.just(DailyAttendanceReport.builder()
                                         .date(startOfDate)

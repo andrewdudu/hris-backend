@@ -42,8 +42,8 @@ public class GetExtendLeaveDataCommandImpl implements GetExtendLeaveDataCommand 
         int year = currentDate.getYear() + 1900;
         Date extensionDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse((year+1) + "-3-1 00:00:00");
 
-        return userRepository.findByUsername(username)
-                .flatMap(user -> requestRepository.findByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, extensionDate)
+        return userRepository.findFirstByUsername(username)
+                .flatMap(user -> requestRepository.findFirstByEmployeeIdAndTypeAndDatesContains(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, extensionDate)
                         .switchIfEmpty(Mono.just(Request.builder().build()))
                         .map(leaveRequest -> setResponseStatus(leaveRequest, currentDate))
                         .flatMap(response -> setResponseQuota(response, user.getEmployeeId(), currentDate, extensionDate))
