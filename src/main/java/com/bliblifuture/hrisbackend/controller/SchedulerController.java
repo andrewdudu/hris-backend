@@ -6,7 +6,6 @@ import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.AutoClockoutCommand;
 import com.bliblifuture.hrisbackend.command.UpdateLeaveQuota;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,14 +19,14 @@ public class SchedulerController {
     @Autowired
     private CommandExecutor commandExecutor;
 
-    @PostMapping("/annual-leave")
-    public Mono<Response<String>> updateAnnualLeave(){
+    @PostMapping("/update-leave")
+    public Mono<Response<String>> updateLeaveQuota(){
         return commandExecutor.execute(UpdateLeaveQuota.class, "")
                 .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/auto-clockout")
     public Mono<Response<String>> autoClockout(){
         return commandExecutor.execute(AutoClockoutCommand.class, "")

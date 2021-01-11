@@ -35,7 +35,8 @@
         },
         "location": {
           "type": "INSIDE|OUTSIDE"
-        }
+        },
+        "status" : "AVAILABLE|UNAVAILABLE"
       },
       "latest": {
         "date": {
