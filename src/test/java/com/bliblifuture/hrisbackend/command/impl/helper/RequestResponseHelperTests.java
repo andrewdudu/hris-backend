@@ -6,7 +6,7 @@ import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
-import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestResponse;
 import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
 import com.bliblifuture.hrisbackend.model.response.util.LeaveResponse;
@@ -75,7 +75,7 @@ public class RequestResponseHelperTests {
                 .roles(Arrays.asList(UserRole.EMPLOYEE))
                 .build();
 
-        Mockito.when(userRepository.findByEmployeeId(request.getEmployeeId()))
+        Mockito.when(userRepository.findFirstByEmployeeId(request.getEmployeeId()))
                 .thenReturn(Mono.just(user));
 
         UserResponse userResponse = UserResponse.builder()
@@ -112,7 +112,7 @@ public class RequestResponseHelperTests {
                 .leave(leave)
                 .build();
 
-        IncomingRequestResponse expected = IncomingRequestResponse.builder()
+        RequestResponse expected = RequestResponse.builder()
                 .date(request.getCreatedDate())
                 .status(request.getStatus())
                 .approvedby(request.getApprovedBy())
@@ -127,7 +127,7 @@ public class RequestResponseHelperTests {
                     Assert.assertEquals(expected, response);
                 });
 
-        Mockito.verify(userRepository, Mockito.times(1)).findByEmployeeId(request.getEmployeeId());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByEmployeeId(request.getEmployeeId());
         Mockito.verify(userResponseHelper, Mockito.times(1)).getUserResponse(user);
 
     }

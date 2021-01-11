@@ -77,7 +77,7 @@ public class GetLeavesDetailResponseCommandImplTests {
                 .name("InfoTech")
                 .build();
         department.setId("ID-1");
-        Mockito.when(departmentRepository.findByCode(departmentCode))
+        Mockito.when(departmentRepository.findFirstByCode(departmentCode))
                 .thenReturn(Mono.just(department));
 
         Date currentDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-20 09:00:00");
@@ -189,7 +189,7 @@ public class GetLeavesDetailResponseCommandImplTests {
                     }
                 });
 
-        Mockito.verify(departmentRepository, Mockito.times(1)).findByCode(departmentCode);
+        Mockito.verify(departmentRepository, Mockito.times(1)).findFirstByCode(departmentCode);
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(requestRepository, Mockito.times(1)).findByDepartmentIdAndDatesBetweenAndStatus(department.getId(), startOfThisMonth,
                 endOfThisMonth, RequestStatus.APPROVED);

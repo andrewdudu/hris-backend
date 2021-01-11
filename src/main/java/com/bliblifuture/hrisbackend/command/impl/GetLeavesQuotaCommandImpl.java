@@ -11,12 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class GetLeavesQuotaCommandImpl implements GetLeavesQuotaCommand {
@@ -31,13 +29,8 @@ public class GetLeavesQuotaCommandImpl implements GetLeavesQuotaCommand {
     @Override
     public Mono<List<LeaveResponse>> execute(String employeeId) {
         Date currentDate = dateUtil.getNewDate();
-        int year = currentDate.getYear() + 1900;
 
-        Date startOfThisYear = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
-                .parse(year + "-1-1" + " 00:00:00");
-        Date endOfLastYear = new Date(startOfThisYear.getTime() - TimeUnit.SECONDS.toMillis(1));
-
-        return leaveRepository.findByEmployeeIdAndExpDateAfter(employeeId, endOfLastYear)
+        return leaveRepository.findByEmployeeIdAndExpDateAfter(employeeId, currentDate)
                 .collectList()
                 .map(this::createResponse);
     }
@@ -72,6 +65,7 @@ public class GetLeavesQuotaCommandImpl implements GetLeavesQuotaCommand {
                 substituteResponse.setUsed(substituteResponse.getUsed() + used);
             }
         }
+        System.out.println(responses);
 
         return responses;
     }

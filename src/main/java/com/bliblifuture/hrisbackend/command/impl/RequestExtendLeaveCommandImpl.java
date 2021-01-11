@@ -42,8 +42,8 @@ public class RequestExtendLeaveCommandImpl implements RequestExtendLeaveCommand 
             return Mono.just(response);
         }
 
-        return userRepository.findByUsername(request.getRequester())
-                .flatMap(user -> requestRepository.findByEmployeeIdAndTypeAndStatus(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, RequestStatus.REQUESTED)
+        return userRepository.findFirstByUsername(request.getRequester())
+                .flatMap(user -> requestRepository.findFirstByEmployeeIdAndTypeAndStatus(user.getEmployeeId(), RequestType.EXTEND_ANNUAL_LEAVE, RequestStatus.REQUESTED)
                         .doOnNext(this::checkRequest)
                         .switchIfEmpty(Mono.just(createLeaveRequest(request, currentDate, user)))
                         .flatMap(leaveRequest -> requestRepository.save(leaveRequest))

@@ -46,7 +46,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
 
     @Override
     public Mono<DashboardResponse> execute(String username) {
-        return userRepository.findByUsername(username)
+        return userRepository.findFirstByUsername(username)
                 .flatMap(this::getResponse);
     }
 
@@ -70,7 +70,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
             ReportResponse report = new ReportResponse();
             IncomingRequestTotalResponse request = new IncomingRequestTotalResponse();
 
-            return dailyAttendanceReportRepository.findByDate(startOfDate)
+            return dailyAttendanceReportRepository.findFirstByDate(startOfDate)
                     .switchIfEmpty(
                             Mono.just(DailyAttendanceReport.builder()
                             .date(startOfDate)
@@ -83,9 +83,9 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
                     .flatMap(res -> {
                         report.setWorking(res.getWorking());
                         report.setAbsent(res.getAbsent());
-                        return eventRepository.findByDate(startOfDate);
+                        return eventRepository.findFirstByDateAndStatus(startOfDate, CalendarStatus.HOLIDAY)
+                                .switchIfEmpty(Mono.just(Event.builder().status(CalendarStatus.WORKING).build()));
                     })
-                    .switchIfEmpty(Mono.just(Event.builder().status(CalendarStatus.WORKING).build()))
                     .map(event -> setCalendarResponse(startOfDate, response, event))
                     .flatMap(res -> requestRepository.countByStatus(RequestStatus.REQUESTED))
                     .map(incomingReqTotal -> {
@@ -103,7 +103,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
         else if(user.getRoles().contains(UserRole.MANAGER)){
             IncomingRequestTotalResponse request = new IncomingRequestTotalResponse();
 
-            return eventRepository.findByDate(startOfDate)
+            return eventRepository.findFirstByDateAndStatus(startOfDate, CalendarStatus.HOLIDAY)
                     .switchIfEmpty(Mono.just(Event.builder().status(CalendarStatus.WORKING).build()))
                     .map(event -> setCalendarResponse(startOfDate, response, event))
                     .flatMap(res -> requestRepository.countByStatusAndManager(RequestStatus.REQUESTED, user.getUsername()))
@@ -121,7 +121,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
 
         return attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable).collectList()
                 .map(attendanceList -> setAttendanceResponse(attendanceList, response, startOfDate))
-                .flatMap(res -> eventRepository.findByDate(startOfDate))
+                .flatMap(res -> eventRepository.findFirstByDateAndStatus(startOfDate, CalendarStatus.HOLIDAY))
                 .switchIfEmpty(Mono.just(Event.builder().status(CalendarStatus.WORKING).build()))
                 .map(event -> setCalendarResponse(startOfDate, response, event));
     }
@@ -183,6 +183,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     }
 
     private DashboardResponse setCalendarResponse(Date currentDate, DashboardResponse response, Event event) {
+        System.out.println(event);
         response.getCalendar().setStatus(event.getStatus());
         response.getCalendar().setDate(currentDate);
         return response;

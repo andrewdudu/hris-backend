@@ -20,5 +20,7 @@ public class AnnouncementResponse extends BaseResponse{
 
     private String notes;
 
+    private String description;
+
     private CalendarStatus status;
 }

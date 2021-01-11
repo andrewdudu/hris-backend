@@ -33,7 +33,7 @@ public class ClockOutCommandImpl implements ClockOutCommand {
     @Override
     public Mono<AttendanceResponse> execute(ClockInClockOutRequest request) {
         return Mono.fromCallable(request::getRequester)
-                .flatMap(username -> userRepository.findByUsername(username))
+                .flatMap(username -> userRepository.findFirstByUsername(username))
                 .flatMap(user -> getTodayAttendance(user, request))
                 .flatMap(attendance -> attendanceRepository.save(attendance))
                 .map(this::createResponse);

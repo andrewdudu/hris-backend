@@ -15,7 +15,7 @@ public class GetUserDetailsByUsernameCommandImpl implements GetUserDetailsByUser
 
     @Override
     public Mono<User> execute(String username) {
-        return userRepository.findByUsername(username);
+        return userRepository.findFirstByUsername(username);
     }
 
 }

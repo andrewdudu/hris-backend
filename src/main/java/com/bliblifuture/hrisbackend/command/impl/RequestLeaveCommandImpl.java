@@ -51,7 +51,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
         return filterDate(request)
                 .flatMap(newDates -> {
                     request.setDates(newDates);
-                    return userRepository.findByUsername(request.getRequester());
+                    return userRepository.findFirstByUsername(request.getRequester());
                 })
                 .flatMap(user -> callHelper(request, user)
                         .flatMap(entity -> employeeRepository.findById(user.getEmployeeId())
@@ -72,7 +72,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
         List<String> newDates = new ArrayList<>();
         return Flux.fromIterable(request.getDates())
                 .map(this::getDate)
-                .flatMap(date -> eventRepository.findByDateAndStatus(date, CalendarStatus.HOLIDAY)
+                .flatMap(date -> eventRepository.findFirstByDateAndStatus(date, CalendarStatus.HOLIDAY)
                         .switchIfEmpty(Mono.just(Event.builder().build()))
                         .map(event -> {
                             inputNewDate(event, newDates, date);

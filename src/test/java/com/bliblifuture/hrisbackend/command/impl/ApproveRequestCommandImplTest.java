@@ -11,7 +11,7 @@ import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.BaseRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
-import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
 import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
@@ -123,7 +123,7 @@ public class ApproveRequestCommandImplTest {
         Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(dateString + startTime);
 
-        Mockito.when(dailyAttendanceReportRepository.findByDate(startOfDate))
+        Mockito.when(dailyAttendanceReportRepository.findFirstByDate(startOfDate))
                 .thenReturn(Mono.empty());
 
         DailyAttendanceReport report = DailyAttendanceReport.builder()
@@ -169,7 +169,7 @@ public class ApproveRequestCommandImplTest {
         Mockito.when(attendanceRepository.save(attendance))
                 .thenReturn(Mono.just(attendance));
 
-        IncomingRequestResponse expected = IncomingRequestResponse.builder()
+        RequestResponse expected = RequestResponse.builder()
                 .user(userResponse)
                 .status(RequestStatus.APPROVED)
                 .type(RequestType.ATTENDANCE)
@@ -195,7 +195,7 @@ public class ApproveRequestCommandImplTest {
         Mockito.verify(uuidUtil, Mockito.times(1)).getNewID();
         Mockito.verify(attendanceRepository, Mockito.times(1)).save(attendance);
         Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(approvedRequest);
-        Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).findByDate(startOfDate);
+        Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).findFirstByDate(startOfDate);
         Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).save(report);
 
     }

@@ -44,9 +44,9 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
         Date currentDate = dateUtil.getNewDate();
         Date startOfNextYear = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse((currentDate.getYear()+1901) + "-1-1 00:00:00");
-        return employeeRepository.findByEmail(username)
+        return employeeRepository.findFirstByEmail(username)
                 .map(employee -> getResponse(employee, currentDate))
-                .flatMap(response -> userRepository.findByUsername(username)
+                .flatMap(response -> userRepository.findFirstByUsername(username)
                         .flatMap(user -> leaveRepository.findFirstByTypeAndEmployeeIdAndExpDate(LeaveType.annual, user.getEmployeeId(), startOfNextYear)
                                 .switchIfEmpty(Mono.just(Leave.builder().build()))
                                 .map(leave -> checkExtendLeave(leave, response, currentDate))
@@ -73,6 +73,7 @@ public class GetAvailableRequestsCommandImpl implements GetAvailableRequestsComm
             response.add(RequestType.INCOMING_REQUESTS);
             response.add(RequestType.SET_HOLIDAY);
             response.add(RequestType.EMPLOYEE);
+            response.add(RequestType.ADD_ANNOUNCEMENT);
         }
         return response;
     }

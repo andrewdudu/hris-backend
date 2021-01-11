@@ -81,7 +81,7 @@ public class GetLeavesReportCommandImplTests {
         Date startOfTheYear = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-1-1");
 
         String year = "2020";
-        Mockito.when(employeeLeaveSummaryRepository.findByYearAndEmployeeId(year, user.getEmployeeId()))
+        Mockito.when(employeeLeaveSummaryRepository.findFirstByYearAndEmployeeId(year, user.getEmployeeId()))
                 .thenReturn(Mono.empty());
 
         EmployeeLeaveSummary leaveSummary = EmployeeLeaveSummary.builder()
@@ -260,7 +260,7 @@ public class GetLeavesReportCommandImplTests {
                 });
 
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(employeeLeaveSummaryRepository, Mockito.times(1)).findByYearAndEmployeeId(year, user.getEmployeeId());
+        Mockito.verify(employeeLeaveSummaryRepository, Mockito.times(1)).findFirstByYearAndEmployeeId(year, user.getEmployeeId());
         Mockito.verify(employeeLeaveSummaryRepository, Mockito.times(1)).save(leaveSummary);
         Mockito.verify(requestRepository, Mockito.times(1)).findByDatesAfterAndStatusAndEmployeeId(startOfTheYear, RequestStatus.REQUESTED, user.getEmployeeId());
         Mockito.verify(attendanceRepository, Mockito.times(1)).countByEmployeeIdAndDateAfter(user.getEmployeeId(), lastTimeOfLastYear);

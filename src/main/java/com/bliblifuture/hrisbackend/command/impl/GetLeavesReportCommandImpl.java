@@ -60,7 +60,7 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
 
         LeaveReportResponse response = LeaveReportResponse.builder().build();
 
-        return employeeLeaveSummaryRepository.findByYearAndEmployeeId(theYear, employeeId)
+        return employeeLeaveSummaryRepository.findFirstByYearAndEmployeeId(theYear, employeeId)
                 .switchIfEmpty(createLeaveSummary(employeeId, theYear, currentDate)
                         .flatMap(employeeLeaveSummary -> employeeLeaveSummaryRepository.save(employeeLeaveSummary))
                 )

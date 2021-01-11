@@ -8,7 +8,7 @@ import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.GetIncomingRequest;
 import com.bliblifuture.hrisbackend.model.request.PagingRequest;
-import com.bliblifuture.hrisbackend.model.response.IncomingRequestResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestResponse;
 import com.bliblifuture.hrisbackend.model.response.PagingResponse;
 import com.bliblifuture.hrisbackend.repository.DepartmentRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
@@ -40,18 +40,18 @@ public class GetIncomingRequestCommandImpl implements GetIncomingRequestCommand 
 
     @SneakyThrows
     @Override
-    public Mono<PagingResponse<IncomingRequestResponse>> execute(GetIncomingRequest request) {
+    public Mono<PagingResponse<RequestResponse>> execute(GetIncomingRequest request) {
         if (request.getType() == null || request.getType().isEmpty()){
             String msg = "type=INVALID_REQUEST";
             throw new IllegalArgumentException(msg);
         }
 
-        return userRepository.findByUsername(request.getRequester())
+        return userRepository.findFirstByUsername(request.getRequester())
                 .flatMap(user -> getRequestsData(user, request));
     }
 
-    public Mono<PagingResponse<IncomingRequestResponse>> getRequestsData(User user, GetIncomingRequest request){
-        PagingResponse<IncomingRequestResponse> response = new PagingResponse<>();
+    public Mono<PagingResponse<RequestResponse>> getRequestsData(User user, GetIncomingRequest request){
+        PagingResponse<RequestResponse> response = new PagingResponse<>();
 
         String status = request.getType();
         PagingRequest pagingRequest = PagingRequest.builder()
@@ -81,7 +81,7 @@ public class GetIncomingRequestCommandImpl implements GetIncomingRequestCommand 
                     .map(total -> response.setPagingDetail(pagingRequest, Math.toIntExact(total)));
         }
 
-        return departmentRepository.findByCode(request.getDepartment())
+        return departmentRepository.findFirstByCode(request.getDepartment())
                 .flatMap(department -> requestRepository
                         .findByDepartmentIdAndStatusOrderByCreatedDateDesc(department.getId(), RequestStatus.valueOf(status), pageable)
                         .collectList()
@@ -94,7 +94,7 @@ public class GetIncomingRequestCommandImpl implements GetIncomingRequestCommand 
                 );
     }
 
-    public Mono<List<IncomingRequestResponse>> getResponses(List<Request> requests){
+    public Mono<List<RequestResponse>> getResponses(List<Request> requests){
         return Flux.fromIterable(requests)
                 .flatMap(incomingRequest -> requestResponseHelper.createResponse(incomingRequest))
                 .collectList();

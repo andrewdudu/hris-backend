@@ -64,7 +64,7 @@ public class LoginCommandImplTests {
                 .password("password")
                 .build();
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         Mockito.when(passwordEncoder.matches(request.getPassword(), user.getPassword()))
@@ -91,7 +91,7 @@ public class LoginCommandImplTests {
                     Assert.assertEquals(expected, response);
                 });
 
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(passwordEncoder, Mockito.times(1)).matches(request.getPassword(), user.getPassword());
         Mockito.verify(jwtTokenUtil, Mockito.times(1)).generateToken(user);
         Mockito.verify(userResponseHelper, Mockito.times(1)).getUserResponse(user);

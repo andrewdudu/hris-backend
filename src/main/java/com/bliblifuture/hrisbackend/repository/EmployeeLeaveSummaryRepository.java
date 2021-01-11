@@ -14,6 +14,6 @@ public interface EmployeeLeaveSummaryRepository extends ReactiveMongoRepository<
     @Query("{ id: { $exists: true }}")
     Flux<EmployeeLeaveSummary> findAll(final Pageable pageable);
 
-    Mono<EmployeeLeaveSummary> findByYearAndEmployeeId(String year, String employeeId);
+    Mono<EmployeeLeaveSummary> findFirstByYearAndEmployeeId(String year, String employeeId);
 
 }

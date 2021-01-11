@@ -37,7 +37,7 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
 
     @Override
     public Mono<AttendanceRequestResponse> execute(AttendanceRequestData request) {
-        return userRepository.findByUsername(request.getRequester())
+        return userRepository.findFirstByUsername(request.getRequester())
                 .map(user -> createRequestEntity(request, user))
                 .flatMap(req -> employeeRepository.findById(req.getEmployeeId())
                         .map(employee -> {

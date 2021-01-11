@@ -14,8 +14,8 @@ public interface UserRepository extends ReactiveMongoRepository<User, String> {
     @Query("{ id: { $exists: true }}")
     Flux<User> findAll(final Pageable pageable);
 
-    Mono<User> findByUsername(String username);
+    Mono<User> findFirstByUsername(String username);
 
-    Mono<User> findByEmployeeId(String employeeId);
+    Mono<User> findFirstByEmployeeId(String employeeId);
 
 }

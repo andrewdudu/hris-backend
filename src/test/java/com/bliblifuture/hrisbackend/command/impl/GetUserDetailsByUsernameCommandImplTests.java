@@ -45,7 +45,7 @@ public class GetUserDetailsByUsernameCommandImplTests {
                 .employeeId("emp-123")
                 .build();
 
-        Mockito.when(userRepository.findByUsername(username))
+        Mockito.when(userRepository.findFirstByUsername(username))
                 .thenReturn(Mono.just(expected));
 
         getUserDetailsByUsernameCommand.execute(username)

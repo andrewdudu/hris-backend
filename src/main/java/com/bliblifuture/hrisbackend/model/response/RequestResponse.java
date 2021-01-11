@@ -14,7 +14,7 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class IncomingRequestResponse extends BaseResponse{
+public class RequestResponse extends BaseResponse{
 
     private UserResponse user;
 

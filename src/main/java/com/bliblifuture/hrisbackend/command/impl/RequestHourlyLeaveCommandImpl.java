@@ -36,7 +36,7 @@ public class RequestHourlyLeaveCommandImpl implements RequestHourlyLeaveCommand 
 
     @Override
     public Mono<HourlyLeaveResponse> execute(HourlyLeaveRequest request) {
-        return employeeRepository.findByEmail(request.getRequester())
+        return employeeRepository.findFirstByEmail(request.getRequester())
                 .map(employee -> createRequest(employee, request))
                 .flatMap(requestEntity -> requestRepository.save(requestEntity))
                 .map(requestEntity -> createResponse(request));

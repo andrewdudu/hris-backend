@@ -64,7 +64,8 @@
   "location": {
     "lat": 787.123123,
     "lon": 178.123123
-  }
+  },
+  "status": "WARNING|FINISH"
 }
 ```
 

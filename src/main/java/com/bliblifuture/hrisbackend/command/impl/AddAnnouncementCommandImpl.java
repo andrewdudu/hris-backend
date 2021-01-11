@@ -35,7 +35,7 @@ public class AddAnnouncementCommandImpl implements AddAnnouncementCommand {
 
     @Override
     public Mono<AnnouncementResponse> execute(AnnouncementRequest request) {
-        return userRepository.findByUsername(request.getRequester())
+        return userRepository.findFirstByUsername(request.getRequester())
                 .flatMap(user -> createAnnouncement(request, user))
                 .flatMap(event -> eventRepository.save(event))
                 .map(this::createResponse);
@@ -68,7 +68,7 @@ public class AddAnnouncementCommandImpl implements AddAnnouncementCommand {
         event.setId(uuidUtil.getNewID());
         event.setCreatedBy(user.getUsername());
         event.setCreatedDate(currentDate);
-        return eventRepository.findByTitleAndDate(request.getTitle(), startOfDate)
+        return eventRepository.findFirstByTitleAndDate(request.getTitle(), startOfDate)
                 .doOnNext(this::checkIfExists)
                 .switchIfEmpty(Mono.just(event));
     }

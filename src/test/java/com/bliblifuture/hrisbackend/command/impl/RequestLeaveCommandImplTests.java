@@ -95,7 +95,7 @@ public class RequestLeaveCommandImplTests {
         String pathFile2 = FileConstant.REQUEST_IMAGE_BASE_URL + request.getType() + "-" + user.getEmployeeId()
                 + "-2-" + currentDate.getTime() + ".webp";
 
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         Employee employee = Employee.builder()
@@ -111,10 +111,10 @@ public class RequestLeaveCommandImplTests {
         Mockito.when(dateUtil.getNewDate())
                 .thenReturn(currentDate);
 
-        Mockito.when(eventRepository.findByDateAndStatus(date1, CalendarStatus.HOLIDAY))
+        Mockito.when(eventRepository.findFirstByDateAndStatus(date1, CalendarStatus.HOLIDAY))
                 .thenReturn(Mono.empty());
 
-        Mockito.when(eventRepository.findByDateAndStatus(date2, CalendarStatus.HOLIDAY))
+        Mockito.when(eventRepository.findFirstByDateAndStatus(date2, CalendarStatus.HOLIDAY))
                 .thenReturn(Mono.empty());
 
         Request req = Request.builder()
@@ -148,11 +148,11 @@ public class RequestLeaveCommandImplTests {
                     Assert.assertEquals(expected.getNotes(), response.getNotes());
                 });
 
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(requestRepository, Mockito.times(1)).save(req);
-        Mockito.verify(eventRepository, Mockito.times(1)).findByDateAndStatus(date1, CalendarStatus.HOLIDAY);
-        Mockito.verify(eventRepository, Mockito.times(1)).findByDateAndStatus(date2, CalendarStatus.HOLIDAY);
+        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByDateAndStatus(date1, CalendarStatus.HOLIDAY);
+        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByDateAndStatus(date2, CalendarStatus.HOLIDAY);
         Mockito.verify(employeeRepository, Mockito.times(1)).findById(user.getEmployeeId());
     }
 

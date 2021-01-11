@@ -39,7 +39,7 @@ public class AddSubstituteLeaveCommandImpl implements AddSubstituteLeaveCommand 
     public Mono<SubstituteLeaveResponse> execute(SubstituteLeaveRequest request) {
         Date currentDate = dateUtil.getNewDate();
 
-        return userRepository.findByUsername(request.getRequester())
+        return userRepository.findFirstByUsername(request.getRequester())
                 .flatMap(user -> createLeave(request, user, currentDate)
                         .flatMap(leave -> leaveRepository.save(leave))
                         .collectList()

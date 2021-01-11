@@ -64,7 +64,7 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
                 .parse(thisYear + "-1-1");
         Date endOfLastYear = new Date(startOfThisYear.getTime() - TimeUnit.SECONDS.toMillis(1));
 
-        return userRepository.findByUsername(username)
+        return userRepository.findFirstByUsername(username)
                 .flatMap(user -> attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), endOfLastMonth)
                         .flatMap(monthAttendance -> {
                             month.setAttendance(Math.toIntExact(monthAttendance));
@@ -79,7 +79,7 @@ public class GetAttendanceSummaryCommandImpl implements GetAttendanceSummaryComm
                         .map(this::countThisMonthLeave)
                         .flatMap(totalThisMonthLeaves -> {
                             month.setAbsent(totalThisMonthLeaves);
-                            return employeeLeaveSummaryRepository.findByYearAndEmployeeId(String.valueOf(thisYear), user.getEmployeeId())
+                            return employeeLeaveSummaryRepository.findFirstByYearAndEmployeeId(String.valueOf(thisYear), user.getEmployeeId())
                                     .switchIfEmpty(Mono.empty());
                         })
                         .map(this::countThisYearLeaves)

@@ -76,7 +76,7 @@ public class RequestAttendanceCommandImplTests {
         request.setRequester(user.getUsername());
 
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
-        Mockito.when(userRepository.findByUsername(user.getUsername()))
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
                 .thenReturn(Mono.just(user));
 
         Employee employee = Employee.builder()
@@ -127,7 +127,7 @@ public class RequestAttendanceCommandImplTests {
                     Assert.assertEquals(expected.getNotes(), response.getNotes());
                 });
 
-        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(user.getUsername());
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(requestRepository, Mockito.times(1)).save(req);
         Mockito.verify(employeeRepository, Mockito.times(1)).findById(user.getEmployeeId());
