@@ -65,9 +65,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
                                     return entity;
                                 }))
                 )
-                .flatMap(leaveRequest -> {
-                    return requestRepository.save(leaveRequest);
-                })
+                .flatMap(leaveRequest -> requestRepository.save(leaveRequest))
                 .map(this::createResponse);
     }
 
