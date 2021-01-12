@@ -1,6 +1,7 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAnnouncementCommand;
+import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import com.bliblifuture.hrisbackend.model.request.PagingRequest;
 import com.bliblifuture.hrisbackend.model.response.AnnouncementResponse;
 import com.bliblifuture.hrisbackend.model.response.PagingResponse;
@@ -42,6 +43,7 @@ public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
 
         return eventRepository.findAllByDateAfterOrderByDateAsc(startOfYesterday, pageable)
                 .switchIfEmpty(Flux.empty())
+                .filter(event -> !event.getStatus().equals(CalendarStatus.ANNOUNCEMENT))
                 .map(events -> events.createResponse(
                         events, AnnouncementResponse.builder().build()
                 ))
