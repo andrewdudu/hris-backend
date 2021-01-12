@@ -180,6 +180,8 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
             response.setType(request.getType().toString());
         }
         response.setId(request.getId());
+        response.setCreatedBy(request.getCreatedBy());
+        response.setCreatedDate(request.getCreatedDate());
 
         return response;
     }

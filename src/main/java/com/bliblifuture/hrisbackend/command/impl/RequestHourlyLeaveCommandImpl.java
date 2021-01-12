@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 @Service
@@ -72,6 +73,7 @@ public class RequestHourlyLeaveCommandImpl implements RequestHourlyLeaveCommand 
         Date endTime = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(thisDate + " " + request.getEndTime() + ":00");
 
+        requestEntity.setDates(Arrays.asList(currentTime));
         requestEntity.setStartTime(startTime);
         requestEntity.setEndTime(endTime);
 
