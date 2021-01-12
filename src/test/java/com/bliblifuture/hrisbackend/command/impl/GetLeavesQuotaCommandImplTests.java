@@ -102,8 +102,6 @@ public class GetLeavesQuotaCommandImplTests {
 
         getLeavesQuotaCommand.execute(empId)
                 .subscribe(response -> {
-                    System.out.println(response);
-                    System.out.println(expected);
                     for (int i = 0; i < expected.size(); i++) {
                         Assert.assertEquals(expected.get(i), response.get(i));
                     }

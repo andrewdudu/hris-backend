@@ -13,6 +13,7 @@ import com.bliblifuture.hrisbackend.util.UuidUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
@@ -51,14 +52,17 @@ public class UpdateLeaveQuotaImpl implements UpdateLeaveQuota {
                 .parse((currentDate.getYear()+1901) + "-1-1 00:00:00");
 
         return userRepository.findAll()
-                .flatMap(user -> createNewAnnualLeave(user, currentDate, startOfNextYear)
-                        .flatMap(leave -> leaveRepository.save(leave))
-                        .flatMap(leave -> employeeRepository.findById(user.getEmployeeId()))
-                        .filter(employee -> employee.getJoinDate().before(availableExtraLeaveJoinDate))
-                        .flatMap(employee -> createNewExtraLeave(employee, currentDate, startOfNextYear, availableExtraLeaveJoinDate))
-                        .flatMap(extraLeave -> leaveRepository.save(extraLeave))
-                )
                 .collectList()
+                .flatMap(users -> Flux.fromIterable(users)
+                        .flatMap(user -> createNewAnnualLeave(user, currentDate, startOfNextYear)
+                                .flatMap(leave -> leaveRepository.save(leave))
+                                .flatMap(leave -> employeeRepository.findById(leave.getEmployeeId()))
+                                .filter(employee -> employee.getJoinDate().before(availableExtraLeaveJoinDate) && employee.getLevel() != null)
+                                .flatMap(employee -> createNewExtraLeave(employee, currentDate, startOfNextYear, availableExtraLeaveJoinDate))
+                                .flatMap(extraLeave -> leaveRepository.save(extraLeave))
+                        )
+                        .collectList()
+                )
                 .map(leaves -> "[SUCCESS]");
     }
 
@@ -87,7 +91,7 @@ public class UpdateLeaveQuotaImpl implements UpdateLeaveQuota {
         leave.setCreatedBy("SYSTEM");
         leave.setCreatedDate(currentDate);
 
-        int level = Integer.getInteger(employee.getLevel());
+        int level = Integer.parseInt(employee.getLevel());
         Date joinDate = employee.getJoinDate();
 
         int extra = 0;

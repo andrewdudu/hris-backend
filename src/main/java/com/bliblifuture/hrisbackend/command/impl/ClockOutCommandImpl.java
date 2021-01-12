@@ -1,6 +1,7 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.ClockOutCommand;
+import com.bliblifuture.hrisbackend.constant.enumerator.AttendanceStatus;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.ClockInClockOutRequest;
@@ -32,26 +33,36 @@ public class ClockOutCommandImpl implements ClockOutCommand {
 
     @Override
     public Mono<AttendanceResponse> execute(ClockInClockOutRequest request) {
+        Date currentTime = dateUtil.getNewDate();
         return Mono.fromCallable(request::getRequester)
                 .flatMap(username -> userRepository.findFirstByUsername(username))
-                .flatMap(user -> getTodayAttendance(user, request))
+                .flatMap(user -> getTodayAttendance(user, request, currentTime))
                 .flatMap(attendance -> attendanceRepository.save(attendance))
-                .map(this::createResponse);
+                .map(attendance -> createResponse(attendance, currentTime));
     }
 
-    private AttendanceResponse createResponse(Attendance attendance) {
+    private AttendanceResponse createResponse(Attendance attendance, Date currentTime) {
         LocationResponse location = LocationResponse.builder()
                 .lat(attendance.getEndLat()).lon(attendance.getEndLon()).build();
         AttendanceResponse response = AttendanceResponse.builder()
                 .location(location)
                 .build();
 
+        long availableClockoutTime = attendance.getStartTime().getTime() + TimeUnit.HOURS.toMillis(9);
+        Date clockoutEligible = new Date(availableClockoutTime);
+
+        if (currentTime.before(clockoutEligible)){
+            response.setStatus(AttendanceStatus.WARNING);
+        }
+        else {
+            response.setStatus(AttendanceStatus.FINISH);
+        }
+
         return response;
     }
 
     @SneakyThrows
-    private Mono<Attendance> getTodayAttendance(User user, ClockInClockOutRequest request) {
-        Date currentTime = dateUtil.getNewDate();
+    private Mono<Attendance> getTodayAttendance(User user, ClockInClockOutRequest request, Date currentTime) {
         String dateString = (currentTime.getYear() + 1900) + "-" + (currentTime.getMonth() + 1) + "-" + currentTime.getDate();
 
         String startTime = " 00:00:00";
@@ -59,7 +70,7 @@ public class ClockOutCommandImpl implements ClockOutCommand {
                 .parse(dateString + startTime);
 
         return attendanceRepository.findFirstByEmployeeIdAndDate(user.getEmployeeId(), startOfDate)
-                .doOnSuccess(attendance -> checkValidity(attendance, currentTime))
+                .doOnSuccess(this::checkValidity)
                 .map(attendance -> {
                     attendance.setEndTime(currentTime);
                     attendance.setEndLat(request.getLocation().getLat());
@@ -68,15 +79,8 @@ public class ClockOutCommandImpl implements ClockOutCommand {
                 });
     }
 
-    private void checkValidity(Attendance attendance, Date currentTime) {
-        if (attendance == null){
-            String errorsMessage = "message=NOT_AVAILABLE";
-            throw new IllegalArgumentException(errorsMessage);
-        }
-
-        long availableClockoutTime = attendance.getStartTime().getTime() + TimeUnit.HOURS.toMillis(9);
-        Date clockoutAvailable = new Date(availableClockoutTime);
-        if (attendance.getStartTime() == null || currentTime.before(clockoutAvailable) || attendance.getEndTime() != null){
+    private void checkValidity(Attendance attendance) {
+        if (attendance == null || attendance.getStartTime() == null || attendance.getEndTime() != null){
             String errorsMessage = "message=NOT_AVAILABLE";
             throw new IllegalArgumentException(errorsMessage);
         }

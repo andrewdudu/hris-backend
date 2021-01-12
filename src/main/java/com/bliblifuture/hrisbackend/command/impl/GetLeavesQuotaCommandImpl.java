@@ -65,7 +65,6 @@ public class GetLeavesQuotaCommandImpl implements GetLeavesQuotaCommand {
                 substituteResponse.setUsed(substituteResponse.getUsed() + used);
             }
         }
-        System.out.println(responses);
 
         return responses;
     }

@@ -67,7 +67,6 @@ public class RequestHourlyLeaveCommandImpl implements RequestHourlyLeaveCommand 
         requestEntity.setCreatedDate(currentTime);
 
         String thisDate = (currentTime.getYear()+1900) + "-" + (currentTime.getMonth() + 1) + "-" + currentTime.getDate();
-        System.out.println(thisDate);
         Date startTime = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(thisDate + " " + request.getStartTime() + ":00");
         Date endTime = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)

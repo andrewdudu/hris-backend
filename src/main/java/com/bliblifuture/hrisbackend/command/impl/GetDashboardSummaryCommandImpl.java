@@ -1,6 +1,7 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetDashboardSummaryCommand;
+import com.bliblifuture.hrisbackend.constant.enumerator.AttendanceStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
@@ -176,6 +177,13 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
             }
         }
 
+        if (current.getDate().getEnd() == null){
+            current.setStatus(AttendanceStatus.UNAVAILABLE);
+        }
+        else {
+            current.setStatus(AttendanceStatus.AVAILABLE);
+        }
+
         response.setAttendance(
                 DashboardAttendanceResponse.builder().current(current).latest(latest).build()
         );
@@ -183,7 +191,6 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
     }
 
     private DashboardResponse setCalendarResponse(Date currentDate, DashboardResponse response, Event event) {
-        System.out.println(event);
         response.getCalendar().setStatus(event.getStatus());
         response.getCalendar().setDate(currentDate);
         return response;
