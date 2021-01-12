@@ -1,12 +1,16 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.RequestLeaveCommand;
-import com.bliblifuture.hrisbackend.command.impl.helper.*;
+import com.bliblifuture.hrisbackend.command.impl.helper.AnnualLeaveRequestHelper;
+import com.bliblifuture.hrisbackend.command.impl.helper.ExtraLeaveRequestHelper;
+import com.bliblifuture.hrisbackend.command.impl.helper.SpecialLeaveRequestHelper;
+import com.bliblifuture.hrisbackend.command.impl.helper.SubstituteLeaveRequestHelper;
 import com.bliblifuture.hrisbackend.constant.LeaveTypeConstant;
 import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.Event;
+import com.bliblifuture.hrisbackend.model.entity.Leave;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
@@ -108,11 +112,13 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
         long currentDateTime = currentDate.getTime();
         switch (request.getType()){
             case LeaveTypeConstant.ANNUAL_LEAVE:
-                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(user.getEmployeeId(), LeaveType.annual, currentDate)
+                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThanOrderByExpDate(user.getEmployeeId(), LeaveType.substitute, currentDate, 0)
+                        .switchIfEmpty(Flux.just(Leave.builder().remaining(0).build()))
                         .collectList()
                         .map(leaves -> new AnnualLeaveRequestHelper().processRequest(request, user, leaves, currentDateTime));
             case LeaveTypeConstant.SUBSTITUTE_LEAVE:
                 return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThanOrderByExpDate(user.getEmployeeId(), LeaveType.substitute, currentDate, 0)
+                        .switchIfEmpty(Flux.empty())
                         .collectList()
                         .map(leaves -> new SubstituteLeaveRequestHelper().processRequest(request, user, leaves, currentDateTime));
             case LeaveTypeConstant.EXTRA_LEAVE:

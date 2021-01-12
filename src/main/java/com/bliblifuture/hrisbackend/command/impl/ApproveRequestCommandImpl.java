@@ -88,15 +88,23 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
                                 .map(reports -> request));
             case ANNUAL_LEAVE:
                 leaveType = LeaveType.annual;
-                return applyLeave(request, leaveType, currentDate)
+                return applyAnnualLeave(request, leaveType, currentDate)
                         .flatMap(res -> Flux.fromIterable(request.getDates())
                                 .flatMap(date -> addAbsentAttendanceReport(startOfDate, currentDate))
                                 .collectList()
                                 .map(reports -> request));
             case SUBSTITUTE_LEAVE:
-                return applySubstituteLeave(request, currentDate);
+                return applySubstituteLeave(request, currentDate)
+                        .flatMap(res -> Flux.fromIterable(request.getDates())
+                                .flatMap(date -> addAbsentAttendanceReport(startOfDate, currentDate))
+                                .collectList()
+                                .map(reports -> request));
             case SPECIAL_LEAVE:
-                return updateLeaveSummary(request, currentDate);
+                return updateLeaveSummary(request, currentDate)
+                        .flatMap(res -> Flux.fromIterable(request.getDates())
+                                .flatMap(date -> addAbsentAttendanceReport(startOfDate, currentDate))
+                                .collectList()
+                                .map(reports -> request));
             case HOURLY_LEAVE:
                 return Mono.just(request)
                         .flatMap(report -> updateLeaveSummary(request, currentDate));
@@ -117,13 +125,29 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
                 .flatMap(leave -> updateLeaveSummary(request, currentDate));
     }
 
+    private Mono<Request> applyAnnualLeave(Request request, LeaveType leaveType, Date currentDate) {
+        int dayUsed = request.getDates().size();
+        return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThanOrderByExpDate(
+                request.getEmployeeId(), LeaveType.substitute, currentDate, 0
+        )
+                .collectList()
+                .doOnSuccess(leaves -> checkTotalQuota(leaves, request.getDates()))
+                .flatMap(leaves -> {
+                    updateAnnualLeave(leaves, dayUsed);
+                    return Flux.fromIterable(leaves)
+                            .flatMap(leave -> leaveRepository.save(leave))
+                            .collectList();
+                })
+                .flatMap(leaves -> updateLeaveSummary(request, currentDate));
+    }
+
     private Mono<Request> applySubstituteLeave(Request request, Date currentDate) {
         int dayUsed = request.getDates().size();
         return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThanOrderByExpDate(
                     request.getEmployeeId(), LeaveType.substitute, currentDate, 0
                 )
                 .collectList()
-                .doOnSuccess(leaves -> checkSubstituteLeave(leaves, request.getDates()))
+                .doOnSuccess(leaves -> checkTotalQuota(leaves, request.getDates()))
                 .flatMap(leaves -> {
                     updateSubstituteLeave(leaves, dayUsed);
                     return Flux.fromIterable(leaves)
@@ -133,8 +157,13 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
                 .flatMap(leaves -> updateLeaveSummary(request, currentDate));
     }
 
-    private void checkSubstituteLeave(List<Leave> leaves, List<Date> dates) {
-        if (leaves.size() < dates.size()){
+    private void checkTotalQuota(List<Leave> leaves, List<Date> dates) {
+        int remaining = 0;
+        for (Leave leave : leaves){
+            remaining += leave.getRemaining();
+        }
+
+        if (remaining < dates.size()){
             String errorsMessage = "message=QUOTA_NOT_AVAILABLE";
             throw new IllegalArgumentException(errorsMessage);
         }
@@ -269,6 +298,22 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
             String errorsMessage = "message=LEAVE_NOT_AVAILABLE";
             throw new IllegalArgumentException(errorsMessage);
         }
+    }
+
+    private List<Leave> updateAnnualLeave(List<Leave> leaves, int daysUsed) {
+        for (Leave leave : leaves) {
+            int remaining = leave.getRemaining();
+            if (daysUsed > remaining){
+                leave.setUsed(leave.getUsed() + remaining);
+                leave.setRemaining(0);
+                daysUsed -= remaining;
+            }
+            else{
+                leave.setRemaining(leave.getRemaining() - daysUsed);
+                leave.setUsed(leave.getUsed() + daysUsed);
+            }
+        }
+        return leaves;
     }
 
     private List<Leave> updateSubstituteLeave(List<Leave> leaves, int dayUsed) {

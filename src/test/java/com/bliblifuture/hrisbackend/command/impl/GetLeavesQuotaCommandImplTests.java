@@ -77,7 +77,7 @@ public class GetLeavesQuotaCommandImplTests {
                 .build();
 
         Date startOfTheYear = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-1-1");
-        Mockito.when(leaveRepository.findByEmployeeIdAndExpDateAfter(empId, startOfTheYear))
+        Mockito.when(leaveRepository.findByEmployeeIdAndExpDateAfterAndRemainingGreaterThan(empId, startOfTheYear, 0))
                 .thenReturn(Flux.just(annual, extra, substitute));
 
         LeaveResponse annualLeave = LeaveResponse.builder()
@@ -109,7 +109,7 @@ public class GetLeavesQuotaCommandImplTests {
 
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(leaveRepository, Mockito.times(1))
-                .findByEmployeeIdAndExpDateAfter(empId, startOfTheYear);
+                .findByEmployeeIdAndExpDateAfterAndRemainingGreaterThan(empId, startOfTheYear, 0);
 
     }
 }
