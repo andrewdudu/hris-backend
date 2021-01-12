@@ -331,7 +331,6 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
     private Leave updateLeave(Leave leave, int dayUsed) {
         leave.setRemaining(leave.getRemaining() - dayUsed);
         leave.setUsed(leave.getUsed() + dayUsed);
-        System.out.println(leave);
         return leave;
     }
 
