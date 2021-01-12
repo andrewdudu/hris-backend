@@ -221,7 +221,11 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
         }
 
         RequestType type = request.getType();
-        int requestDays = request.getDates().size();
+        int requestDays = 0;
+        if (request.getDates() != null){
+            requestDays = request.getDates().size();
+        }
+
         if (type.equals(RequestType.ANNUAL_LEAVE)){
             leaveSummary.setAnnualLeave(leaveSummary.getAnnualLeave() + requestDays);
         }
