@@ -27,7 +27,7 @@ public interface LeaveRepository extends ReactiveMongoRepository<Leave, String> 
 
     Flux<Leave> findByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateDesc(String employeeId, LeaveType type, Date date);
 
-    Flux<Leave> findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(String employeeId, LeaveType type, Date date, int remainingGreaterThan);
+    Flux<Leave> findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThanOrderByExpDate(String employeeId, LeaveType type, Date date, int remainingGreaterThan);
 
     Mono<Long> countByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(String employeeId, LeaveType type, Date date, int remainingGreaterThan);
 

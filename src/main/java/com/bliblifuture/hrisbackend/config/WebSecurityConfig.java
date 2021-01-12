@@ -38,7 +38,7 @@ public class WebSecurityConfig {
                 .authorizeExchange()
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
                 .pathMatchers( "/auth/login").permitAll()
-                .pathMatchers( "/api/scheduler/**").permitAll()
+//                .pathMatchers( "/api/scheduler/**").permitAll()
                 .pathMatchers("/api/dummy/**").permitAll()
                 .pathMatchers(HttpMethod.GET,"/api/request/file/**").permitAll()
                 .pathMatchers(HttpMethod.POST, "/api/request/leaves").permitAll()

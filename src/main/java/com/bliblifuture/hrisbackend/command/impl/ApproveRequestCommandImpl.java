@@ -109,15 +109,18 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
 
     private Mono<Request> applySubstituteLeave(Request request, Date currentDate) {
         int dayUsed = request.getDates().size();
-        return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(
+        return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThanOrderByExpDate(
                     request.getEmployeeId(), LeaveType.substitute, currentDate, 0
                 )
                 .collectList()
                 .doOnSuccess(leaves -> checkSubstituteLeave(leaves, request.getDates()))
-                .map(leaves -> Flux.fromIterable(leaves)
-                        .map(leave -> updateLeave(leave, dayUsed))
-                        .flatMap(leave -> leaveRepository.save(leave)))
-                .flatMap(leave -> updateLeaveSummaryAndAttendanceReport(request, currentDate));
+                .flatMap(leaves -> {
+                    updateSubstituteLeave(leaves, dayUsed);
+                    return Flux.fromIterable(leaves)
+                            .flatMap(leave -> leaveRepository.save(leave))
+                            .collectList();
+                })
+                .flatMap(leaves -> updateLeaveSummaryAndAttendanceReport(request, currentDate));
     }
 
     private void checkSubstituteLeave(List<Leave> leaves, List<Date> dates) {
@@ -247,9 +250,18 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
         }
     }
 
+    private List<Leave> updateSubstituteLeave(List<Leave> leaves, int dayUsed) {
+        for (int i = 0; i < dayUsed; i++) {
+            leaves.get(0).setRemaining(leaves.get(0).getRemaining() - dayUsed);
+            leaves.get(0).setUsed(leaves.get(0).getUsed() + dayUsed);
+        }
+        return leaves;
+    }
+
     private Leave updateLeave(Leave leave, int dayUsed) {
         leave.setRemaining(leave.getRemaining() - dayUsed);
         leave.setUsed(leave.getUsed() + dayUsed);
+        System.out.println(leave);
         return leave;
     }
 
