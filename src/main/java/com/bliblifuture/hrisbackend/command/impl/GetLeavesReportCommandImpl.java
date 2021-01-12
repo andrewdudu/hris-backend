@@ -4,7 +4,6 @@ import com.bliblifuture.hrisbackend.command.GetLeavesReportCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
-import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.EmployeeLeaveSummary;
 import com.bliblifuture.hrisbackend.model.entity.Leave;
 import com.bliblifuture.hrisbackend.model.entity.Request;
@@ -66,7 +65,6 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
                 )
                 .map(employeeLeaveSummary -> setLeavesData(employeeLeaveSummary, response))
                 .flatMap(leaveReportResponse -> requestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfTheYear, RequestStatus.REQUESTED, employeeId)
-                        .filter(request -> request.getType().equals(RequestType.SPECIAL_LEAVE))
                         .switchIfEmpty(Flux.empty())
                         .collectList()
                         .map(requests -> countPendingRequestLeave(requests, leaveReportResponse))
@@ -83,41 +81,65 @@ public class GetLeavesReportCommandImpl implements GetLeavesReportCommand {
     private LeaveReportResponse countPendingRequestLeave(List<Request> requests, LeaveReportResponse leaveReportResponse) {
         LeavesDataResponse pending = LeavesDataResponse.builder().build();
         for (Request request : requests) {
-            SpecialLeaveType type = request.getSpecialLeaveType();
-            int daysUsed = request.getDates().size();
-            switch (type){
-                case SICK:
-                case SICK_WITH_MEDICAL_LETTER:
-                    pending.setSick(pending.getSick() + daysUsed);
-                    break;
-                case CLOSE_FAMILY_DEATH:
-                    pending.setCloseFamilyDeath(pending.getCloseFamilyDeath() + daysUsed);
-                    break;
-                case MAIN_FAMILY_DEATH:
-                    pending.setMainFamilyDeath(pending.getMainFamilyDeath() + daysUsed);
-                    break;
-                case CHILD_CIRCUMSION:
-                    pending.setChildCircumsion(pending.getChildCircumsion() + daysUsed);
-                    break;
-                case CHILD_BAPTISM:
-                    pending.setChildBaptism(pending.getChildBaptism() + daysUsed);
-                    break;
-                case UNPAID_LEAVE:
-                    pending.setUnpaidLeave(pending.getUnpaidLeave() + daysUsed);
-                    break;
-                case CHILDBIRTH:
-                    pending.setChildBirth(pending.getChildBirth() + daysUsed);
-                    break;
-                case MATERNITY:
-                    pending.setMaternity(pending.getMaternity() + daysUsed);
-                    break;
-                case MARRIAGE:
-                    pending.setMarriage(pending.getMarriage() + daysUsed);
-                    break;
-                case HAJJ:
-                    pending.setHajj(pending.getHajj() + daysUsed);
-                    break;
+            int daysUsed = 0;
+            if (request.getDates() != null){
+                daysUsed = request.getDates().size();
             }
+
+            if (request.getType().equals(RequestType.ANNUAL_LEAVE)){
+                pending.setAnnualLeave(pending.getAnnualLeave() + daysUsed);
+            }
+            else if (request.getType().equals(RequestType.EXTRA_LEAVE)){
+                pending.setExtraLeave(pending.getExtraLeave() + daysUsed);
+            }
+            else if (request.getType().equals(RequestType.SUBSTITUTE_LEAVE)){
+                pending.setSubstituteLeave(pending.getSubstituteLeave() + daysUsed);
+            }
+            else if (request.getType().equals(RequestType.HOURLY_LEAVE)){
+                pending.setHourlyLeave(pending.getHourlyLeave() + 1);
+            }
+            else if (request.getType().equals(RequestType.ATTENDANCE)){
+                pending.setRequestAttendance(pending.getRequestAttendance() + 1);
+            }
+            else if (request.getType().equals(RequestType.EXTEND_ANNUAL_LEAVE)){
+                pending.setAnnualLeaveExtension(pending.getAnnualLeaveExtension() + 1);
+            }
+            else if (request.getType().equals(RequestType.SPECIAL_LEAVE)){
+                switch (request.getSpecialLeaveType()){
+                    case SICK:
+                    case SICK_WITH_MEDICAL_LETTER:
+                        pending.setSick(pending.getSick() + daysUsed);
+                        break;
+                    case CLOSE_FAMILY_DEATH:
+                        pending.setCloseFamilyDeath(pending.getCloseFamilyDeath() + daysUsed);
+                        break;
+                    case MAIN_FAMILY_DEATH:
+                        pending.setMainFamilyDeath(pending.getMainFamilyDeath() + daysUsed);
+                        break;
+                    case CHILD_CIRCUMSION:
+                        pending.setChildCircumsion(pending.getChildCircumsion() + daysUsed);
+                        break;
+                    case CHILD_BAPTISM:
+                        pending.setChildBaptism(pending.getChildBaptism() + daysUsed);
+                        break;
+                    case UNPAID_LEAVE:
+                        pending.setUnpaidLeave(pending.getUnpaidLeave() + daysUsed);
+                        break;
+                    case CHILDBIRTH:
+                        pending.setChildBirth(pending.getChildBirth() + daysUsed);
+                        break;
+                    case MATERNITY:
+                        pending.setMaternity(pending.getMaternity() + daysUsed);
+                        break;
+                    case MARRIAGE:
+                        pending.setMarriage(pending.getMarriage() + daysUsed);
+                        break;
+                    case HAJJ:
+                        pending.setHajj(pending.getHajj() + daysUsed);
+                        break;
+                }
+            }
+
         }
         leaveReportResponse.getLeave().setPending(pending);
         return leaveReportResponse;

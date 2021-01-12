@@ -57,4 +57,13 @@ public class EmployeeLeaveSummary extends BaseEntity{
     @Field(name = "substitute_leave")
     private int substituteLeave;
 
+    @Field(name = "annual_leave_extension")
+    private int annualLeaveExtension;
+
+    @Field(name = "hourly_leave")
+    private int hourlyLeave;
+
+    @Field(name = "request_attendance")
+    private int requestAttendance;
+
 }

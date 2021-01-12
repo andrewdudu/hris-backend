@@ -37,5 +37,9 @@ public class LeavesDataResponse {
 
     private int substituteLeave;
 
-    private int attendance;
+    private int hourlyLeave;
+
+    private int annualLeaveExtension;
+
+    private int requestAttendance;
 }
