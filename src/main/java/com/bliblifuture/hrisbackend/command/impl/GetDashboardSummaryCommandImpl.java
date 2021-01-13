@@ -177,7 +177,7 @@ public class GetDashboardSummaryCommandImpl implements GetDashboardSummaryComman
             }
         }
 
-        if (current.getDate().getEnd() == null){
+        if (current.getDate().getEnd() != null){
             current.setStatus(AttendanceStatus.UNAVAILABLE);
         }
         else {
