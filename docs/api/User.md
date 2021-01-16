@@ -80,7 +80,7 @@
 
 ## GET Leaves Quota Detail
 
-- Endpoint : `/user/leave-quotas`
+- Endpoint : `/users/leave-quotas`
 - HTTP Method : `GET`
 
 - Request Header :
