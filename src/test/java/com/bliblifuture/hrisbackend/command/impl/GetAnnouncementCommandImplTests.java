@@ -58,8 +58,8 @@ public class GetAnnouncementCommandImplTests {
         Date currentDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-10 08:00:00");
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
 
-        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_FORMAT)
-                .parse("2020-12-10");
+        Date endOfYesterday = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                .parse("2020-12-09 23:59:00");
 
         Event event1 = Event.builder()
                 .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-12"))
@@ -75,25 +75,25 @@ public class GetAnnouncementCommandImplTests {
                 .build();
 
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        Mockito.when(eventRepository.findAllByDateAfterOrderByDateAsc(startOfDate, pageable))
+        Mockito.when(eventRepository.findAllByDateAfterOrderByDateAsc(endOfYesterday, pageable))
                 .thenReturn(Flux.just(event1, event2));
 
         AnnouncementResponse announcementResponse1 = AnnouncementResponse.builder()
                 .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-12"))
-                .notes("Flash Sale")
+                .description("Flash Sale")
                 .status(CalendarStatus.HOLIDAY)
                 .title("Holiday")
                 .build();
         AnnouncementResponse announcementResponse2 = AnnouncementResponse.builder()
                 .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-14"))
-                .notes("CEO's Bday")
+                .description("CEO's Bday")
                 .status(CalendarStatus.WORKING)
                 .title("CEO's Birthday")
                 .build();
 
         List<AnnouncementResponse> data = Arrays.asList(announcementResponse1, announcementResponse2);
 
-        Mockito.when(eventRepository.countAllByDateAfter(startOfDate))
+        Mockito.when(eventRepository.countAllByDateAfter(endOfYesterday))
                 .thenReturn(Mono.just(2L));
 
         Paging paging = Paging.builder()
@@ -117,8 +117,8 @@ public class GetAnnouncementCommandImplTests {
 
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(eventRepository, Mockito.times(1))
-                .findAllByDateAfterOrderByDateAsc(startOfDate, pageable);
+                .findAllByDateAfterOrderByDateAsc(endOfYesterday, pageable);
         Mockito.verify(eventRepository, Mockito.times(1))
-                .countAllByDateAfter(startOfDate);
+                .countAllByDateAfter(endOfYesterday);
     }
 }

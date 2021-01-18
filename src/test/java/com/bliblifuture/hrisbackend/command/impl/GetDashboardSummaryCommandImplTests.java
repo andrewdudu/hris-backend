@@ -1,10 +1,7 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetDashboardSummaryCommand;
-import com.bliblifuture.hrisbackend.constant.enumerator.AttendanceLocationType;
-import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
-import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
+import com.bliblifuture.hrisbackend.constant.enumerator.*;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.DailyAttendanceReport;
 import com.bliblifuture.hrisbackend.model.entity.User;
@@ -99,7 +96,7 @@ public class GetDashboardSummaryCommandImplTests {
         Mockito.when(dailyAttendanceReportRepository.save(report))
                 .thenReturn(Mono.just(report));
 
-        Mockito.when(eventRepository.findFirstByDate(startOfDate))
+        Mockito.when(eventRepository.findFirstByDateAndStatus(startOfDate, CalendarStatus.HOLIDAY))
                 .thenReturn(Mono.empty());
 
         long requestCount = 10L;
@@ -140,6 +137,7 @@ public class GetDashboardSummaryCommandImplTests {
                 .current(AttendanceResponse.builder()
                         .date(TimeResponse.builder().start(attendance2.getStartTime()).build())
                         .location(LocationResponse.builder().type(AttendanceLocationType.OUTSIDE).build())
+                        .status(AttendanceStatus.AVAILABLE)
                         .build())
                 .latest(AttendanceResponse.builder()
                         .date(TimeResponse.builder().start(attendance1.getStartTime()).end(attendance1.getEndTime()).build())
@@ -176,7 +174,7 @@ public class GetDashboardSummaryCommandImplTests {
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).findFirstByDate(startOfDate);
         Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).save(report);
-        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByDate(startOfDate);
+        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByDateAndStatus(startOfDate, CalendarStatus.HOLIDAY);
         Mockito.verify(requestRepository, Mockito.times(1)).countByStatus(RequestStatus.REQUESTED);
         Mockito.verify(attendanceRepository, Mockito.times(1)).findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable);
     }

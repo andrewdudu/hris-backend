@@ -33,8 +33,8 @@ public class GetLeaveQuotaFormCommandImpl implements GetLeaveQuotaFormCommand {
         Date currentDate = dateUtil.getNewDate();
         return userRepository.findFirstByUsername(request.getRequester())
                 .flatMap(user -> leaveRepository
-                        .findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThanOrderByExpDate(
-                           user.getEmployeeId(), type, currentDate, 0
+                        .findByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateDesc(
+                           user.getEmployeeId(), type, currentDate
                         )
                         .collectList()
                         .map(this::createResponse)

@@ -4,7 +4,7 @@ import com.blibli.oss.command.CommandExecutor;
 import com.blibli.oss.common.response.Response;
 import com.blibli.oss.common.response.ResponseHelper;
 import com.bliblifuture.hrisbackend.command.AutoClockoutCommand;
-import com.bliblifuture.hrisbackend.command.UpdateLeaveQuota;
+import com.bliblifuture.hrisbackend.command.UpdateLeaveQuotaCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +23,7 @@ public class SchedulerController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/update-leave")
     public Mono<Response<String>> updateLeaveQuota(){
-        return commandExecutor.execute(UpdateLeaveQuota.class, "")
+        return commandExecutor.execute(UpdateLeaveQuotaCommand.class, "")
                 .map(ResponseHelper::ok)
                 .subscribeOn(Schedulers.elastic());
     }

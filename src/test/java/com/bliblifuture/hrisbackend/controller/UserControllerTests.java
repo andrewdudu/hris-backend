@@ -6,6 +6,8 @@ import com.bliblifuture.hrisbackend.command.*;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.constant.enumerator.SpecialLeaveType;
 import com.bliblifuture.hrisbackend.model.entity.User;
+import com.bliblifuture.hrisbackend.model.request.LeaveQuotaFormRequest;
+import com.bliblifuture.hrisbackend.model.response.LeaveQuotaFormResponse;
 import com.bliblifuture.hrisbackend.model.response.LeaveReportResponse;
 import com.bliblifuture.hrisbackend.model.response.UserReportResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
@@ -118,6 +120,34 @@ public class UserControllerTests {
                 });
 
         Mockito.verify(commandExecutor, Mockito.times(1)).execute(GetLeavesQuotaCommand.class, empId);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getLeavesQuotaFormTest(){
+        LeaveQuotaFormRequest request = LeaveQuotaFormRequest.builder().code("ANNUAL_LEAVE").build();
+        request.setRequester(principal.getName());
+
+        LeaveQuotaFormResponse data = LeaveQuotaFormResponse.builder()
+                .leaveQuota(10)
+                .build();
+
+        Mockito.when(commandExecutor.execute(GetLeaveQuotaFormCommand.class, request))
+                .thenReturn(Mono.just(data));
+
+        Response<LeaveQuotaFormResponse> expected = new Response<>();
+        expected.setData(data);
+        expected.setCode(HttpStatus.OK.value());
+        expected.setStatus(HttpStatus.OK.name());
+
+        userController.getLeavesQuotaForm(request, principal)
+                .subscribe(response -> {
+                    Assert.assertEquals(expected.getCode(), response.getCode());
+                    Assert.assertEquals(expected.getStatus(), response.getStatus());
+                    Assert.assertEquals(expected.getData(), response.getData());
+                });
+
+        Mockito.verify(commandExecutor, Mockito.times(1)).execute(GetLeaveQuotaFormCommand.class, request);
     }
 
     @Test

@@ -358,6 +358,32 @@ public class RequestControllerTests {
     }
 
     @Test
+    public void bulkApproveRequest() {
+        String id1 = "id1";
+        String id2 = "id2";
+        List<String> ids = Arrays.asList(id1, id2);
+        BulkApproveRequest request = BulkApproveRequest.builder().ids(ids).build();
+        request.setRequester(principal.getName());
+
+        Mockito.when(commandExecutor.execute(BulkApproveRequestCommand.class, request))
+                .thenReturn(Mono.just(BulkApproveResponse.builder().ids(ids).build()));
+
+        Response<BulkApproveResponse> expected = new Response<>();
+        expected.setData(BulkApproveResponse.builder().ids(ids).build());
+        expected.setCode(HttpStatus.OK.value());
+        expected.setStatus(HttpStatus.OK.name());
+
+        requestController.bulkApproveRequest(request, principal)
+                .subscribe(response -> {
+                    Assert.assertEquals(expected.getCode(), response.getCode());
+                    Assert.assertEquals(expected.getStatus(), response.getStatus());
+                    Assert.assertEquals(expected.getData(), response.getData());
+                });
+
+        Mockito.verify(commandExecutor, Mockito.times(1)).execute(BulkApproveRequestCommand.class, request);
+    }
+
+    @Test
     public void getImageTest() throws IOException {
         String filename = "filename";
         String request = FileConstant.REQUEST_FILE_PATH + filename;
@@ -446,6 +472,44 @@ public class RequestControllerTests {
 
         Mockito.verify(commandExecutor, Mockito.times(1))
                 .execute(AddSubstituteLeaveCommand.class, request);
+    }
+
+    @Test
+    public void requestHourlyLeaveTest() {
+        String empId = "id123";
+        HourlyLeaveRequest request = HourlyLeaveRequest.builder()
+                .startTime("12:00")
+                .endTime("13:00")
+                .notes("Bisnis")
+                .build();
+        request.setRequester(principal.getName());
+
+        String date = "2020-12-20";
+
+        HourlyLeaveResponse data = HourlyLeaveResponse.builder()
+                .startTime("12:00")
+                .endTime("13:00")
+                .notes("Bisnis")
+                .dates(Arrays.asList(date))
+                .build();
+
+        Mockito.when(commandExecutor.execute(RequestHourlyLeaveCommand.class, request))
+                .thenReturn(Mono.just(data));
+
+        Response<HourlyLeaveResponse> expected = new Response<>();
+        expected.setData(data);
+        expected.setCode(HttpStatus.OK.value());
+        expected.setStatus(HttpStatus.OK.name());
+
+        requestController.requestHourlyLeave(request, principal)
+                .subscribe(response -> {
+                    Assert.assertEquals(expected.getCode(), response.getCode());
+                    Assert.assertEquals(expected.getStatus(), response.getStatus());
+                    Assert.assertEquals(expected.getData(), response.getData());
+                });
+
+        Mockito.verify(commandExecutor, Mockito.times(1))
+                .execute(RequestHourlyLeaveCommand.class, request);
     }
 
 }

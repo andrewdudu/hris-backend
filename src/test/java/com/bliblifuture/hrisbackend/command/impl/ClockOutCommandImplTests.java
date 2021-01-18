@@ -3,6 +3,7 @@ package com.bliblifuture.hrisbackend.command.impl;
 import com.bliblifuture.hrisbackend.command.ClockOutCommand;
 import com.bliblifuture.hrisbackend.constant.FileConstant;
 import com.bliblifuture.hrisbackend.constant.enumerator.AttendanceLocationType;
+import com.bliblifuture.hrisbackend.constant.enumerator.AttendanceStatus;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.ClockInClockOutRequest;
@@ -104,6 +105,7 @@ public class ClockOutCommandImplTests {
                 .lat(attendanceUpdate.getEndLat()).lon(attendanceUpdate.getEndLon()).build();
         AttendanceResponse expected = AttendanceResponse.builder()
                 .location(location)
+                .status(AttendanceStatus.FINISH)
                 .build();
 
         clockOutCommand.execute(request)

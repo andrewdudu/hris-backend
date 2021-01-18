@@ -1,7 +1,6 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetAnnouncementCommand;
-import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import com.bliblifuture.hrisbackend.model.request.PagingRequest;
 import com.bliblifuture.hrisbackend.model.response.AnnouncementResponse;
 import com.bliblifuture.hrisbackend.model.response.PagingResponse;
@@ -37,11 +36,11 @@ public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
 
         String dateString = (currentDate.getYear() + 1900) + "-" + (currentDate.getMonth() + 1) + "-" + (currentDate.getDate()-1);
 
-        String startTime = " 00:00:00";
-        Date startOfYesterday = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
-                .parse(dateString + startTime);
+        String endTime = " 23:59:00";
+        Date endOfYesterday = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                .parse(dateString + endTime);
 
-        return eventRepository.findAllByDateAfterOrderByDateAsc(startOfYesterday, pageable)
+        return eventRepository.findAllByDateAfterOrderByDateAsc(endOfYesterday, pageable)
                 .switchIfEmpty(Flux.empty())
                 .map(events -> events.createResponse(
                         events, AnnouncementResponse.builder().build()
@@ -49,7 +48,7 @@ public class GetAnnouncementCommandImpl implements GetAnnouncementCommand {
                 .collectList()
                 .flatMap(announcementResponseList -> {
                     response.setData(announcementResponseList);
-                    return eventRepository.countAllByDateAfter(startOfYesterday);
+                    return eventRepository.countAllByDateAfter(endOfYesterday);
                 })
                 .map(total -> response.setPagingDetail(request, Math.toIntExact(total)));
     }

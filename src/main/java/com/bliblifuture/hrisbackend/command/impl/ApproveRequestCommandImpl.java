@@ -257,17 +257,18 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
     }
 
     private EmployeeLeaveSummary createLeaveSummary(String employeeId, String year, Date currentDate) {
-        EmployeeLeaveSummary report = EmployeeLeaveSummary.builder()
+        EmployeeLeaveSummary leaveSummary = EmployeeLeaveSummary.builder()
                 .year(year)
                 .employeeId(employeeId)
                 .build();
 
-        report.setCreatedBy("SYSTEM");
-        report.setUpdatedBy("SYSTEM");
-        report.setCreatedDate(currentDate);
-        report.setUpdatedDate(currentDate);
+        leaveSummary.setId(uuidUtil.getNewID());
+        leaveSummary.setCreatedBy("SYSTEM");
+        leaveSummary.setUpdatedBy("SYSTEM");
+        leaveSummary.setCreatedDate(currentDate);
+        leaveSummary.setUpdatedDate(currentDate);
 
-        return report;
+        return leaveSummary;
     }
 
     private void checkNull(List<Leave> leaves) {

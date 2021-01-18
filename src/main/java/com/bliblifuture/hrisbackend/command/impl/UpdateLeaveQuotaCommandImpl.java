@@ -1,6 +1,6 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
-import com.bliblifuture.hrisbackend.command.UpdateLeaveQuota;
+import com.bliblifuture.hrisbackend.command.UpdateLeaveQuotaCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
 import com.bliblifuture.hrisbackend.model.entity.Employee;
 import com.bliblifuture.hrisbackend.model.entity.Leave;
@@ -20,7 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Service
-public class UpdateLeaveQuotaImpl implements UpdateLeaveQuota {
+public class UpdateLeaveQuotaCommandImpl implements UpdateLeaveQuotaCommand {
 
     @Autowired
     private UserRepository userRepository;
@@ -58,7 +58,7 @@ public class UpdateLeaveQuotaImpl implements UpdateLeaveQuota {
                                 .flatMap(leave -> leaveRepository.save(leave))
                                 .flatMap(leave -> employeeRepository.findById(leave.getEmployeeId()))
                                 .filter(employee -> employee.getJoinDate().before(availableExtraLeaveJoinDate) && employee.getLevel() != null)
-                                .flatMap(employee -> createNewExtraLeave(employee, currentDate, startOfNextYear, availableExtraLeaveJoinDate))
+                                .flatMap(employee -> createNewExtraLeave(employee, currentDate, startOfNextYear))
                                 .flatMap(extraLeave -> leaveRepository.save(extraLeave))
                         )
                         .collectList()
@@ -66,20 +66,18 @@ public class UpdateLeaveQuotaImpl implements UpdateLeaveQuota {
                 .map(leaves -> "[SUCCESS]");
     }
 
-    @SneakyThrows
-    private Mono<Leave> createNewExtraLeave(Employee employee, Date currentDate, Date startOfNextYear, Date availableJoinDate) {
+    private Mono<Leave> createNewExtraLeave(Employee employee, Date currentDate, Date startOfNextYear) {
         return leaveRepository.findFirstByTypeAndEmployeeIdAndExpDate(LeaveType.extra, employee.getId(), startOfNextYear)
-                .switchIfEmpty(Mono.just(createExtraLeave(startOfNextYear, employee, currentDate, availableJoinDate)));
+                .switchIfEmpty(Mono.just(createExtraLeave(startOfNextYear, employee, currentDate)));
     }
 
-    @SneakyThrows
     private Mono<Leave> createNewAnnualLeave(User user, Date currentDate, Date startOfNextYear) {
         return leaveRepository.findFirstByTypeAndEmployeeIdAndExpDate(LeaveType.annual, user.getEmployeeId(), startOfNextYear)
                 .switchIfEmpty(Mono.just(createAnnualLeave(startOfNextYear, user.getEmployeeId(), currentDate)));
     }
 
     @SneakyThrows
-    private Leave createExtraLeave(Date startOfNextYear, Employee employee, Date currentDate, Date availableJoinDate) {
+    private Leave createExtraLeave(Date startOfNextYear, Employee employee, Date currentDate) {
         Leave leave = Leave.builder()
                 .used(0)
                 .expDate(startOfNextYear)
@@ -130,7 +128,7 @@ public class UpdateLeaveQuotaImpl implements UpdateLeaveQuota {
         else if (joinDate.after(eightYearsWorkingTimeJoinDate)){
             leave.setRemaining(4 + extra);
         }
-        else if (joinDate.after(tenYearsWorkingTimeJoinDate)){
+        else {
             leave.setRemaining(5 + extra);
         }
 

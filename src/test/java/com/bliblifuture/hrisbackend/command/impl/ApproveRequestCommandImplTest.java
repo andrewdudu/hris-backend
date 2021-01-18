@@ -5,10 +5,7 @@ import com.bliblifuture.hrisbackend.command.impl.helper.RequestResponseHelper;
 import com.bliblifuture.hrisbackend.constant.enumerator.AttendanceLocationType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
-import com.bliblifuture.hrisbackend.model.entity.Attendance;
-import com.bliblifuture.hrisbackend.model.entity.DailyAttendanceReport;
-import com.bliblifuture.hrisbackend.model.entity.Request;
-import com.bliblifuture.hrisbackend.model.entity.User;
+import com.bliblifuture.hrisbackend.model.entity.*;
 import com.bliblifuture.hrisbackend.model.request.BaseRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.RequestResponse;
@@ -98,6 +95,8 @@ public class ApproveRequestCommandImplTest {
                 .build();
         request.setCreatedDate(date2);
 
+        Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
+
         Mockito.when(requestRepository.findById(request.getId()))
                 .thenReturn(Mono.just(request));
 
@@ -140,6 +139,27 @@ public class ApproveRequestCommandImplTest {
         Mockito.when(dailyAttendanceReportRepository.save(report))
                 .thenReturn(Mono.just(report));
 
+        String year = String.valueOf(currentDate.getYear()+1900);
+        Mockito.when(employeeLeaveSummaryRepository.findFirstByYearAndEmployeeId(year, request.getEmployeeId()))
+                .thenReturn(Mono.empty());
+
+        String uuid = "ATT123";
+
+        EmployeeLeaveSummary leaveSummary = EmployeeLeaveSummary.builder()
+                .year(year)
+                .employeeId(user.getEmployeeId())
+                .requestAttendance(1)
+                .build();
+
+        leaveSummary.setId(uuid);
+        leaveSummary.setCreatedBy("SYSTEM");
+        leaveSummary.setUpdatedBy("SYSTEM");
+        leaveSummary.setCreatedDate(currentDate);
+        leaveSummary.setUpdatedDate(currentDate);
+
+        Mockito.when(employeeLeaveSummaryRepository.save(leaveSummary))
+                .thenReturn(Mono.just(leaveSummary));
+
         Request approvedRequest = new Request();
         BeanUtils.copyProperties(request, approvedRequest);
         approvedRequest.setStatus(RequestStatus.APPROVED);
@@ -150,9 +170,6 @@ public class ApproveRequestCommandImplTest {
         Mockito.when(requestRepository.save(approvedRequest))
                 .thenReturn(Mono.just(approvedRequest));
 
-        Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
-
-        String uuid = "ATT123";
         Mockito.when(uuidUtil.getNewID()).thenReturn(uuid);
 
         Attendance attendance = Attendance.builder()
@@ -192,7 +209,7 @@ public class ApproveRequestCommandImplTest {
         Mockito.verify(requestRepository, Mockito.times(1)).findById(request.getId());
         Mockito.verify(requestRepository, Mockito.times(1)).save(approvedRequest);
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(uuidUtil, Mockito.times(1)).getNewID();
+        Mockito.verify(uuidUtil, Mockito.times(2)).getNewID();
         Mockito.verify(attendanceRepository, Mockito.times(1)).save(attendance);
         Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(approvedRequest);
         Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).findFirstByDate(startOfDate);
