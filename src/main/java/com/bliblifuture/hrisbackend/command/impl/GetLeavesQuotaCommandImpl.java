@@ -2,15 +2,19 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetLeavesQuotaCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.Leave;
 import com.bliblifuture.hrisbackend.model.response.util.LeaveResponse;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -23,16 +27,28 @@ public class GetLeavesQuotaCommandImpl implements GetLeavesQuotaCommand {
     private LeaveRepository leaveRepository;
 
     @Autowired
+    private RequestRepository requestRepository;
+
+    @Autowired
     private DateUtil dateUtil;
 
     @SneakyThrows
     @Override
     public Mono<List<LeaveResponse>> execute(String employeeId) {
         Date currentDate = dateUtil.getNewDate();
+        Date startOfYear = new SimpleDateFormat(DateUtil.DATE_FORMAT)
+                .parse((currentDate.getYear()+1900) + "-01-01");
 
         return leaveRepository.findByEmployeeIdAndExpDateAfter(employeeId, currentDate)
                 .collectList()
-                .map(this::createResponse);
+                .map(this::createResponse)
+                .flatMap(response -> requestRepository.countByEmployeeIdAndTypeAndStatusAndCreatedDateAfter(
+                        employeeId, RequestType.ANNUAL_LEAVE, RequestStatus.APPROVED, startOfYear)
+                        .map(annualLeaveUsed -> {
+                            response.get(0).setUsed(Math.toIntExact(annualLeaveUsed));
+                            return response;
+                        })
+                );
     }
 
     private List<LeaveResponse> createResponse(List<Leave> leaves) {
