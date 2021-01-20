@@ -7,6 +7,7 @@ import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.util.DateUtil;
+import lombok.SneakyThrows;
 import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
@@ -20,6 +21,7 @@ public class SpecialLeaveRequestHelper {
         return Mono.fromCallable(() -> createRequest(data, user, currentDateTime));
     }
 
+    @SneakyThrows
     private Request createRequest(LeaveRequestData data, User user, long currentDateTime) {
         if (data.getType().equals(SpecialLeaveType.SICK_WITH_MEDICAL_LETTER.toString())){
             if (data.getFiles() == null || data.getFiles().isEmpty()){
@@ -30,14 +32,8 @@ public class SpecialLeaveRequestHelper {
 
         List<Date> dates = new ArrayList<>();
         for (String dateString : data.getDates()) {
-            try {
-                Date date = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(dateString);
-                dates.add(date);
-            }
-            catch (Exception e){
-                String errorsMessage = "date=INVALID_FORMAT";
-                throw new RuntimeException(errorsMessage);
-            }
+            Date date = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(dateString);
+            dates.add(date);
         }
 
         Request request = Request.builder()

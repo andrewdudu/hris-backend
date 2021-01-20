@@ -4,7 +4,7 @@ import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
-import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestLeaveDetailResponse;
 import com.bliblifuture.hrisbackend.model.response.RequestResponse;
 import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
@@ -75,7 +75,7 @@ public class RequestResponseHelper {
     }
 
     private RequestResponse setHourlyLeaveResponse(RequestResponse response, Request request) {
-        RequestLeaveResponse leave = RequestLeaveResponse.builder()
+        RequestLeaveDetailResponse leave = RequestLeaveDetailResponse.builder()
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
                 .type(request.getType().toString())
@@ -126,7 +126,7 @@ public class RequestResponseHelper {
     }
 
     private RequestResponse setLeaveRequestResponse(RequestResponse response, Request request) {
-        RequestLeaveResponse leave = RequestLeaveResponse.builder()
+        RequestLeaveDetailResponse leave = RequestLeaveDetailResponse.builder()
                 .dates(convertDatesToString(request.getDates()))
                 .files(request.getFiles())
                 .notes(request.getNotes())

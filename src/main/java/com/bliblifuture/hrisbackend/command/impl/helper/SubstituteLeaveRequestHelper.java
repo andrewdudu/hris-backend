@@ -7,6 +7,7 @@ import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
 import com.bliblifuture.hrisbackend.util.DateUtil;
+import lombok.SneakyThrows;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,17 +28,12 @@ public class SubstituteLeaveRequestHelper {
         }
     }
 
+    @SneakyThrows
     private Request createRequest(LeaveRequestData data, User user, long currentDateTime) {
         List<Date> dates = new ArrayList<>();
         for (String dateString : data.getDates()) {
-            try {
-                Date date = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(dateString);
-                dates.add(date);
-            }
-            catch (Exception e){
-                String errorsMessage = "date=INVALID_FORMAT";
-                throw new IllegalArgumentException(errorsMessage);
-            }
+            Date date = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(dateString);
+            dates.add(date);
         }
 
         Request request = Request.builder()
@@ -50,11 +46,6 @@ public class SubstituteLeaveRequestHelper {
         request.setId("SUBSTITUTE-" + user.getEmployeeId() + currentDateTime);
         request.setCreatedBy(user.getUsername());
         request.setCreatedDate(new Date(currentDateTime));
-
-        if (data.getFiles() != null){
-            List<String> files = FileHelper.saveFiles(data, user.getEmployeeId(), currentDateTime);
-            request.setFiles(files);
-        }
 
         return request;
     }

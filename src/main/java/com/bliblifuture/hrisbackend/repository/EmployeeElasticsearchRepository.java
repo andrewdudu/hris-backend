@@ -10,7 +10,7 @@ import reactor.core.publisher.Flux;
 public interface EmployeeElasticsearchRepository extends ReactiveElasticsearchRepository<EmployeeIndex, String> {
 
     @Query("{\"bool\": {\"must\": {\"wildcard\": {\"name\": \"?0\"} } } }")
-    Flux<EmployeeIndex> search(String value);
+    Flux<EmployeeIndex> search(String keyword);
 
     @Query("{ \"bool\" : " +
                 "{ \"must\" : [ " +
@@ -18,6 +18,6 @@ public interface EmployeeElasticsearchRepository extends ReactiveElasticsearchRe
                     "{ \"query_string\" : { \"query\" : \"*?0*\", \"fields\" : [ \"name\" ] } } ] " +
                 "}" +
             "}")
-    Flux<EmployeeIndex> search(String value, String departmentId);
+    Flux<EmployeeIndex> search(String keyword, String departmentId);
 
 }

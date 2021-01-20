@@ -16,6 +16,7 @@ public class FileHelper {
     public static List<String> saveFiles(LeaveRequestData data, String employeeId, long currentDateTime) {
         List<String> filesPath = new ArrayList<>();
         for (int i = 0; i < data.getFiles().size(); i++) {
+
             // Format file is "extension;base64data"
             String[] fileData = data.getFiles().get(i).split(";");
             if (fileData[0] == null || fileData[1] == null){

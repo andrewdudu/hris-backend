@@ -132,7 +132,7 @@ public class RequestControllerTests {
 
         String pathFile1 = FileConstant.REQUEST_FILE_BASE_URL + image1;
         String pathFile2 = FileConstant.REQUEST_FILE_BASE_URL + image2;
-        RequestLeaveResponse responseData = RequestLeaveResponse.builder()
+        RequestLeaveDetailResponse responseData = RequestLeaveDetailResponse.builder()
                 .files(Arrays.asList(pathFile1, pathFile2))
                 .dates(Arrays.asList(date1, date2))
                 .type(type)
@@ -142,7 +142,7 @@ public class RequestControllerTests {
         Mockito.when(commandExecutor.execute(RequestLeaveCommand.class, request))
                 .thenReturn(Mono.just(responseData));
 
-        Response<RequestLeaveResponse> expected = new Response<>();
+        Response<RequestLeaveDetailResponse> expected = new Response<>();
         expected.setData(responseData);
         expected.setCode(HttpStatus.OK.value());
         expected.setStatus(HttpStatus.OK.name());
@@ -152,8 +152,8 @@ public class RequestControllerTests {
                     Assert.assertEquals(expected.getCode(), response.getCode());
                     Assert.assertEquals(expected.getStatus(), response.getStatus());
 
-                    RequestLeaveResponse ex = expected.getData();
-                    RequestLeaveResponse res = response.getData();
+                    RequestLeaveDetailResponse ex = expected.getData();
+                    RequestLeaveDetailResponse res = response.getData();
                     Assert.assertEquals(ex.getId(), res.getId());
                     Assert.assertEquals(ex.getFiles(), res.getFiles());
                     Assert.assertEquals(ex.getDates(), res.getDates());

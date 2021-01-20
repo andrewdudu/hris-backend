@@ -11,7 +11,6 @@ import com.bliblifuture.hrisbackend.repository.DepartmentRepository;
 import com.bliblifuture.hrisbackend.repository.EmployeeElasticsearchRepository;
 import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
 import com.bliblifuture.hrisbackend.repository.OfficeRepository;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -34,7 +33,6 @@ public class GetEmployeesCommandImpl implements GetEmployeesCommand {
     @Autowired
     private EmployeeElasticsearchRepository employeeElasticsearchRepository;
 
-    @SneakyThrows
     @Override
     public Mono<PagingResponse<EmployeeResponse>> execute(EmployeesRequest request) {
         return getEmployees(request)
@@ -80,7 +78,7 @@ public class GetEmployeesCommandImpl implements GetEmployeesCommand {
                     .flatMap(this::createResponse)
                     .collectList();
         }
-        if (request.getName() == null || request.getName().isEmpty()){
+        else if (request.getName() == null || request.getName().isEmpty()){
             return departmentRepository.findFirstByCode(request.getDepartment())
                     .doOnSuccess(this::checkNull)
                     .flatMap(department -> employeeRepository.findByDepId(department.getId())

@@ -35,7 +35,7 @@ public class RequestController {
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @PostMapping("/api/request/leaves")
-    public Mono<Response<RequestLeaveResponse>> requestLeave(@RequestBody LeaveRequestData requestData, Principal principal){
+    public Mono<Response<RequestLeaveDetailResponse>> requestLeave(@RequestBody LeaveRequestData requestData, Principal principal){
         requestData.setRequester(principal.getName());
         return commandExecutor.execute(RequestLeaveCommand.class, requestData)
                 .map(ResponseHelper::ok)
