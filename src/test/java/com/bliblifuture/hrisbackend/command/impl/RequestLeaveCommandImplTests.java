@@ -819,6 +819,79 @@ public class RequestLeaveCommandImplTests {
         Mockito.verify(employeeRepository, Mockito.times(0)).findById(user.getEmployeeId());
     }
 
+    @Test(expected = RuntimeException.class)
+    public void testRequestSickWithMedicalLetterErrorFile_execute() throws ParseException {
+        User user = User.builder().employeeId("id123").username("username").build();
+
+        Date currentDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-05-27 10:00:00");
+        String id = SpecialLeaveType.SICK_WITH_MEDICAL_LETTER.toString() + "-" + user.getEmployeeId() + "-" + currentDate.getTime();
+
+        String dateString1 = "2020-05-25";
+        Date date1 = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(dateString1);
+        String dateString2 = "2020-05-26";
+        Date date2 = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(dateString2);
+        String type = "SICK_WITH_MEDICAL_LETTER";
+
+        LeaveRequestData request = LeaveRequestData.builder()
+                .dates(Arrays.asList(dateString1, dateString2))
+                .type(type)
+                .files(Arrays.asList("webp;filesError"))
+                .build();
+        request.setRequester(user.getUsername());
+
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
+                .thenReturn(Mono.just(user));
+
+        Employee employee = Employee.builder()
+                .name("Employee 1")
+                .gender(Gender.MALE)
+                .depId("DEP-1")
+                .managerUsername("manager")
+                .build();
+
+        Mockito.when(employeeRepository.findById(user.getEmployeeId()))
+                .thenReturn(Mono.just(employee));
+
+        Mockito.when(dateUtil.getNewDate())
+                .thenReturn(currentDate);
+
+        Mockito.when(eventRepository.findFirstByDateAndStatus(date1, CalendarStatus.HOLIDAY))
+                .thenReturn(Mono.empty());
+
+        Mockito.when(eventRepository.findFirstByDateAndStatus(date2, CalendarStatus.HOLIDAY))
+                .thenReturn(Mono.empty());
+
+        Request req = Request.builder()
+                .dates(Arrays.asList(date1, date2))
+                .type(RequestType.SPECIAL_LEAVE)
+                .specialLeaveType(SpecialLeaveType.SICK_WITH_MEDICAL_LETTER)
+                .status(RequestStatus.REQUESTED)
+                .employeeId(user.getEmployeeId())
+                .departmentId(employee.getDepId())
+                .manager(employee.getManagerUsername())
+                .build();
+        req.setId(id);
+
+        Mockito.when(requestRepository.save(req))
+                .thenReturn(Mono.just(req));
+
+        RequestLeaveDetailResponse expected = RequestLeaveDetailResponse.builder()
+                .dates(Arrays.asList(dateString1, dateString2))
+                .type(SpecialLeaveType.SICK_WITH_MEDICAL_LETTER.toString())
+                .build();
+        expected.setId(id);
+
+        requestLeaveCommand.execute(request)
+                .subscribe();
+
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
+        Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
+        Mockito.verify(requestRepository, Mockito.times(0)).save(req);
+        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByDateAndStatus(date1, CalendarStatus.HOLIDAY);
+        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByDateAndStatus(date2, CalendarStatus.HOLIDAY);
+        Mockito.verify(employeeRepository, Mockito.times(0)).findById(user.getEmployeeId());
+    }
+
     @Test(expected = Exception.class)
     public void testRequestSickInvalidQuota_execute() throws ParseException {
         User user = User.builder().employeeId("id123").username("username").build();

@@ -47,8 +47,11 @@ public class UserController extends WebMvcProperties {
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping("/leave-quotas")
-    public Mono<Response<LeaveQuotaFormResponse>> getLeavesQuotaForm(@RequestBody LeaveQuotaFormRequest request,
+    public Mono<Response<LeaveQuotaFormResponse>> getLeavesQuotaForm(@RequestParam String code,
                                                                      Principal principal){
+        LeaveQuotaFormRequest request = LeaveQuotaFormRequest.builder()
+                .code(code)
+                .build();
         request.setRequester(principal.getName());
         return commandExecutor.execute(GetLeaveQuotaFormCommand.class, request)
                 .map(ResponseHelper::ok)

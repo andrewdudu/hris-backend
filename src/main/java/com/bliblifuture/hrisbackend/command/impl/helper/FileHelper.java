@@ -19,10 +19,7 @@ public class FileHelper {
 
             // Format file is "extension;base64data"
             String[] fileData = data.getFiles().get(i).split(";");
-            if (fileData[0] == null || fileData[1] == null){
-                String errorsMessage = "files=FILES_INVALID";
-                throw new RuntimeException(errorsMessage);
-            }
+
             String extension = "." + fileData[0];
             String base64 = fileData[1];
 

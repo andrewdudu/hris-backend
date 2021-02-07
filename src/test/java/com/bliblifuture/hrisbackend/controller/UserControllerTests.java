@@ -125,7 +125,8 @@ public class UserControllerTests {
     @Test
     @SneakyThrows
     public void getLeavesQuotaFormTest(){
-        LeaveQuotaFormRequest request = LeaveQuotaFormRequest.builder().code("ANNUAL_LEAVE").build();
+        String code = "ANNUAL_LEAVE";
+        LeaveQuotaFormRequest request = LeaveQuotaFormRequest.builder().code(code).build();
         request.setRequester(principal.getName());
 
         LeaveQuotaFormResponse data = LeaveQuotaFormResponse.builder()
@@ -140,7 +141,7 @@ public class UserControllerTests {
         expected.setCode(HttpStatus.OK.value());
         expected.setStatus(HttpStatus.OK.name());
 
-        userController.getLeavesQuotaForm(request, principal)
+        userController.getLeavesQuotaForm(code, principal)
                 .subscribe(response -> {
                     Assert.assertEquals(expected.getCode(), response.getCode());
                     Assert.assertEquals(expected.getStatus(), response.getStatus());
