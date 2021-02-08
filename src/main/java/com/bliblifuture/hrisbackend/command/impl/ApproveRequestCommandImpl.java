@@ -92,14 +92,13 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
     private Mono<Request> applyRequest(Request request, Date currentDate){
         LeaveType leaveType;
 
-        Date reqDate = request.getDates().get(0);
-        String dateString = (reqDate.getYear() + 1900) + "-" + (reqDate.getMonth() + 1) + "-" + reqDate.getDate();
-        String startTime = " 00:00:00";
-        Date startOfRequestDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
-                .parse(dateString + startTime);
-
         switch (request.getType()){
             case ATTENDANCE:
+                Date reqDate = request.getDates().get(0);
+                String dateString = (reqDate.getYear() + 1900) + "-" + (reqDate.getMonth() + 1) + "-" + reqDate.getDate();
+                String startTime = " 00:00:00";
+                Date startOfRequestDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                        .parse(dateString + startTime);
                 return Mono.just(createAttendance(request, currentDate))
                         .flatMap(attendance -> attendanceRepository.save(attendance))
                         .flatMap(attendance -> addWorkingAttendanceReport(startOfRequestDate, currentDate))

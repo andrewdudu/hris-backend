@@ -10,8 +10,8 @@ import com.bliblifuture.hrisbackend.model.request.BaseRequest;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.RequestResponse;
 import com.bliblifuture.hrisbackend.model.response.UserResponse;
-import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
+import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
@@ -23,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.publisher.Mono;
 
@@ -50,6 +52,9 @@ public class RejectRequestCommandImplTest {
 
     @MockBean
     private RequestResponseHelper requestResponseHelper;
+
+    @MockBean
+    private JavaMailSender emailSender;
 
     @MockBean
     private DateUtil dateUtil;
@@ -109,7 +114,7 @@ public class RejectRequestCommandImplTest {
         Mockito.when(requestRepository.save(newRequest)).thenReturn(Mono.just(newRequest));
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
 
-        RequestResponse expeted = RequestResponse.builder()
+        RequestResponse expected = RequestResponse.builder()
                 .user(userResponse)
                 .status(RequestStatus.REJECTED)
                 .type(RequestType.ATTENDANCE)
@@ -117,7 +122,14 @@ public class RejectRequestCommandImplTest {
                 .detail(detail)
                 .approvedby(admin.getUsername())
                 .build();
-        Mockito.when(requestResponseHelper.createResponse(newRequest)).thenReturn(Mono.just(expeted));
+        Mockito.when(requestResponseHelper.createResponse(newRequest)).thenReturn(Mono.just(expected));
+
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setFrom("blibli");
+        mail.setTo(request.getCreatedBy());
+        String type = request.getType().toString();
+        mail.setSubject(type.replace("_", " ") + " REJECTED");
+        mail.setText("Your " + type.toLowerCase().replace("_", " ") + " request has been rejected");
 
         BaseRequest reqData = new BaseRequest();
         reqData.setId(request.getId());
@@ -125,13 +137,14 @@ public class RejectRequestCommandImplTest {
 
         rejectRequestCommand.execute(reqData)
                 .subscribe(response -> {
-                    Assert.assertEquals(expeted, response);
+                    Assert.assertEquals(expected, response);
                 });
 
         Mockito.verify(requestRepository, Mockito.times(1)).findById(request.getId());
         Mockito.verify(requestRepository, Mockito.times(1)).save(newRequest);
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(newRequest);
+        Mockito.verify(emailSender, Mockito.times(1)).send(mail);
     }
 
 }

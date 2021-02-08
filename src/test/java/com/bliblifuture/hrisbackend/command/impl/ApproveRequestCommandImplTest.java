@@ -20,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -61,6 +63,9 @@ public class ApproveRequestCommandImplTest {
 
     @MockBean
     private DailyAttendanceReportRepository dailyAttendanceReportRepository;
+
+    @MockBean
+    private JavaMailSender emailSender;
 
     @MockBean
     private DateUtil dateUtil;
@@ -195,6 +200,13 @@ public class ApproveRequestCommandImplTest {
         Mockito.when(requestResponseHelper.createResponse(approvedRequest))
                 .thenReturn(Mono.just(expected));
 
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setFrom("blibli");
+        mail.setTo(request.getCreatedBy());
+        String type = request.getType().toString();
+        mail.setSubject(type.replace("_", " ") + " APPROVED");
+        mail.setText("Your " + type.toLowerCase().replace("_", " ") + " request has been approved");
+
         BaseRequest reqData = new BaseRequest();
         reqData.setId(request.getId());
         reqData.setRequester(admin.getUsername());
@@ -212,7 +224,7 @@ public class ApproveRequestCommandImplTest {
         Mockito.verify(requestResponseHelper, Mockito.times(1)).createResponse(approvedRequest);
         Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).findFirstByDate(startOfDate);
         Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).save(report);
-
+        Mockito.verify(emailSender, Mockito.times(1)).send(mail);
     }
 
     @Test
