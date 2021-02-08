@@ -9,10 +9,10 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "username": "nana@mail.com",
-  "password": "nanapass",
-  "employeeId": "EMP-311",
-  "roles": ["EMPLOYEE", "ADMIN"]
+  "username": "waridtheeleven@gmail.com",
+  "password": "waridpass",
+  "employeeId": "EMP-319",
+  "roles": ["EMPLOYEE"]
 }
 
 ###
@@ -21,15 +21,15 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "id": "EMP-311",
-  "name": "Nana nana",
-  "gender": "FEMALE",
-  "email": "nana@mail.com",
-  "position": "HR",
-  "depId": "DEP-2",
-  "organizationUnit": "03",
+  "id": "EMP-319",
+  "name": "Ahmad Alwarid",
+  "gender": "MALE",
+  "email": "waridtheeleven@mail.com",
+  "position": "Backend Engineer",
+  "depId": "DEP-1",
+  "organizationUnit": "01",
   "officeId": "OFFICE-1",
-  "managerUsername": "admin@mail.com"
+  "managerUsername": "manager@mail.com"
 }
 
 ###
@@ -81,7 +81,7 @@ Accept: application/json
 }
 
 ###
-POST http://localhost:8080/api/dummy/save-elastic
+POST http://localhost:8081/api/dummy/save-elastic
 Accept: application/json
 
 ###

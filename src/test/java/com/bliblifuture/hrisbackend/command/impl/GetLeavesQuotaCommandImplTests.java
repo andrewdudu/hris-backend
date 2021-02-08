@@ -2,9 +2,12 @@ package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetLeavesQuotaCommand;
 import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
+import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.Leave;
 import com.bliblifuture.hrisbackend.model.response.util.LeaveResponse;
 import com.bliblifuture.hrisbackend.repository.LeaveRepository;
+import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,6 +19,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,6 +43,9 @@ public class GetLeavesQuotaCommandImplTests {
 
     @MockBean
     private LeaveRepository leaveRepository;
+
+    @MockBean
+    private RequestRepository requestRepository;
 
     @MockBean
     private DateUtil dateUtil;
@@ -76,15 +83,20 @@ public class GetLeavesQuotaCommandImplTests {
                 .remaining(1)
                 .build();
 
-        Date startOfTheYear = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-1-1");
-        Mockito.when(leaveRepository.findByEmployeeIdAndExpDateAfter(empId, startOfTheYear))
+        Mockito.when(leaveRepository.findByEmployeeIdAndExpDateAfter(empId, currentDate))
                 .thenReturn(Flux.just(annual, extra, substitute));
+
+        Date startOfYear = new SimpleDateFormat(DateUtil.DATE_FORMAT)
+                .parse((currentDate.getYear()+1900) + "-01-01");
+        Mockito.when(requestRepository.countByEmployeeIdAndTypeAndStatusAndCreatedDateAfter(
+                empId, RequestType.ANNUAL_LEAVE, RequestStatus.APPROVED, startOfYear))
+                .thenReturn(Mono.just(2L));
 
         LeaveResponse annualLeave = LeaveResponse.builder()
                 .type(LeaveType.annual)
                 .used(2)
                 .remaining(10)
-                .expiry(newYear)
+                .expiries(Arrays.asList(newYear))
                 .build();
         LeaveResponse extraLeave = LeaveResponse.builder()
                 .type(LeaveType.extra)
@@ -102,8 +114,6 @@ public class GetLeavesQuotaCommandImplTests {
 
         getLeavesQuotaCommand.execute(empId)
                 .subscribe(response -> {
-                    System.out.println(response);
-                    System.out.println(expected);
                     for (int i = 0; i < expected.size(); i++) {
                         Assert.assertEquals(expected.get(i), response.get(i));
                     }
@@ -111,7 +121,9 @@ public class GetLeavesQuotaCommandImplTests {
 
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(leaveRepository, Mockito.times(1))
-                .findByEmployeeIdAndExpDateAfter(empId, startOfTheYear);
+                .findByEmployeeIdAndExpDateAfter(empId, currentDate);
+        Mockito.verify(requestRepository, Mockito.times(1))
+                .countByEmployeeIdAndTypeAndStatusAndCreatedDateAfter(empId, RequestType.ANNUAL_LEAVE, RequestStatus.APPROVED, startOfYear);
 
     }
 }

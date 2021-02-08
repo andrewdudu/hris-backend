@@ -133,37 +133,46 @@ public class GetLeavesDetailResponseCommandImpl implements GetLeavesDetailRespon
                 });
     }
 
-    private String getTypeLabel(Request data) {
+    private String getTypeLabel(Request request) {
         String typeLabel = "";
-        RequestType type = data.getType();
+        RequestType type = request.getType();
         switch (type){
             case ANNUAL_LEAVE:
             case EXTRA_LEAVE:
             case SUBSTITUTE_LEAVE:
+            case HOURLY_LEAVE:
                 typeLabel = StringUtils.capitalize(type.toString().replace("_"," ").toLowerCase());
                 break;
             case SPECIAL_LEAVE:
-                typeLabel = StringUtils.capitalize(data.getSpecialLeaveType().toString().replace("_"," ").toLowerCase());
+                typeLabel = StringUtils.capitalize(request.getSpecialLeaveType().toString().replace("_"," ").toLowerCase());
                 break;
         }
         return typeLabel;
     }
 
-    private TimeResponse getDateResponse(Request data) {
+    private TimeResponse getDateResponse(Request request) {
         TimeResponse date = TimeResponse.builder()
-                .start(data.getDates().get(0))
-                .end(data.getDates().get(0))
                 .build();
-        if (data.getDates().size() > 1){
-            for (int i = 1; i < data.getDates().size(); i++) {
-                Date theDate = data.getDates().get(i);
-                if (theDate.before(date.getStart())){
-                    date.setStart(theDate);
-                }
-                else if (theDate.after(date.getEnd())){
-                    date.setEnd(theDate);
+
+        if (request.getDates() != null){
+            date.setStart(request.getDates().get(0));
+            date.setEnd(request.getDates().get(0));
+
+            if (request.getDates().size() > 1){
+                for (int i = 1; i < request.getDates().size(); i++) {
+                    Date theDate = request.getDates().get(i);
+                    if (theDate.before(date.getStart())){
+                        date.setStart(theDate);
+                    }
+                    else if (theDate.after(date.getEnd())){
+                        date.setEnd(theDate);
+                    }
                 }
             }
+        }
+        else{
+            date.setStart(request.getStartTime());
+            date.setEnd(request.getEndTime());
         }
         return date;
     }

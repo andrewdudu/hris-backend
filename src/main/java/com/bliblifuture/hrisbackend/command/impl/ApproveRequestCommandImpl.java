@@ -14,6 +14,8 @@ import com.bliblifuture.hrisbackend.util.DateUtil;
 import com.bliblifuture.hrisbackend.util.UuidUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -44,12 +46,14 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
     private DailyAttendanceReportRepository dailyAttendanceReportRepository;
 
     @Autowired
+    private JavaMailSender emailSender;
+
+    @Autowired
     private DateUtil dateUtil;
 
     @Autowired
     private UuidUtil uuidUtil;
 
-    @SneakyThrows
     @Override
     public Mono<RequestResponse> execute(BaseRequest data) {
         Date currentDate = dateUtil.getNewDate();
@@ -58,38 +62,79 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
                 .map(request -> approvedRequest(data, request, currentDate))
                 .flatMap(request -> applyRequest(request, currentDate))
                 .flatMap(request -> requestRepository.save(request))
+                .map(this::sendEmail)
                 .flatMap(request -> requestResponseHelper.createResponse(request));
+    }
+
+    private Request sendEmail(Request request) {
+        String emailDest = request.getCreatedBy();
+
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setFrom("blibli");
+        mail.setTo(emailDest);
+        String type = getType(request);
+        mail.setSubject(type.replace("_", " ") + " APPROVED");
+        mail.setText("Your " + type.toLowerCase().replace("_", " ") + " request has been approved");
+        emailSender.send(mail);
+
+        return request;
+    }
+
+    private String getType(Request request) {
+        RequestType type = request.getType();
+        if (type.equals(RequestType.SPECIAL_LEAVE)){
+            return request.getSpecialLeaveType().toString().toUpperCase();
+        }
+        return type.toString().toUpperCase();
     }
 
     @SneakyThrows
     private Mono<Request> applyRequest(Request request, Date currentDate){
         LeaveType leaveType;
 
-        String dateString = (currentDate.getYear() + 1900) + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate();
-        String startTime = " 00:00:00";
-        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
-                .parse(dateString + startTime);
-
         switch (request.getType()){
             case ATTENDANCE:
+                Date reqDate = request.getDates().get(0);
+                String dateString = (reqDate.getYear() + 1900) + "-" + (reqDate.getMonth() + 1) + "-" + reqDate.getDate();
+                String startTime = " 00:00:00";
+                Date startOfRequestDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
+                        .parse(dateString + startTime);
                 return Mono.just(createAttendance(request, currentDate))
                         .flatMap(attendance -> attendanceRepository.save(attendance))
-                        .flatMap(attendance -> updateAttendanceReport(startOfDate, currentDate))
-                        .map(report -> request);
+                        .flatMap(attendance -> addWorkingAttendanceReport(startOfRequestDate, currentDate))
+                        .flatMap(report -> updateLeaveSummary(request, currentDate));
             case EXTEND_ANNUAL_LEAVE:
-                return approveExtendAnnualLeave(request, currentDate);
+                return approveExtendAnnualLeave(request, currentDate)
+                        .flatMap(report -> updateLeaveSummary(request, currentDate));
             case EXTRA_LEAVE:
                 leaveType = LeaveType.extra;
-                return applyLeave(request, leaveType, currentDate);
+                return applyLeave(request, leaveType, currentDate)
+                        .flatMap(res -> Flux.fromIterable(request.getDates())
+                                .flatMap(date -> addAbsentAttendanceReport(date, currentDate))
+                                .collectList()
+                                .map(reports -> request));
             case ANNUAL_LEAVE:
                 leaveType = LeaveType.annual;
-                return applyLeave(request, leaveType, currentDate);
+                return applyLeave(request, leaveType, currentDate)
+                        .flatMap(res -> Flux.fromIterable(request.getDates())
+                                .flatMap(date -> addAbsentAttendanceReport(date, currentDate))
+                                .collectList()
+                                .map(reports -> request));
             case SUBSTITUTE_LEAVE:
-                return applySubstituteLeave(request, currentDate);
+                leaveType = LeaveType.substitute;
+                return applyLeave(request, leaveType, currentDate)
+                        .flatMap(res -> Flux.fromIterable(request.getDates())
+                                .flatMap(date -> addAbsentAttendanceReport(date, currentDate))
+                                .collectList()
+                                .map(reports -> request));
             case SPECIAL_LEAVE:
-                return updateLeaveSummaryAndAttendanceReport(request, currentDate);
+                return updateLeaveSummary(request, currentDate)
+                        .flatMap(res -> Flux.fromIterable(request.getDates())
+                                .flatMap(date -> addAbsentAttendanceReport(date, currentDate))
+                                .collectList()
+                                .map(reports -> request));
             case HOURLY_LEAVE:
-                return Mono.just(request);
+                return updateLeaveSummary(request, currentDate);
             default:
                 String errorsMessage = "message=INTERNAL_ERROR";
                 throw new RuntimeException(errorsMessage);
@@ -98,86 +143,86 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
 
     private Mono<Request> applyLeave(Request request, LeaveType leaveType, Date currentDate) {
         int dayUsed = request.getDates().size();
-        return leaveRepository.findFirstByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(
-                    request.getEmployeeId(), leaveType, currentDate
-                )
-                .doOnNext(this::checkNull)
-                .map(leave -> updateLeave(leave, dayUsed))
-                .flatMap(leave -> leaveRepository.save(leave))
-                .flatMap(leave -> updateLeaveSummaryAndAttendanceReport(request, currentDate));
-    }
-
-    private Mono<Request> applySubstituteLeave(Request request, Date currentDate) {
-        int dayUsed = request.getDates().size();
-        return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(
-                    request.getEmployeeId(), LeaveType.substitute, currentDate, 0
-                )
+        return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThanOrderByExpDate(
+                request.getEmployeeId(), leaveType, currentDate, 0
+        )
+                .switchIfEmpty(Flux.empty())
                 .collectList()
-                .doOnSuccess(leaves -> checkSubstituteLeave(leaves, request.getDates()))
-                .map(leaves -> Flux.fromIterable(leaves)
-                        .map(leave -> updateLeave(leave, dayUsed))
-                        .flatMap(leave -> leaveRepository.save(leave)))
-                .flatMap(leave -> updateLeaveSummaryAndAttendanceReport(request, currentDate));
+                .doOnSuccess(leaves -> checkAvailableQuota(leaves, request.getDates()))
+                .flatMap(leaves -> Flux.fromIterable(updateMultipleLeavesQuota(leaves, dayUsed))
+                        .flatMap(leave -> leaveRepository.save(leave))
+                        .collectList())
+                .flatMap(leaves -> updateLeaveSummary(request, currentDate));
     }
 
-    private void checkSubstituteLeave(List<Leave> leaves, List<Date> dates) {
-        if (leaves.size() < dates.size()){
+    private void checkAvailableQuota(List<Leave> leaves, List<Date> dates) {
+        int remaining = 0;
+        for (Leave leave : leaves){
+            remaining += leave.getRemaining();
+        }
+
+        if (remaining < dates.size()){
             String errorsMessage = "message=QUOTA_NOT_AVAILABLE";
             throw new IllegalArgumentException(errorsMessage);
         }
     }
 
-    @SneakyThrows
-    private Mono<Request> updateLeaveSummaryAndAttendanceReport(Request request, Date currentDate) {
+    private Mono<Request> updateLeaveSummary(Request request, Date currentDate) {
         String year = String.valueOf(currentDate.getYear() + 1900);
 
         return employeeLeaveSummaryRepository.findFirstByYearAndEmployeeId(year, request.getEmployeeId())
                 .switchIfEmpty(Mono.just(createLeaveSummary(request.getEmployeeId(), year, currentDate)))
-                .map(employeeLeaveSummary -> saveLeaveSummary(employeeLeaveSummary, request))
+                .map(employeeLeaveSummary -> updateLeaveSummary(employeeLeaveSummary, request))
                 .flatMap(employeeLeaveSummary -> employeeLeaveSummaryRepository.save(employeeLeaveSummary))
-                .flatMap(employeeLeaveSummary -> applyDailyAttendanceReport(request.getDates(), currentDate))
-                .map(reports -> request);
+                .map(leaveSummary -> request);
     }
 
-    private Mono<List<DailyAttendanceReport>> applyDailyAttendanceReport(List<Date> dates, Date currentDate) {
-        return Flux.fromIterable(dates)
-                .flatMap(date -> updateAttendanceReport(date, currentDate))
-                .flatMap(report -> dailyAttendanceReportRepository.save(report))
-                .collectList();
-    }
-
-    private Mono<DailyAttendanceReport> updateAttendanceReport(Date startOfDate, Date currentDate) {
-        return dailyAttendanceReportRepository.findFirstByDate(startOfDate)
-                .switchIfEmpty(Mono.just(
-                        DailyAttendanceReport.builder()
-                                .date(startOfDate)
-                                .working(0)
-                                .absent(0)
-                                .build()
-                ))
-                .map(report -> createOrUpdateAttendanceReport(report, currentDate))
+    private Mono<DailyAttendanceReport> addAbsentAttendanceReport(Date date, Date currentDate) {
+        return dailyAttendanceReportRepository.findFirstByDate(date)
+                .switchIfEmpty(Mono.just(createNewAttendanceReport(date, currentDate)))
+                .map(report -> {
+                    report.setAbsent(report.getAbsent() + 1);
+                    return report;
+                })
                 .flatMap(report -> dailyAttendanceReportRepository.save(report));
     }
 
-    private DailyAttendanceReport createOrUpdateAttendanceReport(DailyAttendanceReport report, Date currentDate) {
-        if (report.getId() == null || report.getId().isEmpty()){
-            report.setCreatedBy("SYSTEM");
-            report.setCreatedDate(currentDate);
-            report.setUpdatedBy("SYSTEM");
-            report.setUpdatedDate(currentDate);
-            report.setId("DAR" + report.getDate().getTime());
-        }
-        report.setWorking(report.getWorking() + 1);
+    private Mono<DailyAttendanceReport> addWorkingAttendanceReport(Date date, Date currentDate) {
+        return dailyAttendanceReportRepository.findFirstByDate(date)
+                .switchIfEmpty(Mono.just(createNewAttendanceReport(date, currentDate)))
+                .map(report -> {
+                    report.setWorking(report.getWorking() + 1);
+                    return report;
+                })
+                .flatMap(report -> dailyAttendanceReportRepository.save(report));
+    }
+
+    private DailyAttendanceReport createNewAttendanceReport(Date date, Date currentDate){
+        DailyAttendanceReport report = DailyAttendanceReport.builder()
+                        .date(date)
+                        .working(0)
+                        .absent(0)
+                        .build();
+        report.setCreatedBy("SYSTEM");
+        report.setCreatedDate(currentDate);
+        report.setUpdatedBy("SYSTEM");
+        report.setUpdatedDate(currentDate);
+        report.setId("DAR" + report.getDate().getTime());
+
         return report;
     }
 
-    private EmployeeLeaveSummary saveLeaveSummary(EmployeeLeaveSummary leaveSummary, Request request) {
+    private EmployeeLeaveSummary updateLeaveSummary(EmployeeLeaveSummary leaveSummary, Request request) {
         if (leaveSummary.getId() == null){
             leaveSummary.setId("ELS-" + leaveSummary.getEmployeeId() + "-" + leaveSummary.getYear());
         }
 
         RequestType type = request.getType();
-        int requestDays = request.getDates().size();
+        int requestDays = 0;
+        if (request.getDates() != null){
+            requestDays = request.getDates().size();
+        }
+
         if (type.equals(RequestType.ANNUAL_LEAVE)){
             leaveSummary.setAnnualLeave(leaveSummary.getAnnualLeave() + requestDays);
         }
@@ -186,6 +231,15 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
         }
         else if (type.equals(RequestType.SUBSTITUTE_LEAVE)){
             leaveSummary.setSubstituteLeave(leaveSummary.getSubstituteLeave() + requestDays);
+        }
+        else if (type.equals(RequestType.HOURLY_LEAVE)){
+            leaveSummary.setHourlyLeave(leaveSummary.getHourlyLeave() + 1);
+        }
+        else if (type.equals(RequestType.EXTEND_ANNUAL_LEAVE)){
+            leaveSummary.setAnnualLeaveExtension(leaveSummary.getAnnualLeaveExtension() + 1);
+        }
+        else if (type.equals(RequestType.ATTENDANCE)){
+            leaveSummary.setRequestAttendance(leaveSummary.getRequestAttendance() + 1);
         }
         else {
             switch (request.getSpecialLeaveType()){
@@ -227,30 +281,34 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
     }
 
     private EmployeeLeaveSummary createLeaveSummary(String employeeId, String year, Date currentDate) {
-        EmployeeLeaveSummary report = EmployeeLeaveSummary.builder()
+        EmployeeLeaveSummary leaveSummary = EmployeeLeaveSummary.builder()
                 .year(year)
                 .employeeId(employeeId)
                 .build();
 
-        report.setCreatedBy("SYSTEM");
-        report.setUpdatedBy("SYSTEM");
-        report.setCreatedDate(currentDate);
-        report.setUpdatedDate(currentDate);
+        leaveSummary.setCreatedBy("SYSTEM");
+        leaveSummary.setUpdatedBy("SYSTEM");
+        leaveSummary.setCreatedDate(currentDate);
+        leaveSummary.setUpdatedDate(currentDate);
 
-        return report;
+        return leaveSummary;
     }
 
-    private void checkNull(Leave leave) {
-        if (leave == null){
-            String errorsMessage = "message=LEAVE_NOT_AVAILABLE";
-            throw new IllegalArgumentException(errorsMessage);
+    private List<Leave> updateMultipleLeavesQuota(List<Leave> leaves, int daysUsed) {
+        for (Leave leave : leaves) {
+            int remaining = leave.getRemaining();
+            if (daysUsed > remaining) {
+                leave.setUsed(leave.getUsed() + remaining);
+                daysUsed = daysUsed - remaining;
+                leave.setRemaining(0);
+            }
+            else{
+                leave.setRemaining(leave.getRemaining() - daysUsed);
+                leave.setUsed(leave.getUsed() + daysUsed);
+                break;
+            }
         }
-    }
-
-    private Leave updateLeave(Leave leave, int dayUsed) {
-        leave.setRemaining(leave.getRemaining() - dayUsed);
-        leave.setUsed(leave.getUsed() + dayUsed);
-        return leave;
+        return leaves;
     }
 
     private Attendance createAttendance(Request request, Date currentDate) {

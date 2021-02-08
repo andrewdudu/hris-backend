@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringRunner.class)
 public class GetAttendanceSummaryCommandImplTests {
@@ -78,17 +79,19 @@ public class GetAttendanceSummaryCommandImplTests {
                 .thenReturn(currentDate);
 
         Date startOfCurrentMonth = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-11-1");
+        Date endOfLastMonth = new Date(startOfCurrentMonth.getTime() - TimeUnit.SECONDS.toMillis(1));
 
         long thisMonthAttendance = 15;
 
-        Mockito.when(attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentMonth))
+        Mockito.when(attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), endOfLastMonth))
                 .thenReturn(Mono.just(thisMonthAttendance));
 
         Date startOfCurrentYear = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-1-1");
+        Date endOfLastYear = new Date(startOfCurrentYear.getTime() - TimeUnit.SECONDS.toMillis(1));
 
         long thisYearAttendance = 215;
 
-        Mockito.when(attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentYear))
+        Mockito.when(attendanceRepository.countByEmployeeIdAndDateAfter(user.getEmployeeId(), endOfLastYear))
                 .thenReturn(Mono.just(thisYearAttendance));
 
         Date date1 = new SimpleDateFormat("dd/MM/yyyy").parse("3/7/2020");
@@ -109,7 +112,7 @@ public class GetAttendanceSummaryCommandImplTests {
                 .build();
 
         Mockito.when(
-                requestRepository.findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId())
+                requestRepository.findByDatesAfterAndStatusAndEmployeeId(endOfLastMonth, RequestStatus.APPROVED, user.getEmployeeId())
         ).thenReturn(Flux.just(leave1, leave2));
 
         String thisYear = "2020";
@@ -144,9 +147,9 @@ public class GetAttendanceSummaryCommandImplTests {
                 });
 
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
-        Mockito.verify(attendanceRepository, Mockito.times(1)).countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentMonth);
-        Mockito.verify(attendanceRepository, Mockito.times(1)).countByEmployeeIdAndDateAfter(user.getEmployeeId(), startOfCurrentYear);
-        Mockito.verify(requestRepository, Mockito.times(1)).findByDatesAfterAndStatusAndEmployeeId(startOfCurrentMonth, RequestStatus.APPROVED, user.getEmployeeId());
+        Mockito.verify(attendanceRepository, Mockito.times(1)).countByEmployeeIdAndDateAfter(user.getEmployeeId(), endOfLastMonth);
+        Mockito.verify(attendanceRepository, Mockito.times(1)).countByEmployeeIdAndDateAfter(user.getEmployeeId(), endOfLastYear);
+        Mockito.verify(requestRepository, Mockito.times(1)).findByDatesAfterAndStatusAndEmployeeId(endOfLastMonth, RequestStatus.APPROVED, user.getEmployeeId());
         Mockito.verify(employeeLeaveSummaryRepository, Mockito.times(1)).findFirstByYearAndEmployeeId(thisYear, user.getEmployeeId());
     }
 

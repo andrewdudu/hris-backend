@@ -46,6 +46,7 @@ public class GetCalendarCommandImpl implements GetCalendarCommand {
 
         return eventRepository.findByDateBetweenOrderByDateAsc(startOfThisMonth, startOfNextMonth)
                 .switchIfEmpty(Flux.empty())
+                .filter(event -> !event.getStatus().equals(CalendarStatus.ANNOUNCEMENT))
                 .collectList()
                 .map(events -> createResponse(events, endOfThisMonth));
     }

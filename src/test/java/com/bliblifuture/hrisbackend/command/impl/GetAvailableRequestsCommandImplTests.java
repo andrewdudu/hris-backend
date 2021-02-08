@@ -76,6 +76,7 @@ public class GetAvailableRequestsCommandImplTests {
         expected.add(RequestType.ANNUAL_LEAVE);
         expected.add(RequestType.SPECIAL_LEAVE);
         expected.add(RequestType.SUBSTITUTE_LEAVE);
+        expected.add(RequestType.HOURLY_LEAVE);
         expected.add(RequestType.EXTRA_LEAVE);
         expected.add(RequestType.EXTEND_ANNUAL_LEAVE);
         expected.add(RequestType.INCOMING_REQUESTS);

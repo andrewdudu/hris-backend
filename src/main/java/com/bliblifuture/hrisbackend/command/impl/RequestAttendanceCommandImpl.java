@@ -75,6 +75,13 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
         date = new SimpleDateFormat(DateUtil.DATE_FORMAT)
                 .parse(data.getDate());
 
+        Date currentDateTime = dateUtil.getNewDate();
+
+        if (date.after(currentDateTime)){
+            String msg = "date=INVALID_DATE";
+            throw new IllegalArgumentException(msg);
+        }
+
         Request request = Request.builder()
                 .clockIn(clockIn)
                 .clockOut(clockOut)
@@ -84,7 +91,6 @@ public class RequestAttendanceCommandImpl implements RequestAttendanceCommand {
                 .employeeId(user.getEmployeeId())
                 .type(RequestType.ATTENDANCE)
                 .build();
-        Date currentDateTime = dateUtil.getNewDate();
         request.setCreatedDate(currentDateTime);
         request.setCreatedBy(user.getUsername());
 

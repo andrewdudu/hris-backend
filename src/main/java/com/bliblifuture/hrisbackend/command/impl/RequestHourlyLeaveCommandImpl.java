@@ -10,13 +10,13 @@ import com.bliblifuture.hrisbackend.model.response.HourlyLeaveResponse;
 import com.bliblifuture.hrisbackend.repository.EmployeeRepository;
 import com.bliblifuture.hrisbackend.repository.RequestRepository;
 import com.bliblifuture.hrisbackend.util.DateUtil;
-import com.bliblifuture.hrisbackend.util.UuidUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 @Service
@@ -30,9 +30,6 @@ public class RequestHourlyLeaveCommandImpl implements RequestHourlyLeaveCommand 
 
     @Autowired
     private DateUtil dateUtil;
-
-    @Autowired
-    private UuidUtil uuidUtil;
 
     @Override
     public Mono<HourlyLeaveResponse> execute(HourlyLeaveRequest request) {
@@ -67,12 +64,12 @@ public class RequestHourlyLeaveCommandImpl implements RequestHourlyLeaveCommand 
         requestEntity.setCreatedDate(currentTime);
 
         String thisDate = (currentTime.getYear()+1900) + "-" + (currentTime.getMonth() + 1) + "-" + currentTime.getDate();
-        System.out.println(thisDate);
         Date startTime = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(thisDate + " " + request.getStartTime() + ":00");
         Date endTime = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(thisDate + " " + request.getEndTime() + ":00");
 
+        requestEntity.setDates(Arrays.asList(currentTime));
         requestEntity.setStartTime(startTime);
         requestEntity.setEndTime(endTime);
 

@@ -151,16 +151,18 @@ public class ClockInCommandImpl implements ClockInCommand {
     }
 
     @SneakyThrows
-    private Mono<Attendance> createAttendance(User user, ClockInClockOutRequest request, Date date, Date startOfDate) {
+    private Mono<Attendance> createAttendance(User user, ClockInClockOutRequest request, Date currentTime, Date startOfDate) {
         Attendance attendance = Attendance.builder()
                 .employeeId(user.getEmployeeId())
                 .date(startOfDate)
-                .startTime(date)
+                .startTime(currentTime)
                 .endTime(null)
                 .startLat(request.getLocation().getLat())
                 .startLon(request.getLocation().getLon())
                 .build();
         attendance.setId(uuidUtil.getNewID());
+        attendance.setCreatedDate(currentTime);
+        attendance.setCreatedBy(user.getUsername());
 
         return attendanceRepository.findFirstByEmployeeIdAndDate(user.getEmployeeId(), startOfDate)
                 .doOnSuccess(this::checkIfExists)

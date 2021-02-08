@@ -114,8 +114,9 @@ public class UserResponseHelperTests {
                 .code("ANNUAL")
                 .build();
 
-        Mockito.when(leaveRepository.findByEmployeeIdAndExpDateAfter(employee.getId(), currentDate))
-                .thenReturn(Flux.just(annual));
+        Mockito.when(leaveRepository
+                .findByEmployeeIdAndExpDateAfterAndRemainingGreaterThan(employee.getId(), currentDate, 0)
+        ).thenReturn(Flux.just(annual));
 
         UserResponse expected = UserResponse.builder()
                 .roles(user.getRoles())
@@ -142,7 +143,7 @@ public class UserResponseHelperTests {
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(officeRepository, Mockito.times(1)).findById(employee.getOfficeId());
         Mockito.verify(leaveRepository, Mockito.times(1))
-                .findByEmployeeIdAndExpDateAfter(employee.getId(), currentDate);
+                .findByEmployeeIdAndExpDateAfterAndRemainingGreaterThan(employee.getId(), currentDate, 0);
 
     }
 

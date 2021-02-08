@@ -4,7 +4,7 @@ import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.response.AttendanceResponse;
 import com.bliblifuture.hrisbackend.model.response.ExtendLeaveResponse;
-import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestLeaveDetailResponse;
 import com.bliblifuture.hrisbackend.model.response.RequestResponse;
 import com.bliblifuture.hrisbackend.model.response.util.TimeResponse;
 import com.bliblifuture.hrisbackend.model.response.util.RequestDetailResponse;
@@ -16,6 +16,7 @@ import reactor.core.publisher.Mono;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -35,6 +36,8 @@ public class RequestResponseHelper {
                 .approvedby(request.getApprovedBy())
                 .build();
         response.setId(request.getId());
+        response.setCreatedDate(request.getCreatedDate());
+        response.setCreatedBy(request.getCreatedBy());
 
         return userRepository.findFirstByEmployeeId(request.getEmployeeId())
                 .flatMap(user -> userResponseHelper.getUserResponse(user))
@@ -72,11 +75,12 @@ public class RequestResponseHelper {
     }
 
     private RequestResponse setHourlyLeaveResponse(RequestResponse response, Request request) {
-        RequestLeaveResponse leave = RequestLeaveResponse.builder()
+        RequestLeaveDetailResponse leave = RequestLeaveDetailResponse.builder()
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
                 .type(request.getType().toString())
                 .notes(request.getNotes())
+                .dates(convertDatesToString(Arrays.asList(request.getCreatedDate())))
                 .build();
 
         RequestDetailResponse detail = RequestDetailResponse.builder()
@@ -122,11 +126,12 @@ public class RequestResponseHelper {
     }
 
     private RequestResponse setLeaveRequestResponse(RequestResponse response, Request request) {
-        RequestLeaveResponse leave = RequestLeaveResponse.builder()
+        RequestLeaveDetailResponse leave = RequestLeaveDetailResponse.builder()
                 .dates(convertDatesToString(request.getDates()))
                 .files(request.getFiles())
                 .notes(request.getNotes())
                 .build();
+
         if (request.getType().equals(RequestType.SPECIAL_LEAVE)){
             leave.setType(request.getSpecialLeaveType().toString());
         }

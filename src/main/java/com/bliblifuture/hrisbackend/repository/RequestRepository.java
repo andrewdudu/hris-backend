@@ -38,6 +38,9 @@ public interface RequestRepository extends ReactiveMongoRepository<Request, Stri
 
     Mono<Long> countByStatusAndManager(RequestStatus status, String manager);
 
+    Mono<Long> countByEmployeeIdAndTypeAndStatusAndCreatedDateAfter(
+            String employeeId, RequestType type, RequestStatus status, Date date);
+
     Flux<Request> findByDatesBetweenAndStatus(Date startDate, Date endDate, RequestStatus status);
 
     Flux<Request> findByDepartmentIdAndDatesBetweenAndStatus(String depId, Date start, Date end, RequestStatus status);

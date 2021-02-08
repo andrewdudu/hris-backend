@@ -78,6 +78,27 @@
 }
 ```
 
+## GET Leaves Quota Detail
+
+- Endpoint : `/users/leave-quotas`
+- HTTP Method : `GET`
+
+- Request Header :
+  - Accept : `application/json`
+- Query Param:
+  - code: `ANNUAL_LEAVE|EXTRA_LEAVE|SUBSTITUE_LEAVE`
+- Response Body (Success) :
+
+```json
+{
+  "code": 200,
+  "status": "Success",
+  "data": {
+    "leaveQuota": 2
+  }
+}
+```
+
 ## GET Leaves Quotas
 
 - Endpoint : `/users/{id}/profile`

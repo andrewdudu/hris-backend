@@ -30,4 +30,16 @@ public class LeavesDataResponse {
     private int closeFamilyDeath;
 
     private int unpaidLeave;
+
+    private int annualLeave;
+
+    private int extraLeave;
+
+    private int substituteLeave;
+
+    private int hourlyLeave;
+
+    private int annualLeaveExtension;
+
+    private int requestAttendance;
 }

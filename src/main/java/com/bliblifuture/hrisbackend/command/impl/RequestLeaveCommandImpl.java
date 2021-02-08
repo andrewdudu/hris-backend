@@ -1,16 +1,20 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.RequestLeaveCommand;
-import com.bliblifuture.hrisbackend.command.impl.helper.*;
+import com.bliblifuture.hrisbackend.command.impl.helper.AnnualLeaveRequestHelper;
+import com.bliblifuture.hrisbackend.command.impl.helper.ExtraLeaveRequestHelper;
+import com.bliblifuture.hrisbackend.command.impl.helper.SpecialLeaveRequestHelper;
+import com.bliblifuture.hrisbackend.command.impl.helper.SubstituteLeaveRequestHelper;
 import com.bliblifuture.hrisbackend.constant.LeaveTypeConstant;
 import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
 import com.bliblifuture.hrisbackend.constant.enumerator.LeaveType;
 import com.bliblifuture.hrisbackend.constant.enumerator.RequestType;
 import com.bliblifuture.hrisbackend.model.entity.Event;
+import com.bliblifuture.hrisbackend.model.entity.Leave;
 import com.bliblifuture.hrisbackend.model.entity.Request;
 import com.bliblifuture.hrisbackend.model.entity.User;
 import com.bliblifuture.hrisbackend.model.request.LeaveRequestData;
-import com.bliblifuture.hrisbackend.model.response.RequestLeaveResponse;
+import com.bliblifuture.hrisbackend.model.response.RequestLeaveDetailResponse;
 import com.bliblifuture.hrisbackend.repository.*;
 import com.bliblifuture.hrisbackend.util.DateUtil;
 import lombok.SneakyThrows;
@@ -19,7 +23,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,7 +50,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
     private DateUtil dateUtil;
 
     @Override
-    public Mono<RequestLeaveResponse> execute(LeaveRequestData request) {
+    public Mono<RequestLeaveDetailResponse> execute(LeaveRequestData request) {
         return filterDate(request)
                 .flatMap(newDates -> {
                     request.setDates(newDates);
@@ -61,13 +64,10 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
                                     return entity;
                                 }))
                 )
-                .flatMap(leaveRequest -> {
-                    return requestRepository.save(leaveRequest);
-                })
+                .flatMap(leaveRequest -> requestRepository.save(leaveRequest))
                 .map(this::createResponse);
     }
 
-    @SneakyThrows
     private Mono<List<String>> filterDate(LeaveRequestData request){
         List<String> newDates = new ArrayList<>();
         return Flux.fromIterable(request.getDates())
@@ -94,13 +94,9 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
         }
     }
 
+    @SneakyThrows
     private Date getDate(String date) {
-        try {
-            return new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(date);
-        } catch (ParseException e) {
-            String msg = "dates=INVALID_REQUEST";
-            throw new IllegalArgumentException(msg);
-        }
+        return new SimpleDateFormat(DateUtil.DATE_FORMAT).parse(date);
     }
 
     private Mono<Request> callHelper(LeaveRequestData request, User user) {
@@ -108,15 +104,18 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
         long currentDateTime = currentDate.getTime();
         switch (request.getType()){
             case LeaveTypeConstant.ANNUAL_LEAVE:
-                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(user.getEmployeeId(), LeaveType.annual, currentDate)
+                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThanOrderByExpDate(user.getEmployeeId(), LeaveType.annual, currentDate, 0)
+                        .switchIfEmpty(Flux.just(Leave.builder().remaining(0).build()))
                         .collectList()
                         .map(leaves -> new AnnualLeaveRequestHelper().processRequest(request, user, leaves, currentDateTime));
             case LeaveTypeConstant.SUBSTITUTE_LEAVE:
-                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThan(user.getEmployeeId(), LeaveType.substitute, currentDate, 0)
+                return leaveRepository.findByEmployeeIdAndTypeAndExpDateAfterAndRemainingGreaterThanOrderByExpDate(user.getEmployeeId(), LeaveType.substitute, currentDate, 0)
+                        .switchIfEmpty(Flux.empty())
                         .collectList()
                         .map(leaves -> new SubstituteLeaveRequestHelper().processRequest(request, user, leaves, currentDateTime));
             case LeaveTypeConstant.EXTRA_LEAVE:
                 return leaveRepository.findFirstByEmployeeIdAndTypeAndExpDateAfterOrderByExpDateAsc(user.getEmployeeId(), LeaveType.extra, currentDate)
+                        .switchIfEmpty(Mono.just(Leave.builder().remaining(0).build()))
                         .map(leave -> new ExtraLeaveRequestHelper().processRequest(request, user, leave, currentDateTime));
             case LeaveTypeConstant.CLOSE_FAMILY_DEATH:
             case LeaveTypeConstant.SICK:
@@ -128,7 +127,6 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
             case LeaveTypeConstant.CHILD_BAPTISM:
             case LeaveTypeConstant.CHILDBIRTH:
             case LeaveTypeConstant.MAIN_FAMILY_DEATH:
-            case LeaveTypeConstant.SICK_WITH_MEDICAL_LETTER:
                 if (request.getDates().size() > 2){
                     String msg = "dates=EXCEED_ALLOWABLE_QUOTA";
                     throw new IllegalArgumentException(msg);
@@ -153,6 +151,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
                     throw new IllegalArgumentException(msg);
                 }
                 return new SpecialLeaveRequestHelper().processRequest(request, user, currentDateTime);
+            case LeaveTypeConstant.SICK_WITH_MEDICAL_LETTER:
             case LeaveTypeConstant.UNPAID_LEAVE:
                 return new SpecialLeaveRequestHelper().processRequest(request, user, currentDateTime);
             default:
@@ -161,14 +160,14 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
         }
     }
 
-    private RequestLeaveResponse createResponse(Request request) {
+    private RequestLeaveDetailResponse createResponse(Request request) {
         List<String> dates = new ArrayList<>();
         for (Date dateString : request.getDates()) {
             String date = new SimpleDateFormat(DateUtil.DATE_FORMAT).format(dateString);
             dates.add(date);
         }
 
-        RequestLeaveResponse response = RequestLeaveResponse.builder()
+        RequestLeaveDetailResponse response = RequestLeaveDetailResponse.builder()
                 .files(request.getFiles())
                 .dates(dates)
                 .notes(request.getNotes())
@@ -180,6 +179,8 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
             response.setType(request.getType().toString());
         }
         response.setId(request.getId());
+        response.setCreatedBy(request.getCreatedBy());
+        response.setCreatedDate(request.getCreatedDate());
 
         return response;
     }

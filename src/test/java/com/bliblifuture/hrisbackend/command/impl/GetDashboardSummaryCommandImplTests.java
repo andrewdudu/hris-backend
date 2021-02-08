@@ -1,10 +1,7 @@
 package com.bliblifuture.hrisbackend.command.impl;
 
 import com.bliblifuture.hrisbackend.command.GetDashboardSummaryCommand;
-import com.bliblifuture.hrisbackend.constant.enumerator.AttendanceLocationType;
-import com.bliblifuture.hrisbackend.constant.enumerator.CalendarStatus;
-import com.bliblifuture.hrisbackend.constant.enumerator.RequestStatus;
-import com.bliblifuture.hrisbackend.constant.enumerator.UserRole;
+import com.bliblifuture.hrisbackend.constant.enumerator.*;
 import com.bliblifuture.hrisbackend.model.entity.Attendance;
 import com.bliblifuture.hrisbackend.model.entity.DailyAttendanceReport;
 import com.bliblifuture.hrisbackend.model.entity.User;
@@ -66,7 +63,7 @@ public class GetDashboardSummaryCommandImplTests {
     private DateUtil dateUtil;
 
     @Test
-    public void test_execute() throws ParseException {
+    public void testAdmin_execute() throws ParseException {
         User user = User.builder()
                 .username("username")
                 .password("encryptedPassword")
@@ -99,7 +96,7 @@ public class GetDashboardSummaryCommandImplTests {
         Mockito.when(dailyAttendanceReportRepository.save(report))
                 .thenReturn(Mono.just(report));
 
-        Mockito.when(eventRepository.findFirstByDate(startOfDate))
+        Mockito.when(eventRepository.findFirstByDateAndStatus(startOfDate, CalendarStatus.HOLIDAY))
                 .thenReturn(Mono.empty());
 
         long requestCount = 10L;
@@ -140,6 +137,7 @@ public class GetDashboardSummaryCommandImplTests {
                 .current(AttendanceResponse.builder()
                         .date(TimeResponse.builder().start(attendance2.getStartTime()).build())
                         .location(LocationResponse.builder().type(AttendanceLocationType.OUTSIDE).build())
+                        .status(AttendanceStatus.AVAILABLE)
                         .build())
                 .latest(AttendanceResponse.builder()
                         .date(TimeResponse.builder().start(attendance1.getStartTime()).end(attendance1.getEndTime()).build())
@@ -176,8 +174,274 @@ public class GetDashboardSummaryCommandImplTests {
         Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
         Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).findFirstByDate(startOfDate);
         Mockito.verify(dailyAttendanceReportRepository, Mockito.times(1)).save(report);
-        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByDate(startOfDate);
+        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByDateAndStatus(startOfDate, CalendarStatus.HOLIDAY);
         Mockito.verify(requestRepository, Mockito.times(1)).countByStatus(RequestStatus.REQUESTED);
+        Mockito.verify(attendanceRepository, Mockito.times(1)).findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable);
+    }
+
+    @Test
+    public void testManager_execute() throws ParseException {
+        User user = User.builder()
+                .username("username")
+                .password("encryptedPassword")
+                .roles(Arrays.asList(UserRole.MANAGER, UserRole.EMPLOYEE))
+                .employeeId("ID-123")
+                .build();
+
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
+                .thenReturn(Mono.just(user));
+
+        Date currentDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-12 09:00:00");
+        Mockito.when(dateUtil.getNewDate())
+                .thenReturn(currentDate);
+
+        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-12");
+
+        Mockito.when(eventRepository.findFirstByDateAndStatus(startOfDate, CalendarStatus.HOLIDAY))
+                .thenReturn(Mono.empty());
+
+        long requestCount = 10L;
+        Mockito.when(requestRepository.countByStatusAndManager(RequestStatus.REQUESTED, user.getUsername()))
+                .thenReturn(Mono.just(requestCount));
+
+        Pageable pageable = PageRequest.of(0, 2);
+
+        Attendance attendance1 = Attendance.builder()
+                .employeeId(user.getEmployeeId())
+                .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-11"))
+                .locationType(AttendanceLocationType.INSIDE)
+                .startTime(new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-11 08:00:00"))
+                .endTime(new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-11 18:00:00"))
+                .startLat(3.1)
+                .startLon(1.5)
+                .endLat(3.2)
+                .endLon(1.6)
+                .officeCode("OFFICE-1")
+                .build();
+
+        Attendance attendance2 = Attendance.builder()
+                .employeeId(user.getEmployeeId())
+                .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-12"))
+                .locationType(AttendanceLocationType.OUTSIDE)
+                .image("imagePath")
+                .startTime(new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-12 08:00:00"))
+                .startLat(3.1)
+                .startLon(1.5)
+                .officeCode("OFFICE-1")
+                .build();
+
+        Mockito.when(attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable))
+                .thenReturn(Flux.just(attendance2, attendance1));
+
+        DashboardAttendanceResponse attendanceResponse = DashboardAttendanceResponse
+                .builder()
+                .current(AttendanceResponse.builder()
+                        .date(TimeResponse.builder().start(attendance2.getStartTime()).build())
+                        .location(LocationResponse.builder().type(AttendanceLocationType.OUTSIDE).build())
+                        .status(AttendanceStatus.AVAILABLE)
+                        .build())
+                .latest(AttendanceResponse.builder()
+                        .date(TimeResponse.builder().start(attendance1.getStartTime()).end(attendance1.getEndTime()).build())
+                        .location(LocationResponse.builder().type(AttendanceLocationType.INSIDE).build())
+                        .build())
+                .build();
+
+        CalendarResponse calendarResponse = CalendarResponse.builder()
+                .status(CalendarStatus.WORKING)
+                .date(startOfDate)
+                .build();
+
+        ReportResponse reportResponse = ReportResponse.builder()
+                .absent(0)
+                .working(0)
+                .build();
+
+        IncomingRequestTotalResponse requestTotalResponse = IncomingRequestTotalResponse.builder()
+                .incoming(10)
+                .build();
+        DashboardResponse expected = DashboardResponse.builder()
+                .attendance(attendanceResponse)
+                .calendar(calendarResponse)
+                .request(requestTotalResponse)
+                .build();
+
+        getDashboardSummaryCommand.execute(user.getUsername())
+                .subscribe(response -> {
+                    Assert.assertEquals(expected, response);
+                });
+
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
+        Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
+        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByDateAndStatus(startOfDate, CalendarStatus.HOLIDAY);
+        Mockito.verify(requestRepository, Mockito.times(1)).countByStatusAndManager(RequestStatus.REQUESTED, user.getUsername());
+        Mockito.verify(attendanceRepository, Mockito.times(1)).findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable);
+    }
+
+    @Test
+    public void testEmployee_execute() throws ParseException {
+        User user = User.builder()
+                .username("username")
+                .password("encryptedPassword")
+                .roles(Arrays.asList(UserRole.EMPLOYEE))
+                .employeeId("ID-123")
+                .build();
+
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
+                .thenReturn(Mono.just(user));
+
+        Date currentDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-12 09:00:00");
+        Mockito.when(dateUtil.getNewDate())
+                .thenReturn(currentDate);
+
+        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-12");
+
+        Mockito.when(eventRepository.findFirstByDateAndStatus(startOfDate, CalendarStatus.HOLIDAY))
+                .thenReturn(Mono.empty());
+
+        Pageable pageable = PageRequest.of(0, 2);
+
+        Attendance attendance1 = Attendance.builder()
+                .employeeId(user.getEmployeeId())
+                .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-11"))
+                .locationType(AttendanceLocationType.INSIDE)
+                .startTime(new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-11 08:00:00"))
+                .endTime(new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-11 18:00:00"))
+                .startLat(3.1)
+                .startLon(1.5)
+                .endLat(3.2)
+                .endLon(1.6)
+                .officeCode("OFFICE-1")
+                .build();
+
+        Attendance attendance2 = Attendance.builder()
+                .employeeId(user.getEmployeeId())
+                .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-12"))
+                .locationType(AttendanceLocationType.OUTSIDE)
+                .image("imagePath")
+                .startTime(new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-12 08:00:00"))
+                .startLat(3.1)
+                .startLon(1.5)
+                .officeCode("OFFICE-1")
+                .build();
+
+        Mockito.when(attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable))
+                .thenReturn(Flux.just(attendance2, attendance1));
+
+        DashboardAttendanceResponse attendanceResponse = DashboardAttendanceResponse
+                .builder()
+                .current(AttendanceResponse.builder()
+                        .date(TimeResponse.builder().start(attendance2.getStartTime()).build())
+                        .location(LocationResponse.builder().type(AttendanceLocationType.OUTSIDE).build())
+                        .status(AttendanceStatus.AVAILABLE)
+                        .build())
+                .latest(AttendanceResponse.builder()
+                        .date(TimeResponse.builder().start(attendance1.getStartTime()).end(attendance1.getEndTime()).build())
+                        .location(LocationResponse.builder().type(AttendanceLocationType.INSIDE).build())
+                        .build())
+                .build();
+
+        CalendarResponse calendarResponse = CalendarResponse.builder()
+                .status(CalendarStatus.WORKING)
+                .date(startOfDate)
+                .build();
+
+        DashboardResponse expected = DashboardResponse.builder()
+                .attendance(attendanceResponse)
+                .calendar(calendarResponse)
+                .build();
+
+        getDashboardSummaryCommand.execute(user.getUsername())
+                .subscribe(response -> {
+                    Assert.assertEquals(expected, response);
+                });
+
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
+        Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
+        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByDateAndStatus(startOfDate, CalendarStatus.HOLIDAY);
+        Mockito.verify(attendanceRepository, Mockito.times(1)).findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable);
+    }
+
+    @Test
+    public void testEmployeeNoCurrentAttendance_execute() throws ParseException {
+        User user = User.builder()
+                .username("username")
+                .password("encryptedPassword")
+                .roles(Arrays.asList(UserRole.EMPLOYEE))
+                .employeeId("ID-123")
+                .build();
+
+        Mockito.when(userRepository.findFirstByUsername(user.getUsername()))
+                .thenReturn(Mono.just(user));
+
+        Date currentDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-12 09:00:00");
+        Mockito.when(dateUtil.getNewDate())
+                .thenReturn(currentDate);
+
+        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-12");
+
+        Mockito.when(eventRepository.findFirstByDateAndStatus(startOfDate, CalendarStatus.HOLIDAY))
+                .thenReturn(Mono.empty());
+
+        Pageable pageable = PageRequest.of(0, 2);
+
+        Attendance attendance1 = Attendance.builder()
+                .employeeId(user.getEmployeeId())
+                .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-11"))
+                .locationType(AttendanceLocationType.INSIDE)
+                .startTime(new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-10 08:00:00"))
+                .endTime(new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-10 18:00:00"))
+                .startLat(3.1)
+                .startLon(1.5)
+                .endLat(3.2)
+                .endLon(1.6)
+                .officeCode("OFFICE-1")
+                .build();
+
+        Attendance attendance2 = Attendance.builder()
+                .employeeId(user.getEmployeeId())
+                .date(new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-12"))
+                .locationType(AttendanceLocationType.OUTSIDE)
+                .image("imagePath")
+                .startTime(new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-11 08:00:00"))
+                .endTime(new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-11 18:00:00"))
+                .startLat(3.1)
+                .startLon(1.5)
+                .officeCode("OFFICE-1")
+                .build();
+
+        Mockito.when(attendanceRepository.findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable))
+                .thenReturn(Flux.just(attendance2, attendance1));
+
+        DashboardAttendanceResponse attendanceResponse = DashboardAttendanceResponse
+                .builder()
+                .current(AttendanceResponse.builder()
+                        .date(TimeResponse.builder().build())
+                        .status(AttendanceStatus.AVAILABLE)
+                        .build())
+                .latest(AttendanceResponse.builder()
+                        .date(TimeResponse.builder().start(attendance2.getStartTime()).end(attendance2.getEndTime()).build())
+                        .location(LocationResponse.builder().type(AttendanceLocationType.OUTSIDE).build())
+                        .build())
+                .build();
+
+        CalendarResponse calendarResponse = CalendarResponse.builder()
+                .status(CalendarStatus.WORKING)
+                .date(startOfDate)
+                .build();
+
+        DashboardResponse expected = DashboardResponse.builder()
+                .attendance(attendanceResponse)
+                .calendar(calendarResponse)
+                .build();
+
+        getDashboardSummaryCommand.execute(user.getUsername())
+                .subscribe(response -> {
+                    Assert.assertEquals(expected, response);
+                });
+
+        Mockito.verify(userRepository, Mockito.times(1)).findFirstByUsername(user.getUsername());
+        Mockito.verify(dateUtil, Mockito.times(1)).getNewDate();
+        Mockito.verify(eventRepository, Mockito.times(1)).findFirstByDateAndStatus(startOfDate, CalendarStatus.HOLIDAY);
         Mockito.verify(attendanceRepository, Mockito.times(1)).findAllByEmployeeIdOrderByStartTimeDesc(user.getEmployeeId(),pageable);
     }
 }

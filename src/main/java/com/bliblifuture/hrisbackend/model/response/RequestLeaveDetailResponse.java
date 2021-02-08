@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestLeaveResponse extends BaseResponse{
+public class RequestLeaveDetailResponse extends BaseResponse{
 
     private List<String> dates;
 
