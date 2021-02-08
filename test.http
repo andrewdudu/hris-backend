@@ -81,7 +81,7 @@ Accept: application/json
 }
 
 ###
-POST http://localhost:8080/api/dummy/save-elastic
+POST http://localhost:8081/api/dummy/save-elastic
 Accept: application/json
 
 ###

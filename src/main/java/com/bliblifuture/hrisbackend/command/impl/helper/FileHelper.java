@@ -23,6 +23,10 @@ public class FileHelper {
             String extension = "." + fileData[0];
             String base64 = fileData[1];
 
+            if (extension == ".png" || extension == ".jpeg" || extension == ".jpg"){
+                extension = ".webp";
+            }
+
             String filename = data.getType() + "-" + employeeId + "-" + (i+1) +"-" + currentDateTime + extension;
             String uploadPath = FileConstant.REQUEST_FILE_PATH + filename;
 

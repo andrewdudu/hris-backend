@@ -4,7 +4,7 @@
     docker build -t hris-be
 
 ### Create container
-    docker container create --name hris-be -p 8080:8080 hris-be
+    docker container create --name hris-be -p 8000:8000 hris-be
     
 ### Start container
     docker container start hris-be
