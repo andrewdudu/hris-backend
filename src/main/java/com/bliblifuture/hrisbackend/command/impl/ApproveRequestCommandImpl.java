@@ -14,6 +14,8 @@ import com.bliblifuture.hrisbackend.util.DateUtil;
 import com.bliblifuture.hrisbackend.util.UuidUtil;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -44,6 +46,9 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
     private DailyAttendanceReportRepository dailyAttendanceReportRepository;
 
     @Autowired
+    private JavaMailSender emailSender;
+
+    @Autowired
     private DateUtil dateUtil;
 
     @Autowired
@@ -57,7 +62,30 @@ public class ApproveRequestCommandImpl implements ApproveRequestCommand {
                 .map(request -> approvedRequest(data, request, currentDate))
                 .flatMap(request -> applyRequest(request, currentDate))
                 .flatMap(request -> requestRepository.save(request))
+                .map(this::sendEmail)
                 .flatMap(request -> requestResponseHelper.createResponse(request));
+    }
+
+    private Request sendEmail(Request request) {
+        String emailDest = request.getCreatedBy();
+
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setFrom("blibli");
+        mail.setTo(emailDest);
+        String type = getType(request);
+        mail.setSubject(type.replace("_", " ") + " APPROVED");
+        mail.setText("Your " + type.toLowerCase().replace("_", " ") + " request has been approved");
+        emailSender.send(mail);
+
+        return request;
+    }
+
+    private String getType(Request request) {
+        RequestType type = request.getType();
+        if (type.equals(RequestType.SPECIAL_LEAVE)){
+            return request.getSpecialLeaveType().toString().toUpperCase();
+        }
+        return type.toString().toUpperCase();
     }
 
     @SneakyThrows
