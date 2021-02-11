@@ -2,7 +2,7 @@
 
 ## DOCKER
 #### Build docker image
-    docker build -t hris-be
+    docker build -t hris-be .
 
 #### Create container
     docker container create --name hris-be -p 8081:8081 hris-be
