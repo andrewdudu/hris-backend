@@ -53,6 +53,7 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
     public Mono<RequestLeaveDetailResponse> execute(LeaveRequestData request) {
         return filterDate(request)
                 .flatMap(newDates -> {
+                    checkNull(newDates);
                     request.setDates(newDates);
                     return userRepository.findFirstByUsername(request.getRequester());
                 })
@@ -68,34 +69,38 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
                 .map(this::createResponse);
     }
 
-    private Mono<List<String>> filterDate(LeaveRequestData request){
-        List<String> newDates = new ArrayList<>();
-        return Flux.fromIterable(request.getDates())
-                .map(this::getDate)
-                .flatMap(date -> eventRepository.findFirstByDateAndStatus(date, CalendarStatus.HOLIDAY)
-                        .switchIfEmpty(Mono.just(Event.builder().build()))
-                        .map(event -> {
-                            inputNewDate(event, newDates, date);
-                            return date;
-                        }))
-                .collectList()
-                .map(dates -> newDates);
-    }
-
-    private void inputNewDate(Event event, List<String> newDates, Date date) {
-        String dateString = new SimpleDateFormat(DateUtil.DATE_FORMAT).format(date);
-        if (event.getId() != null && !event.getId().isEmpty()){
-            if (!newDates.contains(dateString)){
-                newDates.add(dateString);
-            }
-        }
-        else if (date.getDay() != 0 && date.getDay() != 6){
-            newDates.add(dateString);
-        }
+    private void checkNull(List<String> newDates) {
         if (newDates.size() == 0){
             String msg = "dates=INVALID_DATE";
             throw new IllegalArgumentException(msg);
         }
+    }
+
+    private Mono<List<String>> filterDate(LeaveRequestData request){
+        List<Date> dates = new ArrayList<>();
+
+        for (String dateString : request.getDates()) {
+            dates.add(getDate(dateString));
+        }
+
+        return Flux.fromIterable(dates)
+                .flatMap(this::getNewDates)
+                .collectList();
+    }
+
+    private Mono<String> getNewDates(Date date) {
+        return eventRepository.findFirstByDateAndStatus(date, CalendarStatus.HOLIDAY)
+                .switchIfEmpty(Mono.just(Event.builder().build()))
+                .map(event -> checkDate(event, date))
+                .filter(filteredDate -> !filteredDate.equals(""));
+    }
+
+    private String checkDate(Event event, Date date) {
+        String dateString = new SimpleDateFormat(DateUtil.DATE_FORMAT).format(date);
+        if (event.getId() == null && date.getDay() != 0 && date.getDay() != 6){
+            return dateString;
+        }
+        return "";
     }
 
     @SneakyThrows
