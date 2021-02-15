@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class RequestHourlyLeaveCommandImpl implements RequestHourlyLeaveCommand {
@@ -68,6 +69,11 @@ public class RequestHourlyLeaveCommandImpl implements RequestHourlyLeaveCommand 
                 .parse(thisDate + " " + request.getStartTime() + ":00");
         Date endTime = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(thisDate + " " + request.getEndTime() + ":00");
+
+        if((endTime.getTime() - startTime.getTime()) > TimeUnit.HOURS.toMillis(2)){
+            String errorsMessage = "message=EXCEED_LIMIT";
+            throw new IllegalArgumentException(errorsMessage);
+        }
 
         requestEntity.setDates(Arrays.asList(currentTime));
         requestEntity.setStartTime(startTime);

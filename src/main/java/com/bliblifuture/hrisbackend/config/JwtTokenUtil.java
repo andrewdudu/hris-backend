@@ -6,6 +6,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,9 +22,10 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Component
+@Slf4j
 public class JwtTokenUtil implements Serializable {
 
-    public static final long JWT_TOKEN_VALIDITY = 1000L*60;
+    public static final long JWT_TOKEN_VALIDITY = 1000L*60*60*1000;
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -30,6 +34,8 @@ public class JwtTokenUtil implements Serializable {
 
     @Autowired
     private DateUtil dateUtil;
+
+    private static Logger logger = LoggerFactory.getLogger(JwtTokenUtil.class);
 
     @PostConstruct
     public void init(){
@@ -74,8 +80,9 @@ public class JwtTokenUtil implements Serializable {
     }
 
     private String doGenerateToken(Map<String, Object> claims, String subject){
+        long currentTimeMillis = new Date().getTime();
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
+                .setExpiration(new Date(currentTimeMillis + JWT_TOKEN_VALIDITY))
                 .signWith(key).compact();
     }
 
