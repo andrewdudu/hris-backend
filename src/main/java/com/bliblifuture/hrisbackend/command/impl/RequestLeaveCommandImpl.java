@@ -92,6 +92,10 @@ public class RequestLeaveCommandImpl implements RequestLeaveCommand {
         else if (date.getDay() != 0 && date.getDay() != 6){
             newDates.add(dateString);
         }
+        if (newDates.size() == 0){
+            String msg = "dates=INVALID_DATE";
+            throw new IllegalArgumentException(msg);
+        }
     }
 
     @SneakyThrows
