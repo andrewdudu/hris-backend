@@ -55,7 +55,7 @@ public class AddAnnouncementCommandImpl implements AddAnnouncementCommand {
         String startDate = (currentDate.getYear()+1900) + "-" + (currentDate.getMonth()+1) + "-"
                 + currentDate.getDate();
 
-        String startTime = " 00:00:00";
+        String startTime = " 00:00:01";
         Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT)
                 .parse(startDate + startTime);
 
