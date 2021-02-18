@@ -72,7 +72,7 @@ public class AddAnnouncementCommandImplTests {
         Date currentDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-30 10:00:00");
         Mockito.when(dateUtil.getNewDate()).thenReturn(currentDate);
 
-        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-30");
+        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-30 00:00:01");
         Mockito.when(eventRepository.findFirstByTitleAndDate(title, startOfDate))
                 .thenReturn(Mono.empty());
 
@@ -130,7 +130,7 @@ public class AddAnnouncementCommandImplTests {
 
         Date currentDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-30 10:00:00");
 
-        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_FORMAT).parse("2020-12-30");
+        Date startOfDate = new SimpleDateFormat(DateUtil.DATE_TIME_FORMAT).parse("2020-12-30 00:00:01");
 
         Event event = Event.builder()
                 .title(title)
