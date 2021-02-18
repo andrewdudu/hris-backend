@@ -1,7 +1,30 @@
+#FROM openjdk:8-jdk-alpine
+#
+#ARG JAR_FILE=target/*.jar
+#
+#COPY ${JAR_FILE} hris-backend.jar
+#
+#ENTRYPOINT ["mvn", "spring-boot:run"]
+
+FROM openjdk:8-jdk-alpine as build
+WORKDIR /workspace/app
+
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+COPY src src
+
+RUN ./mvnw install -DskipTests
+RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
+
 FROM openjdk:8-jdk-alpine
+VOLUME /tmp
 
-ARG JAR_FILE=target/*.jar
+ARG JAR_FILE=/target/*.jar
+COPY ${JAR_FILE} hris-be.jar
 
-COPY ${JAR_FILE} hris-backend.jar
-
-CMD ["java", "-jar", "/hris-backend.jar"]
+ARG DEPENDENCY=/workspace/app/target/dependency
+COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
+COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
+COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
+ENTRYPOINT ["java", "-Dserver.port=8081", "-jar", "hris-be.jar"]

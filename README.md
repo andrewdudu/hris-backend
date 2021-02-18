@@ -1,21 +1,25 @@
 # HRIS-BACKEND
 
-### Build docker image
-    docker build -t hris-be
+## DOCKER
+### Install mvnw
+    mvn -N io.takari:maven:wrapper
 
-### Create container
-    docker container create --name hris-be -p 8000:8000 hris-be
+#### Build docker image
+    docker build -t hris-be .
+
+#### Create container
+    docker container create --name hris-be -p 127.0.0.1:8081:8081 hris-be
     
-### Start container
+#### Start container
     docker container start hris-be
     
     
-# RUNDECK
+## RUNDECK
 
-### Auto-Clockout
+#### Auto-Clockout
     curl -c /cookie -H "Content-Type: application/json" --request POST \   -d '{\"username\":\"admin@mail.com\", \"password\":\"adminpass\"}' http://localhost:8081/auth/login
     curl -b /cookie --request POST 'http://localhost:8081/api/scheduler/auto-clockout'
     
-### Auto Update Leave Quota
+#### Auto Update Leave Quota
     curl -c /cookie -H "Content-Type: application/json" --request POST \   -d '{\"username\":\"admin@mail.com\", \"password\":\"adminpass\"}' http://localhost:8081/auth/login
     curl -b /cookie --request POST 'http://localhost:8081/api/scheduler/update-leave'
