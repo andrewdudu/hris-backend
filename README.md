@@ -1,6 +1,9 @@
 # HRIS-BACKEND
 
 ## DOCKER
+### Install mvnw
+    mvn -N io.takari:maven:wrapper
+
 #### Build docker image
     docker build -t hris-be .
 
